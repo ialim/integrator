@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>integrator: Direction D, Spec Sheet</title>
+<style>
+/*
+  DIRECTION D: SPEC SHEET. Concrete values to lift (light mode only).
+  Surfaces   sheet #FFFFFF | tint #EDF3F7 (label cells, header rows) | cyan tint #E1F0F5 (offline banner, hold band)
+             desk (page) #E8EDF1 | alert tint #FBE9E6 | caution tint #FAF0D4 | ok tint #E2F1E8
+  Text       ink #0D1B2A | secondary #384758 | line cyan #0B6A8A (labels, links, primary fill; white text 6.10:1)
+  Status     In Stock #0F5C36 | Back-order and caution #6A4200 | escalated and error #9A1B1B
+  Lines      control border #5E7081 (4.33:1 or better on every surface); dashed 1 px for inner rules; solid 1 px ink for frames
+  Focus      3 px cyan #0B6A8A outline, 2 px offset
+  Type       names and body: system-ui sans; labels, quantities, codes and every amount: system monospace with tabular figures
+  Shape      square corners (0 px), corner marks on total boxes, bracketed status codes such as [IN STOCK]
+  Density    medium: strict 12 px gutter, quantity, unit price and total in a ruled cell row like a bill of materials
+*/
+:root{
+  --desk:#E8EDF1; --sheet:#FFFFFF; --tint:#EDF3F7; --cyan-tint:#E1F0F5;
+  --bad-tint:#FBE9E6; --warn-tint:#FAF0D4; --ok-tint:#E2F1E8;
+  --ink:#0D1B2A; --ink2:#384758; --cyan:#0B6A8A;
+  --ok:#0F5C36; --warn:#6A4200; --bad:#9A1B1B;
+  --control:#5E7081; --grid:#DCE4EA; --bezel:#1B2733;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background-color:var(--desk);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font:14px/1.5 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul{padding:0;list-style:none}
+button,input{font:inherit;color:inherit;margin:0}
+button{cursor:pointer}
+table{border-collapse:collapse}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:square;stroke-linejoin:miter}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+/* page chrome: the intro is a drawing title block */
+.page{max-width:1272px;margin:0 auto;padding:32px 24px 56px}
+.tblock{max-width:880px;background:var(--sheet);border:1px solid var(--ink)}
+.tb-head{display:flex;justify-content:space-between;gap:12px;padding:9px 18px;border-bottom:1px dashed var(--control);font:600 12px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.tb-body{padding:22px 22px 24px}
+.tb-body h1{margin:0 0 14px;font:700 42px/1.05 var(--mono);letter-spacing:-.03em}
+.rationale{margin:0 0 16px;font:15px/1.6 var(--sans)}
+.personality{padding:10px 14px;border-left:3px solid var(--cyan);background:var(--cyan-tint);font:600 14px/1.5 var(--mono)}
+.sec{display:flex;align-items:center;gap:10px;margin:48px 0 8px;font:700 13px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.sec::before{content:"";width:10px;height:10px;border:2px solid var(--cyan)}
+.sec::after{content:"";flex:1;border-top:1px dashed var(--control)}
+.note{margin:0 0 22px;max-width:780px;padding:6px 10px;background:var(--sheet);border-left:3px solid var(--control);font-size:13px;color:var(--ink2)}
+.phones{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.unit figcaption span{display:block;font:13px/1.4 var(--sans);letter-spacing:0;text-transform:none;color:var(--ink2)}
+.phone{position:relative;width:380px;padding:10px;background:var(--bezel);border-radius:18px}
+.phone::before,.phone::after{content:"";position:absolute;top:790px;width:10px;height:3px;background:#7FD8F0}
+.phone::before{left:0}
+.phone::after{right:0}
+.screen{position:relative;min-height:780px;padding-bottom:24px;background:var(--sheet);border-radius:9px;overflow:hidden}
+
+/* app bar */
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:0 14px 0 4px;background:var(--sheet);border-bottom:1px solid var(--ink)}
+.back{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 10px 0 4px;background:none;border:0;color:var(--cyan);font:600 12.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.brand{display:inline-flex;align-items:center;gap:7px;font:700 14px/1 var(--mono);color:var(--ink)}
+.brand::before{content:"";width:9px;height:9px;background:var(--cyan)}
+
+/* offline banner */
+.banner{display:flex;gap:10px;align-items:flex-start;margin:12px 12px 0;padding:10px 12px;background:var(--cyan-tint);border:1px dashed var(--cyan);font:13px/1.45 var(--sans)}
+.banner .i{width:22px;height:22px;color:var(--cyan)}
+.banner strong{font-weight:700}
+
+/* project head */
+.proj{padding:16px 12px 6px}
+.eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:6px;font:600 11.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.eyebrow::before{content:"";width:8px;height:8px;border:2px solid var(--cyan)}
+.proj h3{font:600 20px/1.25 var(--sans)}
+.meta{margin-top:6px;font:12px/1.3 var(--mono);color:var(--ink2)}
+
+/* rooms */
+.room{margin-top:14px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.room-head{display:flex;align-items:center;gap:8px;min-height:48px;padding-left:12px;background:var(--tint);border-bottom:1px dashed var(--control)}
+.collapsed .room-head{border-bottom:0}
+.room-head h4{flex:1;font:600 16px/1.25 var(--sans)}
+.room-head .sum{font:700 14px/1.2 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.toggle{display:grid;place-items:center;width:48px;height:48px;background:none;border:0;border-left:1px dashed var(--control);color:var(--cyan)}
+.caption{padding:8px 12px 0;font:12px/1.4 var(--mono);color:var(--ink2)}
+.item{padding:12px;border-top:1px dashed var(--control)}
+.caption + ul .item:first-child,.room-head + ul .item:first-child{border-top:0}
+.top{display:flex;gap:10px;align-items:baseline}
+.no{flex:none;font:600 12px/1.3 var(--mono);color:var(--cyan)}
+.name{font:600 15px/1.3 var(--sans)}
+.code{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin:6px 0 8px;font:600 11.5px/1.35 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.code .i{width:15px;height:15px}
+.code.ok{color:var(--ok)}
+.code.bo{color:var(--warn)}
+.code .detail{flex-basis:100%;font:500 12.5px/1.35 var(--sans);letter-spacing:0;text-transform:none;color:var(--ink)}
+.cells{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.1fr);border:1px solid var(--control)}
+.cells > *{min-width:0;border-left:1px dashed var(--control)}
+.cells > :nth-child(3n+1){border-left:0}
+.cells .lab{padding:5px 8px 4px;background:var(--tint);border-bottom:1px dashed var(--control);font:600 10.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.cells .val{display:flex;align-items:center;padding:0 8px;font:500 12px/1.3 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cells .val.tot{font-weight:700;font-size:12.5px}
+.cells .qty{margin:4px}
+.qty{display:flex;border:1px solid var(--control);background:var(--sheet)}
+.qty button{display:grid;place-items:center;width:44px;height:44px;border:0;background:var(--tint);color:var(--cyan)}
+.qty input{width:44px;height:44px;padding:0;border:0;border-left:1px dashed var(--control);border-right:1px dashed var(--control);border-radius:0;background:var(--sheet);color:var(--ink);text-align:center;font:700 15px var(--mono);font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
+.techrow{display:flex;align-items:center;gap:8px;margin-top:8px;padding:4px 4px 4px 8px;border:1px solid var(--control)}
+.techrow .lab{font:600 10.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.doc{display:inline-flex;align-items:center;gap:5px;min-height:44px;margin-left:auto;padding:0 6px;background:none;border:0;color:var(--cyan);font:600 12px/1 var(--mono);letter-spacing:.02em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+.doc .i{width:16px;height:16px}
+.add{display:flex;align-items:center;gap:8px;width:calc(100% - 24px);min-height:46px;margin:0 12px 12px;padding:0 12px;background:var(--sheet);border:1px dashed var(--control);color:var(--cyan);font:600 12.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;text-align:left}
+.room-total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;border-top:1px solid var(--ink)}
+.room-total span{font:600 12px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.room-total strong{font:700 16px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+
+/* totals and buttons */
+.grand{position:relative;margin:20px 12px 0;padding:14px 14px 12px;background:var(--sheet);border:1px solid var(--ink)}
+.t{position:absolute;width:8px;height:8px;background:var(--cyan)}
+.t1{left:-4px;top:-4px}.t2{right:-4px;top:-4px}.t3{left:-4px;bottom:-4px}.t4{right:-4px;bottom:-4px}
+.grand .lab{font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.grand .amt{margin:4px 0 6px;font:700 30px/1.1 var(--mono);letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vat{font:600 11.5px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
+.asof{margin-top:8px;padding-top:8px;border-top:1px dashed var(--control);font:12px/1.3 var(--mono);color:var(--ink2)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 12px 0}
+.btn2{display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 10px;background:var(--sheet);border:1px solid var(--control);color:var(--cyan);font:600 12px/1.25 var(--mono);letter-spacing:.04em;text-transform:uppercase;text-align:left}
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 12px 0}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:6px 8px;background:var(--cyan);border:1px solid var(--cyan);color:#fff;font:700 12.5px/1.25 var(--mono);letter-spacing:.05em;text-transform:uppercase;text-align:center}
+.btn.full{width:100%}
+.btn.outline{background:var(--sheet);color:var(--cyan);border-color:var(--control)}
+.btn[disabled]{background:var(--tint);border:1px dashed var(--control);color:var(--ink2);cursor:not-allowed}
+.unavail{display:grid;gap:14px;margin:14px 12px 0}
+.why{display:flex;gap:8px;align-items:flex-start;margin-top:6px;font-size:12.5px;line-height:1.45;color:var(--ink2)}
+.why .i{width:16px;height:16px;margin-top:1px;color:var(--cyan)}
+
+/* payment */
+.stat{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 10px 5px 8px;border:1px solid var(--warn);background:var(--warn-tint);color:var(--warn);font:700 12px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.stat .i{width:16px;height:16px}
+.due{position:relative;margin:16px 12px 0;padding:14px 14px 6px;background:var(--sheet);border:1px solid var(--ink)}
+.due .lab{font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.due .amt{margin:4px 0 8px;font:700 32px/1.1 var(--mono);letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.split div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:8px 0;border-top:1px dashed var(--control);font:13px/1.3 var(--sans)}
+.split dd{font:600 13px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.held{display:flex;align-items:center;gap:8px;margin:12px 12px 0;padding:10px 12px;background:var(--cyan-tint);border:1px dashed var(--cyan);font:600 13.5px/1.3 var(--mono)}
+.held .i{color:var(--cyan)}
+.spec{margin:16px 12px 0;border:1px solid var(--ink)}
+.spec h4{padding:8px 12px;background:var(--tint);border-bottom:1px solid var(--ink);font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.srow{display:grid;grid-template-columns:96px minmax(0,1fr);border-top:1px dashed var(--control)}
+.srow:first-of-type{border-top:0}
+.srow dt{padding:11px 8px 11px 12px;background:var(--tint);border-right:1px dashed var(--control);font:600 10.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.srow dd{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:50px;padding:2px 6px 2px 10px;font:600 15px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.copy{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:76px;min-height:44px;padding:0 10px;background:var(--sheet);border:1px solid var(--control);color:var(--cyan);font:600 12px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.copy .i{width:16px;height:16px}
+.refrow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;padding:2px 6px 2px 12px}
+.refcode{font:700 24px/1.2 var(--mono);letter-spacing:-.02em}
+.hint{margin-top:8px;font-size:13px;color:var(--ink2)}
+.upload{margin:16px 12px 0}
+.upload .btn{min-height:54px;font-size:13px}
+
+/* desktop frame */
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1200px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;background:var(--tint);border-bottom:1px solid var(--ink)}
+.chrome i{width:10px;height:10px;border:1px solid var(--control);background:var(--sheet)}
+.chrome .tab{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--ink);border-bottom:0;font:12px/1 var(--mono);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:16px;height:50px;padding:0 20px;background:var(--sheet);border-bottom:1px solid var(--ink)}
+.topbar .brand{font-size:16px}
+.topbar .area{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.topbar .who{margin-left:auto;font:12px/1 var(--mono);color:var(--ink2)}
+.cbody{display:grid;grid-template-columns:minmax(0,1fr) 316px}
+.queue{padding:22px 20px 26px}
+.queue h3{font:700 24px/1.15 var(--mono);letter-spacing:-.03em}
+.queue .sub{margin:4px 0 14px;font:12.5px/1.4 var(--mono);color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;background:var(--bad-tint);border:1px dashed var(--bad);font:600 13px/1.35 var(--sans);color:var(--ink)}
+.notice .i{color:var(--bad)}
+.q{width:100%;font-size:13px}
+.q th{padding:8px 8px;background:var(--tint);border-top:1px solid var(--ink);border-bottom:2px solid var(--ink);text-align:left;font:600 10.5px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.q th .i{display:inline-block;width:13px;height:13px;margin-left:4px;vertical-align:-2px}
+.q td{padding:7px 8px;border-bottom:1px dashed var(--control);vertical-align:middle;color:var(--ink)}
+.q .num{text-align:right;font:600 12.5px/1.3 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.q .mono{font:12px/1.3 var(--mono);white-space:nowrap}
+.q .age strong{display:block;font:700 13px/1.3 var(--mono);white-space:nowrap}
+.flag{display:flex;align-items:center;gap:4px;margin-top:2px;font:700 10.5px/1.2 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--bad);white-space:nowrap}
+.flag .i{width:13px;height:13px}
+.q tr.late td{background:var(--bad-tint);border-top:1px dashed var(--bad);border-bottom:1px dashed var(--bad)}
+.q tr.late td:first-child{box-shadow:inset 4px 0 0 var(--bad)}
+.q tr.sel td{box-shadow:inset 0 2px 0 var(--cyan),inset 0 -2px 0 var(--cyan)}
+.q tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--bad),inset 0 2px 0 var(--cyan),inset 0 -2px 0 var(--cyan)}
+.st{display:inline-flex;align-items:center;gap:5px;font:600 11px/1.3 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.st.unc{color:var(--warn);font-weight:700}
+.st .i{width:15px;height:15px}
+.panel{padding:22px 20px 24px;border-left:1px solid var(--ink);background:var(--tint)}
+.panel h3{font:700 17px/1.25 var(--mono);letter-spacing:-.02em}
+.panel .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.shot{position:relative;display:grid;place-items:center;height:150px;margin-bottom:16px;border:1px solid var(--ink);background:repeating-linear-gradient(45deg,var(--sheet) 0 9px,var(--tint) 9px 10px)}
+.shot span{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--sheet);border:1px solid var(--control);font:600 12px/1.2 var(--mono);color:var(--ink2)}
+.shot .i{width:18px;height:18px}
+.cmp{border:1px solid var(--ink);background:var(--sheet)}
+.cmp div{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px;padding:8px 10px;border-top:1px dashed var(--control)}
+.cmp div:first-child{border-top:0}
+.cmp .diff{border-top:1px solid var(--ink)}
+.cmp dt{font:600 10.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.cmp dd{font:700 14px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.matchline{margin:12px 0 16px}
+.match{display:inline-flex;align-items:center;gap:5px;font:700 11.5px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}
+.match .i{width:16px;height:16px}
+.panel .btns{display:grid;gap:8px}
+.panel .btn{min-height:44px;font-size:12.5px}
+
+/* footer */
+.foot p{margin:0 0 12px;max-width:840px;font-size:14px}
+.sw{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0}
+.sw li{display:flex;align-items:center;gap:8px;font:12.5px/1.2 var(--mono)}
+.sw i{width:22px;height:22px;background:var(--c);border:1px solid var(--ink)}
+.demo-focus{width:auto;min-height:46px;padding:0 20px;outline:3px solid var(--cyan);outline-offset:2px}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.6"/><path d="M12 17.4v.2"/></symbol>
+<symbol id="i-offline" viewBox="0 0 24 24"><path d="M5 19v-3M10 19v-6M15 19V9M20 19V5"/><path d="M3 3l18 18"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-chev-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-chev-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="i-chev-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-chev-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 11L12 15.5 16.5 11"/><path d="M5 20h14"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5"/><path d="M7.5 9L12 4.5 16.5 9"/><path d="M5 20h14"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="1"/><path d="M15 9V6a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9"/><path d="M12 17.2v.2"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><circle cx="9" cy="10" r="1.8"/><path d="M4 18l5-5 4 4 3-3 4 4"/></symbol>
+<symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6.5 13.5L12 19l5.5-5.5"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6v.2"/></symbol>
+</svg>
+
+<div class="page">
+<header class="tblock">
+  <div class="tb-head"><span>integrator</span><span>Visual direction D of 4</span></div>
+  <div class="tb-body">
+    <h1>Spec Sheet</h1>
+    <p class="rationale">Spec Sheet speaks in the idiom of the trade: a monospaced face for quantities, codes and amounts, fine dashed rules, corner marks and one cyan line colour on white. Density is medium on a strict grid, so quantity, unit price and total line up like a bill of materials. Status is a short bracketed code with a symbol, such as [IN STOCK], which reads at a glance and never depends on colour.</p>
+    <p class="personality">Precise, technical and practitioner to practitioner: an installer's drawing sheet.</p>
+  </div>
+</header>
+
+<h2 class="sec">Hero screen: Project, three variants</h2>
+<p class="note">Phone frames are 360 px wide and shown at full scroll length. The pale cyan notches on the bezel mark 780 px, the bottom of a typical phone screen.</p>
+<div class="phones">
+
+<!-- 1. Owner view -->
+<figure class="unit">
+<figcaption>1. Owner view<span>Prices, totals, Proposal and Order actions</span></figcaption>
+<div class="phone"><div class="screen">
+  <header class="appbar">
+    <button type="button" class="back"><svg class="i" aria-hidden="true"><use href="#i-chev-left"/></svg>Projects</button>
+    <span class="brand">integrator</span>
+  </header>
+  <div class="proj">
+    <p class="eyebrow">Project</p>
+    <h3>Lekki Phase 1 duplex: CCTV and access control</h3>
+    <p class="meta">2 rooms</p>
+  </div>
+
+  <section class="room" aria-labelledby="d1-r1">
+    <div class="room-head">
+      <h4 id="d1-r1">Entrance and gate</h4>
+      <button type="button" class="toggle" aria-expanded="true" aria-label="Collapse Entrance and gate"><svg class="i" aria-hidden="true"><use href="#i-chev-up"/></svg></button>
+    </div>
+    <p class="caption">Selling Price per unit, VAT included</p>
+    <ul>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">01</span><h5 class="name">4MP PoE dome camera</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 4MP PoE dome camera">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="4" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦68,400.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦273,600.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">02</span><h5 class="name">8-channel PoE NVR with 2 TB drive</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-channel PoE NVR with 2 TB drive">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦142,500.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦142,500.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">03</span><h5 class="name">8-port PoE switch</h5></div>
+        <p class="code bo"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>Back-order<span aria-hidden="true">]</span><span class="detail">ships in about 3 weeks · 8% off</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-port PoE switch">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦53,268.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦53,268.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">04</span><h5 class="name">Cat6 cable, 305 m box</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of Cat6 cable, 305 m box">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦96,000.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦96,000.00</span>
+        </div>
+      </li>
+    </ul>
+    <button type="button" class="add"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add product</button>
+    <p class="room-total"><span>Room total</span><strong>₦565,368.00</strong></p>
+  </section>
+
+  <section class="room collapsed" aria-labelledby="d1-r2">
+    <div class="room-head">
+      <h4 id="d1-r2">Living room</h4>
+      <p class="sum"><span class="sr">Room total </span>₦136,800.00</p>
+      <button type="button" class="toggle" aria-expanded="false" aria-label="Expand Living room"><svg class="i" aria-hidden="true"><use href="#i-chev-down"/></svg></button>
+    </div>
+  </section>
+
+  <section class="grand" aria-label="Project total">
+    <i class="t t1"></i><i class="t t2"></i><i class="t t3"></i><i class="t t4"></i>
+    <p class="lab">Project total</p>
+    <p class="amt">₦702,168.00</p>
+    <p class="vat"><span aria-hidden="true">[</span>VAT included<span aria-hidden="true">]</span></p>
+  </section>
+
+  <div class="acts">
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>Parts list</button>
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Make available offline</button>
+  </div>
+
+  <div class="cta">
+    <button type="button" class="btn">Generate proposal</button>
+    <button type="button" class="btn">Create order</button>
+  </div>
+</div></div>
+</figure>
+
+<!-- 2. Technician view -->
+<figure class="unit">
+<figcaption>2. Technician view<span>Items and quantities only. No prices, totals, Proposal or Order</span></figcaption>
+<div class="phone"><div class="screen">
+  <header class="appbar">
+    <button type="button" class="back"><svg class="i" aria-hidden="true"><use href="#i-chev-left"/></svg>Projects</button>
+    <span class="brand">integrator</span>
+  </header>
+  <div class="proj">
+    <p class="eyebrow">Project</p>
+    <h3>Lekki Phase 1 duplex: CCTV and access control</h3>
+    <p class="meta">2 rooms</p>
+  </div>
+
+  <section class="room" aria-labelledby="d2-r1">
+    <div class="room-head">
+      <h4 id="d2-r1">Entrance and gate</h4>
+      <button type="button" class="toggle" aria-expanded="true" aria-label="Collapse Entrance and gate"><svg class="i" aria-hidden="true"><use href="#i-chev-up"/></svg></button>
+    </div>
+    <ul>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">01</span><h5 class="name">4MP PoE dome camera</h5></div>
+        <div class="techrow">
+          <span class="lab" aria-hidden="true">Qty</span>
+          <div class="qty" role="group" aria-label="Quantity of 4MP PoE dome camera">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="4" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <button type="button" class="doc" aria-label="Documentation for 4MP PoE dome camera"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Documentation</button>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">02</span><h5 class="name">8-channel PoE NVR with 2 TB drive</h5></div>
+        <div class="techrow">
+          <span class="lab" aria-hidden="true">Qty</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-channel PoE NVR with 2 TB drive">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <button type="button" class="doc" aria-label="Documentation for 8-channel PoE NVR with 2 TB drive"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Documentation</button>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">03</span><h5 class="name">8-port PoE switch</h5></div>
+        <div class="techrow">
+          <span class="lab" aria-hidden="true">Qty</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-port PoE switch">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <button type="button" class="doc" aria-label="Documentation for 8-port PoE switch"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Documentation</button>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">04</span><h5 class="name">Cat6 cable, 305 m box</h5></div>
+        <div class="techrow">
+          <span class="lab" aria-hidden="true">Qty</span>
+          <div class="qty" role="group" aria-label="Quantity of Cat6 cable, 305 m box">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <button type="button" class="doc" aria-label="Documentation for Cat6 cable, 305 m box"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Documentation</button>
+        </div>
+      </li>
+    </ul>
+    <button type="button" class="add" style="margin-top:12px"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add product</button>
+  </section>
+
+  <section class="room collapsed" aria-labelledby="d2-r2">
+    <div class="room-head">
+      <h4 id="d2-r2">Living room</h4>
+      <button type="button" class="toggle" aria-expanded="false" aria-label="Expand Living room"><svg class="i" aria-hidden="true"><use href="#i-chev-down"/></svg></button>
+    </div>
+  </section>
+
+  <div class="acts">
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>Parts list</button>
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Make available offline</button>
+  </div>
+</div></div>
+</figure>
+
+<!-- 3. Owner view, offline -->
+<figure class="unit">
+<figcaption>3. Owner view, offline<span>Proposal and Order unavailable until reconnected</span></figcaption>
+<div class="phone"><div class="screen">
+  <header class="appbar">
+    <button type="button" class="back"><svg class="i" aria-hidden="true"><use href="#i-chev-left"/></svg>Projects</button>
+    <span class="brand">integrator</span>
+  </header>
+  <div class="banner" role="status">
+    <svg class="i" aria-hidden="true"><use href="#i-offline"/></svg>
+    <p><strong>You're offline.</strong> Changes are saved on this phone and will sync later. Prices as of 3:12 pm.</p>
+  </div>
+  <div class="proj">
+    <p class="eyebrow">Project</p>
+    <h3>Lekki Phase 1 duplex: CCTV and access control</h3>
+    <p class="meta">2 rooms</p>
+  </div>
+
+  <section class="room" aria-labelledby="d3-r1">
+    <div class="room-head">
+      <h4 id="d3-r1">Entrance and gate</h4>
+      <button type="button" class="toggle" aria-expanded="true" aria-label="Collapse Entrance and gate"><svg class="i" aria-hidden="true"><use href="#i-chev-up"/></svg></button>
+    </div>
+    <p class="caption">Selling Price per unit, VAT included</p>
+    <ul>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">01</span><h5 class="name">4MP PoE dome camera</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 4MP PoE dome camera">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="4" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦68,400.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦273,600.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">02</span><h5 class="name">8-channel PoE NVR with 2 TB drive</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-channel PoE NVR with 2 TB drive">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦142,500.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦142,500.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">03</span><h5 class="name">8-port PoE switch</h5></div>
+        <p class="code bo"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>Back-order<span aria-hidden="true">]</span><span class="detail">ships in about 3 weeks · 8% off</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of 8-port PoE switch">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦53,268.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦53,268.00</span>
+        </div>
+      </li>
+      <li class="item">
+        <div class="top"><span class="no" aria-hidden="true">04</span><h5 class="name">Cat6 cable, 305 m box</h5></div>
+        <p class="code ok"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>In Stock<span aria-hidden="true">]</span></p>
+        <div class="cells">
+          <span class="lab" aria-hidden="true">Qty</span><span class="lab" aria-hidden="true">Unit</span><span class="lab" aria-hidden="true">Total</span>
+          <div class="qty" role="group" aria-label="Quantity of Cat6 cable, 305 m box">
+            <button type="button" aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="text" inputmode="numeric" value="1" aria-label="Quantity">
+            <button type="button" aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <span class="val"><span class="sr">Unit price </span>₦96,000.00</span>
+          <span class="val tot"><span class="sr">Line total </span>₦96,000.00</span>
+        </div>
+      </li>
+    </ul>
+    <button type="button" class="add"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add product</button>
+    <p class="room-total"><span>Room total</span><strong>₦565,368.00</strong></p>
+  </section>
+
+  <section class="room collapsed" aria-labelledby="d3-r2">
+    <div class="room-head">
+      <h4 id="d3-r2">Living room</h4>
+      <p class="sum"><span class="sr">Room total </span>₦136,800.00</p>
+      <button type="button" class="toggle" aria-expanded="false" aria-label="Expand Living room"><svg class="i" aria-hidden="true"><use href="#i-chev-down"/></svg></button>
+    </div>
+  </section>
+
+  <section class="grand" aria-label="Project total">
+    <i class="t t1"></i><i class="t t2"></i><i class="t t3"></i><i class="t t4"></i>
+    <p class="lab">Project total</p>
+    <p class="amt">₦702,168.00</p>
+    <p class="vat"><span aria-hidden="true">[</span>VAT included<span aria-hidden="true">]</span></p>
+    <p class="asof">Prices as of 3:12 pm</p>
+  </section>
+
+  <div class="acts">
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>Parts list</button>
+    <button type="button" class="btn2"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Make available offline</button>
+  </div>
+
+  <div class="unavail">
+    <div>
+      <button type="button" class="btn full" disabled aria-describedby="d3-why1"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Generate proposal</button>
+      <p class="why" id="d3-why1"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg>Needs a connection: Proposals use current prices, not the ones saved on this phone.</p>
+    </div>
+    <div>
+      <button type="button" class="btn full" disabled aria-describedby="d3-why2"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Create order</button>
+      <p class="why" id="d3-why2"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg>Needs a connection: Orders use current prices, not the ones saved on this phone.</p>
+    </div>
+  </div>
+</div></div>
+</figure>
+
+</div>
+
+<h2 class="sec">Secondary screen: Order payment</h2>
+<div class="phones">
+<figure class="unit">
+<figcaption>4. Order payment<span>Owner view, after Create order</span></figcaption>
+<div class="phone"><div class="screen">
+  <header class="appbar">
+    <button type="button" class="back"><svg class="i" aria-hidden="true"><use href="#i-chev-left"/></svg>Orders</button>
+    <span class="brand">integrator</span>
+  </header>
+  <div class="proj">
+    <p class="eyebrow">Order</p>
+    <h3>INT-0042</h3>
+    <p class="stat"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>Awaiting payment</p>
+  </div>
+
+  <section class="due" aria-label="Amount Due">
+    <i class="t t1"></i><i class="t t2"></i><i class="t t3"></i><i class="t t4"></i>
+    <p class="lab">Amount Due</p>
+    <p class="amt">₦711,668.00</p>
+    <dl class="split">
+      <div><dt>Goods (VAT included)</dt><dd>₦702,168.00</dd></div>
+      <div><dt>Delivery</dt><dd>₦9,500.00</dd></div>
+    </dl>
+  </section>
+  <p class="held"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>Price held for 3 h 12 min</p>
+
+  <section class="spec" aria-labelledby="d4-bank">
+    <h4 id="d4-bank">Pay by bank transfer</h4>
+    <dl>
+      <div class="srow"><dt>Bank</dt><dd>Example Bank</dd></div>
+      <div class="srow"><dt>Account number</dt><dd><span>1234567890</span><button type="button" class="copy" aria-label="Copy account number"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>Copy</button></dd></div>
+      <div class="srow"><dt>Account name</dt><dd>integrator Ltd</dd></div>
+    </dl>
+  </section>
+
+  <section class="spec" aria-labelledby="d4-ref">
+    <h4 id="d4-ref">Order reference</h4>
+    <div class="refrow"><p class="refcode">INT-0042</p><button type="button" class="copy" aria-label="Copy order reference"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>Copy</button></div>
+  </section>
+  <p class="hint" style="margin:8px 12px 0">Put this reference in the transfer narration.</p>
+
+  <div class="upload">
+    <button type="button" class="btn full"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload receipt</button>
+    <p class="hint">A photo or PDF is fine.</p>
+  </div>
+</div></div>
+</figure>
+</div>
+
+<h2 class="sec">Secondary screen: Staff Receipts queue</h2>
+<figure class="deskwrap">
+<figcaption class="note">5. Staff console, Receipts queue, desktop browser about 1,200 px wide</figcaption>
+<div class="browser">
+  <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tab">Receipts: Staff console</span></div>
+  <header class="topbar">
+    <span class="brand">integrator</span>
+    <span class="area">Staff console</span>
+    <span class="who">Finance</span>
+  </header>
+  <div class="cbody">
+    <section class="queue" aria-labelledby="d5-h">
+      <h3 id="d5-h">Receipts</h3>
+      <p class="sub">Oldest first. Target: 2 business hours.</p>
+      <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>5 receipts are waiting. 2 have exceeded the target of 2 business hours.</p>
+      <table class="q">
+        <caption class="sr">Receipts waiting for review, oldest first</caption>
+        <thead>
+          <tr>
+            <th scope="col" aria-sort="descending">Age<svg class="i" aria-hidden="true"><use href="#i-arrow-down"/></svg></th>
+            <th scope="col">Business</th>
+            <th scope="col">Order</th>
+            <th scope="col" class="num">Declared amount</th>
+            <th scope="col">Sender</th>
+            <th scope="col">Bank reference</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="late sel" aria-current="true">
+            <td class="age"><strong>3 h 05 min</strong><span class="flag"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>Target exceeded</span></td>
+            <td>Hammed Security</td><td class="mono">INT-0036</td><td class="num">₦1,284,500.00</td><td>H. Yusuf</td><td class="mono">FT48213007</td>
+            <td><span class="st"><span aria-hidden="true">[</span>Submitted<span aria-hidden="true">]</span></span></td>
+          </tr>
+          <tr class="late">
+            <td class="age"><strong>2 h 10 min</strong><span class="flag"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>Target exceeded</span></td>
+            <td>Bright Link Ltd</td><td class="mono">INT-0039</td><td class="num">₦386,900.00</td><td>Bright Link Ltd</td><td class="mono">FT77120594</td>
+            <td><span class="st"><span aria-hidden="true">[</span>Submitted<span aria-hidden="true">]</span></span></td>
+          </tr>
+          <tr>
+            <td class="age"><strong>1 h 35 min</strong></td>
+            <td>Sade AV Systems</td><td class="mono">INT-0040</td><td class="num">₦92,450.00</td><td>S. Balogun</td><td class="mono">FT83011720</td>
+            <td><span class="st unc"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>Payment unconfirmed<span aria-hidden="true">]</span></span></td>
+          </tr>
+          <tr>
+            <td class="age"><strong>41 min</strong></td>
+            <td>Okoro Homes Ltd</td><td class="mono">INT-0041</td><td class="num">₦518,000.00</td><td>C. Okoro</td><td class="mono">FT90417226</td>
+            <td><span class="st"><span aria-hidden="true">[</span>Submitted<span aria-hidden="true">]</span></span></td>
+          </tr>
+          <tr>
+            <td class="age"><strong>12 min</strong></td>
+            <td>Tunde Systems</td><td class="mono">INT-0042</td><td class="num">₦711,668.00</td><td>T. Adeyemi</td><td class="mono">FT10435559</td>
+            <td><span class="st"><span aria-hidden="true">[</span>Submitted<span aria-hidden="true">]</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <aside class="panel" aria-labelledby="d5-p">
+      <h3 id="d5-p">Receipt for INT-0036</h3>
+      <p class="sub">Hammed Security. Sender H. Yusuf.</p>
+      <div class="shot" role="img" aria-label="Receipt image placeholder"><span><svg class="i" aria-hidden="true"><use href="#i-image"/></svg>Receipt image</span></div>
+      <dl class="cmp">
+        <div><dt>Declared amount</dt><dd>₦1,284,500.00</dd></div>
+        <div><dt>Bank-statement amount</dt><dd>₦1,284,500.00</dd></div>
+        <div class="diff"><dt>Difference</dt><dd>₦0.00</dd></div>
+      </dl>
+      <p class="matchline"><span class="match"><span aria-hidden="true">[</span><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Amounts match<span aria-hidden="true">]</span></span></p>
+      <div class="btns">
+        <button type="button" class="btn">Confirm</button>
+        <button type="button" class="btn outline">Mark unconfirmed</button>
+      </div>
+    </aside>
+  </div>
+</div>
+</figure>
+
+<footer class="foot">
+  <h2 class="sec">Checks for this direction</h2>
+  <p><strong>Lowest body-text contrast: 5.17:1</strong> (placeholder, to be replaced after the final computation), against the 4.5:1 AA minimum for normal text.</p>
+  <ul class="sw" aria-label="Palette">
+    <li style="--c:#FFFFFF"><i></i>sheet #FFFFFF</li>
+    <li style="--c:#EDF3F7"><i></i>tint #EDF3F7</li>
+    <li style="--c:#E1F0F5"><i></i>cyan tint #E1F0F5</li>
+    <li style="--c:#E8EDF1"><i></i>desk #E8EDF1</li>
+    <li style="--c:#0D1B2A"><i></i>ink #0D1B2A</li>
+    <li style="--c:#384758"><i></i>secondary #384758</li>
+    <li style="--c:#0B6A8A"><i></i>cyan #0B6A8A</li>
+    <li style="--c:#0F5C36"><i></i>ok #0F5C36</li>
+    <li style="--c:#6A4200"><i></i>caution #6A4200</li>
+    <li style="--c:#9A1B1B"><i></i>alert #9A1B1B</li>
+    <li style="--c:#5E7081"><i></i>control #5E7081</li>
+  </ul>
+  <p>Focus ring sample: <button type="button" class="btn demo-focus">Create order</button></p>
+</footer>
+</div>
+</body>
+</html>
