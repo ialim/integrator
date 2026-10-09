@@ -3,19 +3,19 @@ id: SPEC-integrator
 companions:
   - ../../planning-artifacts/prds/prd-integrator-2026-09-27/prd.md
   - ../../planning-artifacts/prds/prd-integrator-2026-09-27/addendum.md
-  - ../../planning-artifacts/ux-designs/ux-integrator-2026-10-07/prd-change-requests.md
   - ../../planning-artifacts/ux-designs/ux-integrator-2026-10-07/EXPERIENCE.md
   - ../../planning-artifacts/ux-designs/ux-integrator-2026-10-07/DESIGN.md
   - ../../planning-artifacts/architecture/architecture-integrator-2026-10-09/ARCHITECTURE-SPINE.md
 sources:
   - ../../planning-artifacts/briefs/brief-integrator-2026-09-27/brief.md
+  - ../../planning-artifacts/ux-designs/ux-integrator-2026-10-07/prd-change-requests.md
 ---
 
 > **Canonical contract.** This SPEC and the files in `companions:` are the complete, preservation-validated contract for what to build, test, and validate. Source documents listed in frontmatter are for traceability — consult them only if you need narrative rationale or prose color this contract intentionally omits.
 
 # integrator v1
 
-*Working title.* Companion roles: `prd.md` holds every FR (with testable consequences), the Glossary and NFR-1 to NFR-10; `addendum.md` holds the status model, edge-case register and pricing test vectors; `prd-change-requests.md` holds UX positions that override the PRD; `EXPERIENCE.md` and `DESIGN.md` hold behaviour and look; `ARCHITECTURE-SPINE.md` holds binding decisions AD-1 to AD-26.
+*Working title.* Companion roles: `prd.md` holds every FR (with testable consequences), the Glossary and NFR-1 to NFR-10; `addendum.md` holds the status model, edge-case register and pricing test vectors; `EXPERIENCE.md` and `DESIGN.md` hold behaviour and look; `ARCHITECTURE-SPINE.md` holds binding decisions AD-1 to AD-26.
 
 ## Why
 
@@ -82,7 +82,7 @@ A **vision with an opportunity behind it**: a systems integrator builds a platfo
 - Timers stored in UTC, shown in West Africa Time, idempotent, alerting the founder on a miss (NFR-9).
 - Designed for 500 Integrators, 5,000 Products and 500 Orders a month; launch at 10, 500+ and about 15 (NFR-1).
 - Build order is Priority 1 (first Order), 2 (launch week), 3 (returns workflow about three months after launch); returns run manually until then.
-- Where the PRD and `prd-change-requests.md` disagree, a settled UX position (Added, Changed, Filled) wins until the PRD is updated.
+- The PRD was reconciled with the UX design and the architecture spine on 9 October 2026; where `EXPERIENCE.md` and the PRD still differ, raise it rather than choose.
 - `ARCHITECTURE-SPINE.md` decisions AD-1 to AD-26 are binding on every epic and story.
 - Return, warranty, cancellation and Credit Note terms ship in counsel-vetted Terms without "no refunds" wording.
 
@@ -104,14 +104,12 @@ A **vision with an opportunity behind it**: a systems integrator builds a platfo
 
 ## Assumptions
 
-- Settled UX positions in `prd-change-requests.md` are correct readings of the founder's intent; the PRD will be updated to match.
 - PRD success targets (SM-1 to SM-C5) are the founder's working figures, still marked `[ASSUMPTION]` in the PRD.
 - When Admin edits the holiday calendar, open Business-Hours deadlines are recomputed (architecture choice, reversible).
 
 ## Open Questions
 
-- **Founder (from UX):** wrong-code and resend caps (FR-1); re-requesting a rejected Level 3 (FR-6, FR-7); queues and targets for recovery, cancel and change requests, delivery-price requests and call-backs (FR-71, FR-78); closing an account that holds a credit-only balance (FR-72); which units allow fractional quantities (FR-26); per-phone Documentation version tracking (FR-50); baselines for unusual-pattern alerts (FR-53); staff two-step sign-in method (FR-71); dashboard plan start date and SM-6 cost inputs (FR-80); Supplier order entity for back-orders (FR-17, FR-74); zone coverage checks, the initial local-government-area list per zone and real Zone Rates (FR-47, FR-56); who manages Product Ranges.
-- **Founder (from PRD §8.3):** whether flat Zone Rates need weight bands at launch; whether a second Store changes Zone Rates; whether Suppliers can meet Lead Times when ordered only after payment; real breakeven inputs and inventory-float funding; whether far zones need longer than 48 hours for courier handover.
+- **Founder:** PRD §8.3 questions 1 to 18 (zone rates and weight bands, a second Store, Supplier lead times and orders, breakeven inputs, far-zone return window, sign-in limits, rejected Level 3 requests, queues without targets, closing with a credit-only balance, fractional units, per-phone Documentation versions, the receiver's one-time code, alert baselines, staff sign-in method, dashboard inputs, zone coverage, Product Range management).
 - **Accountant:** VAT registration, tax-invoice and credit-note fields and numbering, serials on the invoice or a delivery note, VAT on delivery and Credit Notes, e-invoicing timing, financial-record retention.
 - **Counsel:** Credit Note ledger as deposit-taking, expiry and refund terms, returns terms, consumer-law exposure, NDPA obligations including the transfer basis for London hosting and Cloudflare R2 storage, NCC and SONCAP for listed Products, the nine wording items in `EXPERIENCE.md`.
 - **Builder:** whether Laravel Cloud Serverless Postgres allows a least-privilege application role (AD-21), before the Staff epic.

@@ -1,6 +1,6 @@
 ---
 title: PRD changes and open questions from the UX work
-status: for the PRD owner
+status: folded into the PRD
 updated: 2026-10-09
 sources:
   - .memlog.md
@@ -9,6 +9,8 @@ sources:
 ---
 
 # PRD changes and open questions from the UX work
+
+> **Folded into the PRD on 9 October 2026** (`bmad-prd` Update). Every settled item is in the PRD under "From UX design and architecture"; the Open items are PRD §8.3 questions 6 to 18, apart from three the architecture spine closed (FR-19, FR-28 Parts-list PDF, FR-38/FR-55 receipt time). This file is now a record only.
 
 While the screens were walked step by step, the sheets needed things the PRD does not say, says differently, or leaves open. The owner confirmed each step's sheet, so the position taken on a sheet is the UX position. Nothing here has been written into the PRD. Use this as the input to a PRD update (`bmad-prd`, Update) and as a reading list for the architecture and story work. Each item's full reasoning is in `.memlog.md`, in the notes headed "PRD gaps and tensions found while drawing Step N".
 
