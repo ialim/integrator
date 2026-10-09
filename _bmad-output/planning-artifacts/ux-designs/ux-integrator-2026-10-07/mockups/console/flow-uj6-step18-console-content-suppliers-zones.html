@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 18, the staff console: documentation, suppliers, stores and delivery zones (proposal)</title>
+<style>
+/*
+  STEP 18 WIREFRAMES: the staff console: documentation and the guide editor, suppliers, stores and delivery zones.
+  Bola in Operations adds the guides technicians need. Kunle in Admin approves a supplier. Operations sets where and how
+  goods are delivered.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-14, FR-37, FR-47 to FR-50, FR-52, FR-56, FR-59, SM-7. Rates, estimates and addresses are placeholders.
+  Frames are 1240 px wide, for a desktop browser. Now is Mon 12 Oct 2026, mid-afternoon, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{position:relative;width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:660px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:38px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.okmark{display:inline-flex;align-items:center;gap:5px;font:700 12.5px var(--sans);color:var(--ok)}
+.okmark.no{color:var(--bad)}
+.okmark.need{color:var(--warn)}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl .nw{white-space:nowrap}
+.tbl .mono{font:12px/1.3 var(--mono)}
+.tbl small{display:block;font-size:12px;color:var(--ink2)}
+.tbl tr.attn td{background:var(--warn-tint)}
+.tbl tr.sel td{box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.tbl tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.tbl tr.edit td{background:var(--warn-tint)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.after.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.fchip.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.field{margin-top:10px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.field .in{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.ta{align-items:flex-start;min-height:72px;padding:9px 12px}
+.field .in.num{font-variant-numeric:tabular-nums}
+.field .in.drop{min-height:84px;justify-content:center;border:2px dashed var(--control);background:var(--paper);color:var(--ink2);text-align:center}
+.md{display:grid;grid-template-columns:330px minmax(0,1fr);gap:0}
+.md .ql{padding-right:18px;min-width:0}
+.md .detail{padding-left:20px;border-left:1px solid var(--ink);min-width:0}
+.ql li{padding:10px 10px;border-bottom:1px solid var(--rule)}
+.ql li.sel{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.ql .t{display:flex;justify-content:space-between;gap:8px;font:700 14px/1.3 var(--sans)}
+.ql .t span:last-child{font-weight:600;color:var(--ink2);white-space:nowrap}
+.ql small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.ql .chips{margin-top:5px}
+.detail h2.dh{font:700 20px/1.2 var(--serif)}
+.detail .meta{margin:3px 0 12px;font-size:13px;color:var(--ink2)}
+.slot{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
+.slot b{display:block;font:700 14.5px/1.3 var(--sans)}
+.slot small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.slot .st{font:600 13px var(--sans);color:var(--warn)}
+.slot .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.meterbar{position:relative;height:14px;margin:6px 0 4px;background:var(--aged);border:1px solid var(--control)}
+.meterbar i{display:block;height:100%;background:var(--green)}
+.meterbar em{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--ink)}
+.ed{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:0}
+.ed > nav{padding-right:16px}
+.ed > nav li{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--control);border-bottom:0;background:var(--sheet);font:600 13px/1.3 var(--sans);color:var(--ink2)}
+.ed > nav li:last-child{border-bottom:1px solid var(--control)}
+.ed > nav li.on{background:var(--green);border-color:var(--green);color:#fff}
+.ed > nav li span:first-child{color:inherit}
+.ed > .form{padding:0 20px;border-left:1px solid var(--ink);border-right:1px solid var(--rule);min-width:0}
+.ed > aside{padding-left:18px;min-width:0}
+.ed h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.pv{width:270px;margin:0 auto;padding:8px;background:var(--bezel);border-radius:30px}
+.pv .scr{background:var(--paper);border-radius:22px;overflow:hidden;min-height:430px}
+.pv .bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--green);color:#fff;font:700 13px var(--serif)}
+.pv .gb{padding:7px 12px;background:var(--aged);border-bottom:1px solid var(--rule);font-size:10.5px;color:var(--ink2)}
+.pv .pips{display:flex;gap:4px;margin:10px 12px 0}
+.pv .pips i{flex:1;height:6px;background:var(--aged);border:1px solid var(--control)}
+.pv .pips i.on{background:var(--green);border-color:var(--green)}
+.pv .st{padding:8px 12px 0}
+.pv .st .n{font:700 9.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.pv .st h3{margin-top:2px;font:700 18px/1.2 var(--serif)}
+.pv .st p{margin-top:8px;font-size:13px;line-height:1.45}
+.pv .ph{display:grid;place-items:center;height:80px;margin-top:8px;background:var(--aged);border:1px solid var(--rule);font-size:10.5px;color:var(--ink2)}
+.pv .warn{margin-top:8px;padding:7px 9px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 12px/1.35 var(--sans)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 18 of the walk-through</p>
+  <h1 class="top">The staff console: documentation, suppliers, stores and delivery zones</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell. This step finishes the console: the guides a technician reads on site and how they are written, the suppliers behind the catalogue and who approves them, and where and for how much goods are delivered. Four desktop frames, then a sheet of states. Rates, estimates, addresses and supplier names are placeholders. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Documentation<span>The job is closing the gap: which products people order that still have nothing to read. The list starts with the ones ordered most, because the success measure counts products ordered in the last 90 days. Suppliers do not log in, so Operations adds what they send.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Documentation · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:05 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a on">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <h1>Documentation</h1>
+          <p class="sub">64% of the products ordered in the last 90 days have documentation: 82 of 128. The goal is 80% by month 6, and 100% by month 12.</p>
+          <div class="meterbar" role="progressbar" aria-label="Documentation coverage 64 percent, goal 80 percent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="64"><i style="width:64%"></i><em style="left:80%" title="Goal 80%"></em></div>
+          <div class="filters" style="margin-top:12px"><span class="fchip on">Ordered lately, none · 46</span><span class="fchip">None at all · 211</span><span class="fchip">Replaced lately · 4</span><span class="fchip">Withdrawn · 1</span></div>
+          <div class="md">
+            <ul class="ql" aria-label="Products without documentation, most ordered first">
+              <li class="sel" aria-current="true"><div class="t"><span>Cat6 cable, 305 m box</span><span>14 orders</span></div><small>CBL-0305 · Kable Co</small><div class="chips"><span class="chip warn">Nothing yet</span></div></li>
+              <li><div class="t"><span>24-port PoE switch</span><span>9 orders</span></div><small>SWT-0132 · Meridian</small><div class="chips"><span class="chip warn">Nothing yet</span></div></li>
+              <li><div class="t"><span>PoE injector, 30 W</span><span>8 orders</span></div><small>ACC-0107 · Apex Power</small><div class="chips"><span class="chip warn">Nothing yet</span></div></li>
+              <li><div class="t"><span>Wall bracket, dome camera</span><span>7 orders</span></div><small>ACC-0212 · Delta Mounts</small><div class="chips"><span class="chip warn">Nothing yet</span></div></li>
+              <li><div class="t"><span>Door controller, 2-door</span><span>6 orders</span></div><small>ACS-0044 · Zenith Access</small><div class="chips"><span class="chip warn">Nothing yet</span></div></li>
+            </ul>
+            <section class="detail" aria-labelledby="dd1">
+              <h2 class="dh" id="dd1">Cat6 cable, 305 m box</h2>
+              <p class="meta">CBL-0305 · ordered 14 times in the last 90 days by 6 businesses · today they see "Documentation coming soon."</p>
+              <div class="slot"><span><b>Installation guide</b><small>Written, one step at a time, with photos and warnings. This is what a technician reads on site.</small></span><span class="btns"><span class="st">None yet</span><span class="b">Write a guide…</span><span class="b o">Copy from another product…</span></span></div>
+              <div class="slot"><span><b>Manufacturer's manual</b><small>A PDF, as the supplier sent it. Opens in the phone's own PDF viewer.</small></span><span class="btns"><span class="st">None yet</span><span class="b">Upload a PDF…</span></span></div>
+              <div class="slot"><span><b>Video</b><small>Large files. A phone saves it only if the person asks, and shows the size first.</small></span><span class="btns"><span class="st">None yet</span><span class="b">Add a video…</span></span></div>
+              <p class="after">Documentation needs no purchase and no approval: anyone who can browse the catalogue can read it. As soon as you add something, "Documentation coming soon." goes away.</p>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">What changing it does to phones that saved it</h3>
+              <dl class="cmp">
+                <div><dt>You replace a manual or a guide</dt><dd>Saved copies say "Replaced", and still open</dd></div>
+                <div><dt>You remove it</dt><dd>Saved copies say "Withdrawn", and open only after Open anyway</dd></div>
+                <div><dt>Both happen at the phone's next sync</dt><dd>Never at once</dd></div>
+              </dl>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Writing a guide<span>Steps on the left, one step in the middle, and on the right exactly what a technician will see on a phone. Every save is a new version, and the version note is shown to people who saved the old one.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Guide · 4MP PoE dome camera · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:20 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a on">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px"><div><h1 style="font-size:24px">Installation and set-up guide</h1><p class="sub" style="margin:2px 0 0">4MP PoE dome camera · CAM-0412 · version 3, a draft · version 2 is live</p></div><div class="actions" style="margin:0"><span class="b o">Save draft</span><span class="b">Publish version 3</span></div></div>
+          <div class="ed">
+            <nav aria-label="Steps"><ul>
+              <li><span>1 Check the box</span><span>↑ ↓</span></li>
+              <li><span>2 Mount the base</span><span>↑ ↓</span></li>
+              <li class="on"><span>3 Connect and power</span><span>↑ ↓</span></li>
+              <li><span>4 Adjust the lens</span><span>↑ ↓</span></li>
+              <li><span>5 Add it to the recorder</span><span>↑ ↓</span></li>
+              <li><span>6 Close and seal</span><span>↑ ↓</span></li>
+            </ul><div class="actions" style="margin-top:10px"><span class="b o sm">Add a step</span></div></nav>
+            <section class="form" aria-labelledby="ef">
+              <h2 id="ef">Step 3</h2>
+              <div class="field" style="margin-top:0"><label>Step title</label><div class="in">Connect and power the camera</div></div>
+              <div class="field"><label>What to do <small>short sentences, one action each</small></label><div class="in ta">Plug the camera's network cable into a PoE port on the switch.<br>Wait about a minute. The status light turns solid green when the camera is ready.</div></div>
+              <div class="field"><label>Photo for this step <small>optional</small></label><div class="in" style="justify-content:flex-start;gap:12px"><span style="display:grid;place-items:center;width:64px;height:44px;background:var(--aged);border:1px solid var(--rule);font-size:11px;color:var(--ink2)">Photo</span><span class="b o sm">Change photo</span></div></div>
+              <div class="field"><label>Describe the photo <small>for people who cannot see it, needed when there is a photo</small></label><div class="in">The cable's plug in the first PoE port of the switch.</div></div>
+              <div class="field"><label>A warning <small>optional, shown in a box</small></label><div class="in ta" style="min-height:52px">Do not use a port that is not PoE. The camera will not power on.</div></div>
+              <div class="actions"><span class="b o sm">Delete this step</span></div>
+              <div class="field"><label>What changed in version 3 <small>shown to people who saved version 2</small></label><div class="in">Corrected the warning in step 3.</div></div>
+              <p class="after need">Version 2 is saved on 6 phones. After you publish, each shows "A newer version is available" at its next sync, and can still open version 2 until the person updates.</p>
+            </section>
+            <aside aria-labelledby="ep">
+              <h2 id="ep">How it looks on a phone</h2>
+              <div class="pv"><div class="scr">
+                <div class="bar"><span>‹ Product</span><span>Set-up guide</span><span style="width:40px"></span></div>
+                <div class="gb">4MP PoE dome camera · version 3</div>
+                <div class="pips"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+                <div class="st"><p class="n">Step 3 of 6</p><h3>Connect and power the camera</h3><p>Plug the camera's network cable into a PoE port on the switch.</p><div class="ph">Photo</div><p>Wait about a minute. The status light turns solid green when the camera is ready.</p><div class="warn">Do not use a port that is not PoE. The camera will not power on.</div></div>
+              </div></div>
+              <p class="after" style="margin-top:12px">A step with no text cannot be published. Large type and one step to a screen are fixed, so every guide reads the same way on a ladder.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Suppliers, as Admin sees them<span>Who the goods come from, whether they are approved, and whether their agreement says what happens with returns, dead-on-arrival units and counterfeits. Only Admin approves a supplier or switches the one a product is bought from.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Suppliers · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a on">Suppliers</span>
+        </nav>
+        <div class="main">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px"><div><h1>Suppliers</h1><p class="sub">7 approved, 1 waiting for you · 512 active products</p></div><span class="b o">Propose a supplier…</span></div>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 340px">
+            <div style="padding-right:20px;min-width:0">
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Suppliers</caption>
+                <thead><tr><th scope="col">Supplier</th><th scope="col">Status</th><th scope="col" class="num">Products</th><th scope="col">Agreement terms</th><th scope="col">Costs updated</th></tr></thead>
+                <tbody>
+                  <tr><td>Northgate Distribution</td><td><span class="chip">Approved</span></td><td class="num">142</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">12 Oct</td></tr>
+                  <tr><td>Zenith Access</td><td><span class="chip">Approved</span></td><td class="num">96</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">6 Oct</td></tr>
+                  <tr class="attn"><td>Sentinel Imports</td><td><span class="chip">Approved</span></td><td class="num">88</td><td><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Counterfeit missing</span></td><td class="nw">28 Sep</td></tr>
+                  <tr><td>Delta Mounts</td><td><span class="chip">Approved</span></td><td class="num">88</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">1 Oct</td></tr>
+                  <tr><td>Kable Co</td><td><span class="chip">Approved</span></td><td class="num">46</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">2 Oct</td></tr>
+                  <tr><td>Apex Power</td><td><span class="chip">Approved</span></td><td class="num">31</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">30 Sep</td></tr>
+                  <tr><td>Meridian Supply</td><td><span class="chip">Approved</span></td><td class="num">21</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">9 Oct</td></tr>
+                  <tr class="sel" aria-current="true"><td>Brightwave Wholesale</td><td><span class="chip warn">Waiting for you</span></td><td class="num">0</td><td><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Counterfeit missing</span></td><td class="nw">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <aside class="detail" aria-labelledby="sp">
+              <h2 class="dh" id="sp" style="font-size:18px">Brightwave Wholesale</h2>
+              <p class="meta">Proposed by Bola A. on 9 Oct · agreement attached (PDF)</p>
+              <dl class="cmp">
+                <div><dt>Returns</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>30 days</span></dd></div>
+                <div><dt>Dead on arrival</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>14 days</span></dd></div>
+                <div><dt>Counterfeit chargeback</dt><dd><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Not stated</span></dd></div>
+              </dl>
+              <div class="actions" style="flex-direction:column;align-items:stretch"><span class="b" aria-disabled="true">Approve the supplier</span><span class="b o">Approve with a reason…</span><span class="b o">Ask Operations for the missing term</span></div>
+              <p class="after need">Its products cannot go on sale until all three terms are written down. A shorter dead-on-arrival window here shortens the window we give businesses for those products.</p>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Switching who a product is bought from</h3>
+              <dl class="cmp">
+                <div><dt>4MP PoE dome camera</dt><dd>Northgate → Meridian</dd></div>
+                <div><dt>Cost</dt><dd>USD 37.21 → 36.00</dd></div>
+                <div><dt>Base-tier price</dt><dd>₦68,400.00 → ₦66,175.76</dd></div>
+                <div><dt>Touches</dt><dd>4 carts · 9 projects</dd></div>
+              </dl>
+              <div class="actions"><span class="b o">Ask for a second approver…</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. Stores and delivery zones<span>Where people can collect, and where we deliver and for how much. A zone with no rate is "coming soon", which is how the launch service area is set. Changing a rate never changes an order already made.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Stores and zones · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:40 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a on">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <h1>Stores and delivery zones</h1>
+          <h3 style="margin:14px 0 6px;font:700 16px var(--serif)">Stores</h3>
+          <table class="tbl">
+            <caption style="position:absolute;left:-9999px">Stores</caption>
+            <thead><tr><th scope="col">Store</th><th scope="col">Address</th><th scope="col">Opening hours</th><th scope="col" class="num">Open shipments</th><th scope="col">Status</th></tr></thead>
+            <tbody><tr><td>Main Store</td><td>14 Creek Road, Apapa, Lagos</td><td>Mon to Sat, 8 am to 6 pm</td><td class="num">6</td><td><span class="chip good">Active</span> <span class="chip">The Main Store</span></td></tr></tbody>
+          </table>
+          <div class="actions" style="margin-top:8px"><span class="b o sm">Add a store…</span></div>
+          <h3 style="margin:18px 0 6px;font:700 16px var(--serif)">Delivery zones</h3>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 300px">
+            <div style="padding-right:20px;min-width:0">
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Delivery zones</caption>
+                <thead><tr><th scope="col">Zone</th><th scope="col">Covers</th><th scope="col" class="num">Zone Rate</th><th scope="col">Estimate</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Lagos Mainland</td><td>Ikeja, Surulere, Yaba and 12 more areas</td><td class="num">₦6,500.00</td><td>1 to 2 days</td><td><span class="chip good">Active</span></td></tr>
+                  <tr class="sel" aria-current="true"><td>Lagos Island and Lekki</td><td>Lagos Island, Eti-Osa, Ibeju-Lekki</td><td class="num">₦9,500.00</td><td>1 to 2 days</td><td><span class="chip good">Active</span></td></tr>
+                  <tr><td>Lagos outer</td><td>Ikorodu, Epe, Badagry and 4 more</td><td class="num">₦12,000.00</td><td>2 to 3 days</td><td><span class="chip good">Active</span></td></tr>
+                  <tr><td>Other South-West states</td><td>Ogun, Oyo, Osun, Ondo, Ekiti</td><td class="num">₦14,500.00</td><td>3 to 4 days</td><td><span class="chip good">Active</span></td></tr>
+                  <tr><td>Abuja (FCT)</td><td>All six area councils</td><td class="num">₦18,000.00</td><td>3 to 5 days</td><td><span class="chip good">Active</span></td></tr>
+                  <tr class="attn"><td>North and East, by region</td><td>Remaining states</td><td class="num">No rate</td><td>No estimate</td><td><span class="chip warn">Coming soon</span></td></tr>
+                </tbody>
+              </table>
+              <p class="after need" style="margin-top:12px">A zone with no rate or estimate cannot be switched on. Delivery to a "coming soon" zone is blocked when someone makes an order, and they are told delivery there is not open yet.</p>
+            </div>
+            <aside class="detail" aria-labelledby="zn">
+              <h2 class="dh" id="zn" style="font-size:18px">Lagos Island and Lekki</h2>
+              <div class="field" style="margin-top:6px"><label>Zone Rate, per shipment</label><div class="in num">₦9,500.00 → ₦10,000.00</div></div>
+              <div class="field"><label>Reason</label><div class="in ta" style="min-height:52px">Courier raised its price on 1 Oct.</div></div>
+              <p class="after">Only orders made after you save use the new rate. 3 orders made already keep ₦9,500.00.</p>
+              <div class="actions"><span class="b big">Save the rate</span></div>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">Test an address</h3>
+              <div class="field" style="margin-top:0"><div class="in">Lagos · Eti-Osa</div></div>
+              <p style="margin-top:6px;font-size:13px"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>One zone: Lagos Island and Lekki</span></p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Documentation</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">What a business sees</p><h4>"Documentation coming soon."</h4><p>On a product with none, in the PRD's words. The Support line "Need it now? Call or WhatsApp us" sits under it, as decided in Step 11.</p></div>
+      <div class="sc need"><p class="lab">Replacing</p><h4>Saved copies on 6 phones will say "Replaced"</h4><p>Said before you save, so no one is surprised. The old version is kept, can be compared, and can be restored as a new version.</p></div>
+      <div class="sc err"><p class="lab">Removing</p><h4>Saved copies will say "Withdrawn"</h4><p>A reason is required, because a withdrawn guide may be unsafe. The people who saved it are told at their next sync.</p></div>
+      <div class="sc err"><p class="lab">A file that cannot be used</p><h4>Not a PDF or a video we can play, or too big</h4><p>Said in one line before it is saved. The size limits are placeholders until the build.</p></div>
+      <div class="sc err"><p class="lab">A guide that cannot be published</p><h4>Step 4 has no text, or a photo with no description</h4><p>Publish is off, and the step is marked. A guide needs at least one step, every step needs text, and every photo needs a description for people who cannot see it.</p></div>
+      <div class="sc"><p class="lab">Copy from another product</p><h4>Starts a new guide from an existing one</h4><p>Useful for variants of the same product. It is a copy, so editing one never changes the other.</p></div>
+    </div>
+
+    <h3 class="grp">Suppliers</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Missing terms</p><h4>Sentinel Imports has no counterfeit-chargeback term</h4><p>Shown on the list in brass. Its products stay on sale, and Admin is asked to get the term written down. A new product from it cannot go on sale until it is.</p></div>
+      <div class="sc err"><p class="lab">A bad switch</p><h4>A supplier with no cost, or a cost of zero, is refused</h4><p>The Active Supplier cannot be removed without a replacement. The preview names the products affected.</p></div>
+      <div class="sc"><p class="lab">Who can do what</p><h4>Operations proposes and enters costs, Admin approves and switches</h4><p>Operations sees the Approve and Switch buttons with a lock and "Admin only". A switch needs a second approver and appears in Approvals.</p></div>
+      <div class="sc need"><p class="lab">Stopping a supplier</p><h4>Not in the PRD: what happens to its products</h4><p>Proposed: suspending a supplier takes its products off sale after a preview of what that touches, and a replacement supplier can be named per product. Needs your say.</p></div>
+    </div>
+
+    <h3 class="grp">Stores and delivery zones</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Closing a store</p><h4>6 shipments still point to this store</h4><p>It cannot be switched off until they are reassigned, with a message to the businesses. The Main Store needs a replacement first.</p></div>
+      <div class="sc err"><p class="lab">Overlapping areas</p><h4>Eti-Osa is in two zones</h4><p>An address must resolve to exactly one zone. The save is refused and names the two zones. An area in no zone is listed as unplaced.</p></div>
+      <div class="sc need"><p class="lab">An address nobody covers</p><h4>"We could not place this address"</h4><p>When someone makes an order, they can pick a zone themselves, or ask for a delivery price from Operations. The second one creates a task here, and needs a place and a target in the console.</p></div>
+      <div class="sc"><p class="lab">A flat rate</p><h4>One price a shipment, however heavy</h4><p>The PRD notes this loses money on racks, UPS units and displays. Weight bands are for a later version. Extra courier cost after payment is absorbed and reported.</p></div>
+      <div class="sc"><p class="lab">Opening hours</p><h4>Shown to a business choosing Pick-up</h4><p>With the address. A closed day, like a public holiday, is shown from the Business Hours calendar.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: documentation and coverage, the guide editor, suppliers, and stores and delivery zones.</p>
+</main>
+</body>
+</html>

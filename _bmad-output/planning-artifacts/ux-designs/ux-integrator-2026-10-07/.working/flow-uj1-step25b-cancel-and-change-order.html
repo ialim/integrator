@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 25B, cancel and change an order (proposal)</title>
+<style>
+/*
+  STEP 25B WIREFRAMES: cancelling and changing an order (UJ-1 edge case, UJ-4 edge case; FR-57, FR-75, FR-39, FR-45).
+  Six phone screens, a table of what a person can do at each point in an order's life, and a sheet of states.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; nothing is decided until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, caution #6E4400, caution tint #F6EACB, error #8A1C14, error tint #F6E4DE,
+  control #7A7258, hairline #D9CFB5, bezel #2B281F, scrim rgba(26,24,18,.62).
+  Sample data matches Steps 1 to 25A: INT-0042 (Lekki Phase 1 duplex, ₦731,729.94, paid 12:52 pm, two deliveries,
+  the second a back-order 8-port PoE switch), INT-0044 (Funmi's cabling and connectors, ₦48,600.00, pick-up),
+  INT-0031 (Ikoyi Marina office, the switch promised Tue 29 Sep, 8 days late on Wed 7 Oct).
+  Clocks follow Step 23: "by 4:52 pm today" is paid at 12:52 pm plus 4 business hours; "by Thu 8 Oct, 11:40 am" is one
+  business day after a request at 11:40 am on Wed 7 Oct. Text is 12 px or larger everywhere (Step 21).
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:820px;margin:0 0 26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:800px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:120px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px;background:var(--green);color:#fff}
+.title{font:700 17px/1.2 var(--serif)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:14px 16px 4px}
+.head h3{font:700 21px/1.2 var(--serif)}
+.meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans)}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.panel{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass)}
+.panel dl div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.panel dd{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.panel .tot{border-bottom:0;border-top:3px double var(--ink);margin-top:3px;padding-top:8px;font-weight:700}
+.panel .tot dd{font-size:17px}
+.sub{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.say{margin:10px 16px 0;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.say b{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:12px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn.danger{background:var(--bad);border-color:var(--bad)}
+.btn[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:var(--sheet);border-top:2px solid var(--ink)}
+.bar .btn{width:100%;margin:0}
+.bar p{margin-top:6px;font-size:13px;color:var(--ink2);text-align:center}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:14px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:48px;background:var(--sheet);color:var(--green);font:600 15px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.field{margin:10px 16px 0}
+.field label{display:block;margin-bottom:4px;font:600 13.5px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0}
+.two .field{margin:0}
+.zone{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--green);font-size:14px}
+.zone b{font-variant-numeric:tabular-nums}
+.fine{margin:10px 16px 0;font-size:13px;color:var(--ink2)}
+.dcard{margin:10px 16px 0;padding:11px 12px;background:var(--sheet);border:1px solid var(--control)}
+.dcard h4{display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 15px/1.3 var(--sans)}
+.dcard ul{margin-top:6px;font-size:13.5px;color:var(--ink2)}
+.dcard p{margin-top:6px;font-size:14px}
+.dcard.late{background:var(--warn-tint);border-color:var(--brass)}
+.pmeta{margin-top:6px;font-size:13px;color:var(--ink2)}
+.act{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px;min-height:52px;border-bottom:1px solid var(--rule);color:var(--green);font:600 15px var(--sans)}
+.done{display:flex;gap:10px;align-items:flex-start;margin:14px 16px 0;padding:12px;background:var(--sheet);border:2px solid var(--green);font-size:14px}
+.done .i{color:var(--ok);margin-top:1px}
+.done b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.note{margin:10px 16px 0;padding:9px 11px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.ban{margin:12px 16px 0;padding:11px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font-size:14px}
+.ban b{display:block;font-size:15px}
+.ban p{margin-top:4px}
+.ban p b{display:inline;font-size:inherit}
+.scrim{position:absolute;inset:0;background:rgba(26,24,18,.62)}
+.sheet{position:absolute;left:0;right:0;bottom:0;padding:16px 16px 18px;background:var(--paper);border-top:3px solid var(--green);border-radius:14px 14px 0 0}
+.sheet h3{font:700 19px/1.2 var(--serif)}
+.sheet p{margin-top:6px;font-size:14px}
+.sheet .btn{width:100%;margin:10px 0 0}
+.cons{margin-top:8px}
+.cons li{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--rule);font-size:14px}
+.cons li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--ink)}
+.rcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.rc{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 13.5px var(--sans)}
+.rc.on{border:2px solid var(--green)}
+.ask{margin-top:10px;font:600 13.5px var(--sans)}
+.ask small{font-weight:400;color:var(--ink2)}
+.pick{display:grid;grid-template-columns:auto 1fr;gap:12px;margin:10px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.pick.on{border:2px solid var(--green)}
+.pick.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.pick h5{font:700 14.5px/1.3 var(--sans)}
+.pick p{margin-top:3px;font-size:13px;color:var(--ink2)}
+.pick ul{margin-top:4px;font-size:13px;color:var(--ink2)}
+.cbx{display:grid;place-items:center;width:26px;height:26px;border:2px solid var(--control);background:var(--sheet)}
+.cbx.on{border-color:var(--green);background:var(--green);color:#fff}
+.cbx.off{border:2px dashed var(--control);background:var(--aged)}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+tbody th{width:230px;font-weight:600}
+.states{margin-top:34px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .lead{max-width:820px;margin:0 0 16px;font-size:14px;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 0 0;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.sc .b.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.sc .b.danger{background:var(--bad);border-color:var(--bad)}
+.sc .in{margin-top:8px;min-height:44px;font-size:14px}
+.tagadd{display:inline-block;margin-top:6px;padding:1px 7px;border:1px solid var(--brass);background:var(--warn-tint);color:var(--warn);font:700 12px/1.5 var(--sans)}
+.notes{max-width:820px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 25B of the walk-through</p>
+  <h1>Cancelling and changing an order</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. UJ-1 says Tunde cancels the order if his client withdraws before approval, and UJ-4 says he can cancel a back-order line that is more than 7 days late. Until now there was only an “Ask to cancel” button. Six screens follow an order through its life: paid and waiting for approval, the cancel confirmation and its result, a change to the delivery, a request to cancel once approved, and a late back-order line. A table says what a person can do at each point, and a sheet gives the other states, including the delivery exceptions. Nothing here is decided until you confirm it.</p>
+
+  <div class="row">
+    <figure class="unit">
+      <figcaption>1. An order that is paid and waiting for approval<span>Two things he can still do, listed plainly at the end: change the delivery, or cancel. The clock gives the time we will have approved it by, worked out for him.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0042</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Lekki Phase 1 duplex</p><h3>₦731,729.94</h3><div class="chips"><span class="chip">Paid in full</span><span class="chip">Waiting for approval</span></div></div>
+        <p class="say">We check the stock and approve your order, usually within 4 business hours. <b>We will have done it by 4:52 pm today.</b></p>
+        <h4 class="sec">Deliveries · 2 planned</h4>
+        <div class="dcard"><h4>Delivery 1<span class="chip">Not sent yet</span></h4><ul><li>4MP PoE dome camera × 6</li><li>8-channel PoE NVR × 1</li><li>Cat6 cable, 305 m box × 1</li></ul></div>
+        <div class="dcard"><h4>Delivery 2<span class="chip">Not sent yet</span></h4><ul><li>8-port PoE switch × 1</li></ul><p class="pmeta">Back-order · expected in about 3 weeks.</p></div>
+        <h4 class="sec">What you can do</h4>
+        <div class="act"><span>Change delivery details</span><svg class="i"><use href="#ic-right"/></svg></div>
+        <div class="act"><span>Cancel order</span><svg class="i"><use href="#ic-right"/></svg></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Cancel order: what happens, before he decides<span>The question is the title and the consequences are listed. Red is used here and only here, because this cannot be undone. A reason is asked for and is optional.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0042</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Lekki Phase 1 duplex</p><h3>₦731,729.94</h3><div class="chips"><span class="chip">Paid in full</span><span class="chip">Waiting for approval</span></div></div>
+        <h4 class="sec">Deliveries · 2 planned</h4>
+        <div class="dcard"><h4>Delivery 1<span class="chip">Not sent yet</span></h4><ul><li>4MP PoE dome camera × 6</li></ul></div>
+        <div class="scrim"></div>
+        <div class="sheet" role="alertdialog" aria-label="Cancel order INT-0042">
+          <h3>Cancel order INT-0042?</h3>
+          <p>This cancels the whole order. We free the stock we set aside for it.</p>
+          <ul class="cons"><li><span><b>₦731,729.94 becomes a credit note.</b> You can use it on a later order for 12 months. It is not paid out to your bank account.</span></li><li><span>A cancelled order does not count toward your loyalty tier.</span></li><li><span><b>You cannot undo this.</b></span></li></ul>
+          <p class="ask">Why are you cancelling? <small>optional</small></p>
+          <div class="rcs"><span class="rc on">My client changed their mind</span><span class="rc">I made a mistake in the order</span><span class="rc">Something else</span></div>
+          <button class="btn danger" type="button">Cancel order</button>
+          <button class="btn outline" type="button">Keep the order</button>
+        </div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. After cancelling<span>What he has now, in plain words, and what he can do next. The money is a credit note because the PRD makes cancellations credit-only.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0042</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Lekki Phase 1 duplex</p><h3>Order cancelled</h3><div class="chips"><span class="chip">Cancelled</span></div></div>
+        <div class="done" role="status"><svg class="i"><use href="#ic-check"/></svg><span><b>₦731,729.94 is now a credit note</b>Credit note CN-0014. You can use it on a later order until Thu 7 Oct 2027.</span></div>
+        <p class="note">A credit note from a cancelled order is for buying from us. It is not paid out to your bank account.</p>
+        <button class="btn" type="button">View credit notes</button>
+        <button class="btn outline" type="button">Make a new order from the Project</button>
+        <p class="fine">The Lekki Phase 1 duplex Project is as it was. Nothing in it changed.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. Change the delivery before payment is complete<span>Funmi’s order INT-0044, from pick-up to delivery. Only the delivery charge changes. The price of the goods and the end time of the price hold stay exactly as they were.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Change delivery</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Order INT-0044 · Cabling and connectors</p><h3>Now: pick-up at the Main Store</h3><p class="meta">Awaiting payment · price held</p></div>
+        <div class="seg"><span class="on">Delivery</span><span>Pick-up</span></div>
+        <div class="two"><div class="field"><label>State</label><div class="in">Lagos<svg class="i"><use href="#ic-chev"/></svg></div></div><div class="field"><label>Local government</label><div class="in">Eti-Osa<svg class="i"><use href="#ic-chev"/></svg></div></div></div>
+        <div class="field"><label>Area</label><div class="in">Lekki Phase 1</div></div>
+        <div class="two"><div class="field"><label>Receiver</label><div class="in">Funmi</div></div><div class="field"><label>Receiver phone</label><div class="in">0803 555 0118</div></div></div>
+        <p class="zone">Delivery zone: <b>Lagos Island and Lekki</b><br><b>₦9,500.00</b> for each delivery · usually 2 to 3 days</p>
+        <h4 class="sec">What changes</h4>
+        <div class="panel"><dl><div><dt>Goods<span class="sub">VAT included</span></dt><dd>₦48,600.00</dd></div><div><dt>Delivery</dt><dd>+₦9,500.00</dd></div><div class="tot"><dt>New amount due</dt><dd>₦58,100.00</dd></div></dl></div>
+        <p class="say">The price of your goods does not change, and neither does your price hold. It ends at the same time as before.</p>
+        <div class="bar"><button class="btn" type="button">Save changes</button></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Ask to cancel, once the order is approved<span>Now it is a request. Only deliveries that have not left can be picked. The one already ordered from the supplier is dashed, with the reason beside it. The answer time is worked out for him.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Ask to cancel</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Order INT-0042 · Approved</p><h3>Choose what to cancel</h3></div>
+        <div class="ban"><b>This is a request, not a cancellation</b><p>While we decide, your deliveries are on hold. We will answer by <b>Thu 8 Oct, 11:40 am</b>.</p></div>
+        <div class="pick on"><span class="cbx on"><svg class="i" style="width:18px;height:18px"><use href="#ic-check"/></svg></span><div><h5>Delivery 1 · Processing</h5><ul><li>4MP PoE dome camera × 6</li><li>8-channel PoE NVR × 1</li><li>Cat6 cable, 305 m box × 1</li></ul><p>Not sent yet, so we can stop it.</p></div></div>
+        <div class="pick off"><span class="cbx off"></span><div><h5>Delivery 2 · Back-order</h5><ul><li>8-port PoE switch × 1</li></ul><p>We have already ordered this from our supplier, so it cannot be cancelled yet. If it is more than 7 days late, you can cancel it yourself for a credit note.</p></div></div>
+        <div class="field"><label>Why are you asking? <small>needed</small></label><div class="in">My client changed their mind<svg class="i"><use href="#ic-chev"/></svg></div></div>
+        <p class="fine">If we agree, the price of Delivery 1 and its delivery charge become a credit note. We show the amount when we answer.</p>
+        <div class="bar"><button class="btn" type="button">Send request</button><p>Delivery 2 is not affected.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. A back-order line that is more than 7 days late<span>No request needed. The PRD gives him the right to cancel that line for a credit note, so the card says so and the dialog says exactly what he gets.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0031</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Ikoyi Marina office: access control</p><h3>₦538,900.00</h3><div class="chips"><span class="chip">Approved</span><span class="chip">Paid in full</span></div></div>
+        <h4 class="sec">Deliveries · 2</h4>
+        <div class="dcard"><h4>Delivery 1<span class="chip">Delivered</span></h4><ul><li>Access control panel, 4 doors × 1</li><li>Card reader × 4</li></ul><p class="pmeta">Delivered Thu 24 Sep.</p></div>
+        <div class="dcard late"><h4>Delivery 2<span class="chip warn">Running late</span></h4><ul><li>8-port PoE switch × 1</li></ul><p><b>Promised Tue 29 Sep. 8 days late.</b> You can cancel this item and get a credit note, or keep waiting.</p><button class="btn outline" type="button" style="width:100%;margin:10px 0 0">Cancel this item</button></div>
+        <div class="scrim"></div>
+        <div class="sheet" role="alertdialog" aria-label="Cancel the 8-port PoE switch">
+          <h3>Cancel the 8-port PoE switch?</h3>
+          <ul class="cons"><li><span><b>₦53,268.00 becomes a credit note.</b> You can use it on a later order for 12 months.</span></li><li><span>The rest of the order is not affected.</span></li><li><span><b>You cannot undo this.</b></span></li></ul>
+          <button class="btn danger" type="button">Cancel this item</button>
+          <button class="btn outline" type="button">Keep waiting</button>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="tb">
+    <h2 id="tb">What a person can do, at each point in an order’s life</h2>
+    <p class="lead">One table the build can test, and the app’s Orders screen follows it. Owners and Managers only. A Technician sees none of these actions, and their order links say “Ask Tunde”.</p>
+    <div class="scroll" role="region" aria-label="What a person can do at each point, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:760px">
+      <caption style="position:absolute;left:-9999px">What an Owner or Manager can do at each point in an order’s life</caption>
+      <thead><tr><th scope="col">Where the order is</th><th scope="col">What he can do</th><th scope="col">What happens</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Awaiting payment, nothing confirmed</th><td>Upload receipt. Change delivery details. Cancel order.</td><td>Change: at once, and only the delivery charge moves. Cancel: at once. There is nothing to credit. Receipts he has sent that we have not checked go to our finance team.</td></tr>
+        <tr><th scope="row">Awaiting payment, a payment under review</th><td>Upload receipt. Change delivery details. Ask finance to cancel.</td><td>Our finance team has to agree before the order is cancelled.</td></tr>
+        <tr><th scope="row">Paid, waiting for approval</th><td>Change delivery details (a request). Cancel order.</td><td>Cancel: at once, and what we confirmed becomes a credit note. Change: Operations answers by the approval time. Neither restarts the price hold.</td></tr>
+        <tr><th scope="row">Approved, nothing sent yet</th><td>Ask to cancel (a request, one delivery at a time).</td><td>Deliveries are on hold. Operations decides within 1 business day. A back-order item already ordered from the supplier cannot be cancelled.</td></tr>
+        <tr><th scope="row">A back-order line more than 7 days late</th><td>Cancel this item.</td><td>At once, for a credit note, whether or not we have ordered it.</td></tr>
+        <tr><th scope="row">In transit or delivered</th><td>Report a problem.</td><td>Cancelling no longer applies. The returns rules apply (Step 12).</td></tr>
+        <tr><th scope="row">Delivery failed</th><td>Update receiver details.</td><td>The delivery goes back to Processing and is sent again.</td></tr>
+        <tr><th scope="row">Expired or cancelled</th><td>Make a new order from the Project, or put the parts back in the cart.</td><td>Nothing else. Money received is already a credit note.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2 id="ss" style="margin-top:34px">Reference sheet: the other states</h2>
+    <p class="lead">Brass cards need something from the person or a clock. Red cards mean something went wrong. Plain cards are information. Wording is a placeholder, and the cancellation and credit note wording is on the counsel register.</p>
+    <div class="grid">
+      <div class="sc"><p class="lab">Cancel, nothing paid</p><h4>Cancel order INT-0044?</h4><p>No money has been received, so there is nothing to credit. The order is cancelled at once and you cannot undo it.</p><span class="b danger">Cancel order</span><span class="b o">Keep the order</span></div>
+      <div class="sc need"><p class="lab">Cancel, a payment under review</p><h4>We are checking a payment on this order</h4><p>Our finance team has to agree before it is cancelled. We will tell you what they decide.</p><span class="b">Ask finance to cancel</span><span class="b off">Cancel order</span></div>
+      <div class="sc"><p class="lab">Cancel, a receipt not checked yet</p><h4>You sent a receipt for ₦200,000.00 that we have not checked</h4><p>Our finance team deals with it. If we confirm it, it is added to your credit note.</p></div>
+      <div class="sc need"><p class="lab">Change, after payment</p><h4>Send a change request</h4><p>Operations looks at your change before they approve the order. We will answer by 4:52 pm today. The price of your goods does not change.</p><span class="b">Send change request</span></div>
+      <div class="sc need"><p class="lab">Change request sent</p><h4>Change requested</h4><p>Delivery to Lekki Phase 1 instead of pick-up. We will answer by 4:52 pm today. You can still cancel the order.</p></div>
+      <div class="sc need"><p class="lab">Cancellation requested</p><h4>Cancellation requested</h4><p>Your deliveries are on hold. We will answer by Thu 8 Oct, 11:40 am. You can keep using the app as normal.</p></div>
+      <div class="sc"><p class="lab">Cancellation agreed</p><h4>Delivery 1 is cancelled</h4><p>The price of Delivery 1 and its delivery charge are now credit note CN-0015. Delivery 2 goes ahead as planned.</p><span class="b o">View credit note</span></div>
+      <div class="sc err"><p class="lab">Cancellation not possible</p><h4>We could not cancel Delivery 1</h4><p>It left our store at 9:10 am today and is on its way. When it arrives you can report a problem or return it. We are sorry we could not stop it.</p><span class="b o">Call or WhatsApp us</span></div>
+      <div class="sc err"><p class="lab">Delivery failed</p><h4>We could not deliver</h4><p>The courier could not reach the receiver. Check the name and phone number. We will send it again.</p><div class="in">Funmi · 0803 555 0118</div><span class="b">Send it again</span></div>
+      <div class="sc need"><p class="lab">Ship in full, 14 days</p><h4>Send what is ready now?</h4><p>Your order has waited 14 days for one item. We can send the rest now. One more delivery costs ₦9,500.00, VAT included, to pay before we send it.</p><span class="tagadd">Charge to be confirmed</span><br><span class="b">Send what is ready</span><span class="b o">Keep waiting</span></div>
+      <div class="sc need"><p class="lab">Waiting to be collected</p><h4>Please collect your order at the Main Store</h4><p>It has been ready since Mon 5 Oct. We remind you after 7 days. After 14 days we mark it not collected. After 30 days we may cancel it and put the goods back on the shelf. You would get a credit note less the restocking fee.</p></div>
+      <div class="sc"><p class="lab">A Technician</p><h4>No cancel, no change</h4><p>A Technician sees the status and the deliveries and none of these buttons. Order links say “Ask Tunde”.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: cancelling before approval and what he gets back, changing the delivery, the request after approval, the late back-order line, and the delivery exceptions.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 15, the staff console, Admin: people and access (proposal)</title>
+<style>
+/*
+  STEP 15 WIREFRAMES: the staff console, Admin: people and access. Kunle in Admin approves a business, checks an identity by
+  hand, acts on an account that needs it, and decides the remedy for a returned device.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-4 to FR-9, FR-52, FR-53, FR-58 to FR-61, FR-64, FR-66, FR-67, FR-68, FR-72, FR-76, FR-78, UJ-2, UJ-6, UJ-7.
+  Frames are 1240 px wide, for a desktop browser. Now is Mon 12 Oct 2026, 11:30 am, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{position:relative;width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:660px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:38px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.nav .deputy{margin:14px 18px 0;padding:10px 12px;border:1px dashed var(--control);font-size:12.5px;color:var(--ink2)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.notice .b{margin-left:auto}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.red{background:var(--bad);border-color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cards + .cards{margin-top:16px}
+.qcard{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.qcard h3{font:700 16px/1.2 var(--serif)}
+.qcard .big{margin-top:6px;font:700 34px/1 var(--sans);font-variant-numeric:tabular-nums}
+.qcard .big small{font:600 14px var(--sans);color:var(--ink2)}
+.qcard p{margin-top:6px;font-size:13px}
+.qcard .small{color:var(--ink2)}
+.qcard .b{margin-top:10px}
+.meter{height:12px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.okmark{display:inline-flex;align-items:center;gap:5px;font:700 12.5px var(--sans);color:var(--ok)}
+.okmark.no{color:var(--bad)}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.trio > section{padding:0 20px;min-width:0}
+.trio > section:first-child{padding-left:0}
+.trio > section:last-child{padding-right:0}
+.trio > section + section{border-left:1px solid var(--rule)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.two > section{padding:0 20px;min-width:0}
+.two > section:first-child{padding-left:0}
+.two > section:last-child{padding-right:0}
+.two > section + section{border-left:1px solid var(--rule)}
+.trio h2,.two h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.crumbs{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.crumbs .b{min-height:34px;margin-left:auto}
+.checklist li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.checklist .box{display:grid;place-items:center;width:22px;height:22px;border:2px solid var(--control);background:var(--sheet);margin-top:1px}
+.checklist .box.on{background:var(--green);border-color:var(--green);color:#fff}
+.checklist b{font:600 13.5px/1.3 var(--sans)}
+.checklist small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.field{margin-top:10px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field .in{display:flex;align-items:center;min-height:42px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.ta{align-items:flex-start;min-height:72px;padding:9px 12px}
+.field .in.ph{color:var(--ink2)}
+.field small{display:block;margin-top:3px;font-size:12.5px;color:var(--ink2)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.after.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.opts li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--control);background:var(--sheet);font-size:13.5px}
+.opts li.on{border:2px solid var(--green);padding:9px 11px}
+.opts .rad{display:grid;place-items:center;width:22px;height:22px;border:2px solid var(--control);border-radius:50%;margin-top:1px}
+.opts li.on .rad{border-color:var(--green)}
+.opts li.on .rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--green)}
+.opts b{display:block;font:700 14px/1.3 var(--sans)}
+.opts small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.opts li.off{background:var(--aged);color:var(--ink2)}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.hdr h1{font:700 24px/1.2 var(--serif);color:var(--green)}
+.hdr .meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.search{display:flex;align-items:center;gap:8px;min-height:40px;margin-bottom:14px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:13.5px;color:var(--ink2)}
+.btnlist{display:grid;gap:8px}
+.btnlist .b{justify-content:flex-start}
+.btnlist small{display:block;margin:-4px 0 4px;font-size:12px;color:var(--ink2)}
+.scrim{position:absolute;inset:0;background:rgba(26,24,18,.58)}
+.dialog{position:absolute;left:50%;top:96px;width:540px;margin-left:-270px;padding:20px 22px 22px;background:var(--sheet);border:2px solid var(--ink)}
+.dialog h2{font:700 20px/1.2 var(--serif);color:var(--ink)}
+.dialog p{margin-top:6px;font-size:13.5px}
+.dialog ul{margin:8px 0 0;font-size:13.5px}
+.dialog ul.plain li{display:flex;gap:8px;padding:3px 0}
+.dialog ul.plain li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--green)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 15 of the walk-through</p>
+  <h1 class="top">The staff console, Admin: people and access</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell as Steps 13 and 14. Admin can do everything, so the rail shows everything, but the Today page puts first what only Admin can decide: approving a business (UJ-2), checking an identity by hand, acting on an account, and deciding a return when Operations investigated it (UJ-7). Five desktop frames, then a sheet of states. Settings, staff, the audit trail and the founder's dashboard come in the next step. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Today, Admin<span>The same page as the other roles, with the queues only Admin owns, the things waiting for a second person, and everything that has passed 75% of its target in any queue. The rail shows every area, grouped.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Today · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:30 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a on">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a">Dashboard</span>
+          <h2>Other roles' queues</h2>
+          <span class="a">Receipts · Orders · Shipments</span>
+        </nav>
+        <div class="main">
+          <h1>Good morning, Kunle</h1>
+          <p class="sub">Admin · 5 things need you today</p>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>1 item has passed 75% of its target and was escalated to you: receipt INT-0047, 1 h 31 min of 2 business hours. Its owner is Ngozi A., and her deputy is Tolu K.<span class="b">Open escalated</span></p>
+          <div class="cards">
+            <section class="qcard"><h3>Level 3 requests</h3><p class="big">2 <small>waiting</small></p><p>Oldest: <b>3 h 10 min</b> of a 1 business day target</p><div class="meter" role="progressbar" aria-label="Oldest request has used 32 percent of its target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32"><i style="width:32%"></i></div><p class="small"><b>0</b> over target · 100% on time this week</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>NIN reviews</h3><p class="big">1 <small>waiting</small></p><p>Oldest: <b>3 h 40 min</b> of a 1 business day target</p><div class="meter" role="progressbar" aria-label="Oldest review has used 37 percent of its target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="37"><i style="width:37%"></i></div><p class="small"><b>0</b> over target · 100% on time this week</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>Return decisions</h3><p class="big">1 <small>waiting</small></p><p>RR-0087, 4MP PoE dome camera. Amaka K. sent her findings at 10:55 am.</p><p class="small">Admin decides because Operations investigated it.</p><span class="b">Open the queue</span></section>
+          </div>
+          <div class="cards">
+            <section class="qcard"><h3>Waiting for a second person</h3><p class="big">3 <small>items</small></p><p>A serial exception (needs Operations and you), a whole-product counterfeit hold, and a Platform Rate change of 3.4%.</p><span class="b">Open approvals</span></section>
+            <section class="qcard"><h3>Holds and blocklist</h3><p class="big">2 <small>accounts on hold</small></p><p>14 entries on the blocklist. 1 hold was started by Finance and needs you to ratify it by Tue 13 Oct, 11:05 am.</p><span class="b">Open holds</span></section>
+            <section class="qcard"><h3>Founder's weekly review</h3><p class="big">5 <small>override events</small></p><p>Admin and Finance overrides this week, and any use of "acting as". Due Mon 12 Oct, end of day.</p><p class="small">0 alerts for unusual patterns.</p><span class="b o">Open the review</span></section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Approving a business, UJ-2<span>One screen with the three things the PRD asks for: who is asking, who vouches, and the checks. Admin ticks each check as it is done, writes a reason, and decides. The approval record names the voucher.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Level 3 request · Bello Smart Systems · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:30 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a on">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Level 3 requests</span><span>›</span><b>Bello Smart Systems</b><span>· 1 of 2 · asked 8:20 am</span><span class="b o">‹ Previous</span><span class="b o" style="margin-left:0">Next ›</span></div>
+          <div class="trio">
+            <section aria-labelledby="a1">
+              <h2 id="a1">Who is asking</h2>
+              <dl class="cmp">
+                <div><dt>Trade name</dt><dd>Bello Smart Systems</dd></div>
+                <div><dt>Owner</dt><dd>Hammed Bello</dd></div>
+                <div><dt>Identity</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>NIN verified, 8:05 am</span></dd></div>
+                <div><dt>Contact</dt><dd>0803 555 0142</dd></div>
+                <div><dt>Signed up</dt><dd>Mon 12 Oct, 7:58 am</dd></div>
+                <div><dt>Terms accepted</dt><dd>Version 3, 8:01 am</dd></div>
+                <div><dt>Blocklist</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>No match</span></dd></div>
+                <div><dt>Same NIN on another account</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None</span></dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="a2">
+              <h2 id="a2">Who vouches</h2>
+              <dl class="cmp">
+                <div><dt>Business</dt><dd>Ogunleye Networks &amp; Security</dd></div>
+                <div><dt>Person</dt><dd>Segun Ogunleye, Owner</dd></div>
+                <div><dt>Established</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>5 completed orders</span></dd></div>
+                <div><dt>Vouching rights</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Active</span></dd></div>
+                <div><dt>Vouched in the last 90 days</dt><dd>3 of 6</dd></div>
+                <div><dt>Earlier people they vouched for</dt><dd>1 approved, 0 suspended</dd></div>
+                <div><dt>Open claims or returns</dt><dd>None</dd></div>
+                <div><dt>Code used</dt><dd>Mon 12 Oct, 8:20 am</dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="a3">
+              <h2 id="a3">Your checks, then decide</h2>
+              <ul class="checklist">
+                <li><span class="box on"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Online presence</b><small>Kunle O., 10:42 am. A shop page and a social page, both active since 2022.</small></span></li>
+                <li><span class="box on"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Proof of an installed job</b><small>Kunle O., 10:55 am. A photo of a CCTV install in Lekki, sent on WhatsApp.</small></span></li>
+                <li><span class="box on"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Phone call</b><small>Kunle O., 11:12 am. Called 0803 555 0142. Hammed says he met Segun at the seminar.</small></span></li>
+              </ul>
+              <div class="field"><label>Reason for your decision <small style="font-weight:400;color:var(--ink2)">kept on record</small></label><div class="in ta">All three checks done. Voucher is established and in good standing.</div></div>
+              <div class="actions"><span class="b big">Approve</span><span class="b danger">Reject…</span></div>
+              <p class="after">On approving: Bello Smart Systems is approved. Prices, projects and ordering unlock for Hammed. The record names Segun as the voucher. Hammed is told on WhatsApp and email.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. An identity check by hand<span>For a profile the automatic check could not confirm. The NIN stays hidden until Kunle gives a reason, and each reveal is written to the record with who, when and why.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">NIN review · Aliyu Danjuma · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:30 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a on">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>NIN reviews</span><span>›</span><b>Aliyu Danjuma</b><span>· sent Sat 10 Oct, 5:50 pm · 3 h 40 min of 1 business day</span></div>
+          <div class="two">
+            <section aria-labelledby="n1">
+              <h2 id="n1">What he sent, and what the check said</h2>
+              <dl class="cmp">
+                <div><dt>Name he gave</dt><dd>Aliyu Danjuma</dd></div>
+                <div><dt>Date of birth</dt><dd>2 Mar 1991</dd></div>
+                <div><dt>Home address</dt><dd>5 Ahmadu Bello Way, Kaduna</dd></div>
+                <div><dt>NIN</dt><dd style="font-family:var(--mono)">••••••• 6203 <span class="b o sm" style="margin-left:6px">Show the NIN…</span></dd></div>
+                <div><dt>Automatic check</dt><dd><span class="okmark no">Name does not match the NIN record</span></dd></div>
+                <div><dt>Date of birth</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Matches</span></dd></div>
+                <div><dt>Same NIN on another account</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None</span></dd></div>
+                <div><dt>Tries so far</dt><dd>1 of 3</dd></div>
+              </dl>
+              <p class="after need">Every later NIN check for this account is done by hand, because of the mismatch. He does not know that. He has been told "Our team will check this".</p>
+            </section>
+            <section aria-labelledby="n2">
+              <h2 id="n2">What you do</h2>
+              <ul class="opts">
+                <li class="on"><span class="rad"></span><span><b>Verified by hand</b><small>You are satisfied who he is. Say how, in your reason.</small></span></li>
+                <li><span class="rad"></span><span><b>Not verified, ask him to correct it</b><small>He sees your reason and can send his details again, 2 more tries.</small></span></li>
+                <li><span class="rad"></span><span><b>Mark as a duplicate</b><small>This NIN belongs to another business account. Both are flagged for you.</small></span></li>
+              </ul>
+              <div class="field"><label>Your reason</label><div class="in ta">Spoke to him on the phone, 11:20 am. Name has a second surname on the NIN card: Danjuma Musa. Photo of the NIN slip checked.</div></div>
+              <div class="field"><label>Evidence</label><div class="in ph">A photo of his NIN slip or ID card <span class="b o sm" style="margin-left:auto">Ask him for one</span></div><small>If you ask, his Get approved screen shows "Send a photo of your NIN slip or ID card". Otherwise he does nothing.</small></div>
+              <div class="actions"><span class="b big">Save decision</span></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. One business account, and holding it<span>Everything about a business on one page, with the tools only Admin has. Every action asks for a reason and is audited. The Hold dialog says in plain words what it does and whom it tells.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Sade AV Systems · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:30 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a on">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+        </nav>
+        <div class="main">
+          <div class="search"><svg class="i"><use href="#i-search"/></svg>Find a business, owner, phone, email, order or serial number</div>
+          <div class="hdr"><div><h1>Sade AV Systems</h1><p class="meta">Owner S. Balogun · vouched for by Bright Link Ltd · approved Wed 12 Aug · Base tier</p></div><div class="chips"><span class="chip">Approved</span><span class="chip warn">Needs a look</span></div></div>
+          <div class="two">
+            <section aria-labelledby="b1">
+              <h2 id="b1">The account</h2>
+              <p class="after need" style="margin:0 0 10px">3 receipts for order INT-0040 were not confirmed. A staff review is required before another is accepted.</p>
+              <dl class="cmp">
+                <div><dt>Orders</dt><dd>4, 2 completed</dd></div>
+                <div><dt>Counted spend, last 6 months</dt><dd>₦612,000.00</dd></div>
+                <div><dt>Credit notes with a balance</dt><dd>None</dd></div>
+                <div><dt>Open cases and returns</dt><dd>None</dd></div>
+                <div><dt>People on the team</dt><dd>2: Owner and one Technician</dd></div>
+                <div><dt>Vouched for</dt><dd>Nobody (not established)</dd></div>
+                <div><dt>Sending bank accounts on record</dt><dd>1</dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="b2">
+              <h2 id="b2">What you can do</h2>
+              <div class="btnlist">
+                <span class="b o">Put on hold…</span><small>No new orders and no refunds. Payments are still processed.</small>
+                <span class="b o">Revoke approval…</span><small>Prices and ordering go away until approved again.</small>
+                <span class="b o">Disable a person…</span>
+                <span class="b o">Add to the blocklist…</span><small>A NIN, a contact or a sending bank account. Checked at sign-up and when payments are confirmed.</small>
+                <span class="b o">Pause or give vouching rights…</span>
+                <span class="b o">Add a note</span>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="scrim" aria-hidden="true"></div>
+        <div class="dialog" role="dialog" aria-labelledby="hd" aria-modal="true">
+          <h2 id="hd">Put Sade AV Systems on hold?</h2>
+          <p>While it is on hold:</p>
+          <ul class="plain"><li>They cannot make new orders.</li><li>They cannot be paid a refund.</li><li>Payments for orders they already made are still processed.</li></ul>
+          <div class="field"><label>Reason <small style="font-weight:400;color:var(--ink2)">staff only, required, kept on record</small></label><div class="in ta">Three unconfirmed receipts on INT-0040 with different sender names. Checking before more orders.</div></div>
+          <p style="margin-top:12px"><b>Tell the Owner?</b></p>
+          <ul class="opts" style="margin-top:6px">
+            <li class="on"><span class="rad"></span><span><b>Yes, tell them</b><small>They see a banner and get a message with a number to call.</small></span></li>
+            <li><span class="rad"></span><span><b>No, this is a fraud review</b><small>They are not told. This is flagged for the founder's weekly review.</small></span></li>
+          </ul>
+          <div class="actions"><span class="b red big">Put on hold</span><span class="b o big">Cancel</span></div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. Deciding a return, UJ-7<span>Amaka investigated this one, so Admin decides. The options follow the PRD's order for this kind of fault, the first one that is possible is chosen for him, and any other choice needs a reason. The courier cost goes to Finance as a credit note request.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Decide RR-0087 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:30 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a on">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Return decisions</span><span>›</span><b>RR-0087 · 4MP PoE dome camera</b><span>· Adeyemi Integrated Systems</span></div>
+          <div class="two">
+            <section aria-labelledby="d1">
+              <h2 id="d1">What was found</h2>
+              <dl class="cmp">
+                <div><dt>Reason</dt><dd>Does not work out of the box</dd></div>
+                <div><dt>Serial</dt><dd style="font-family:var(--mono)">NG4P-77124</dd></div>
+                <div><dt>Issue code</dt><dd>IC-4829-QK7M, serial matches</dd></div>
+                <div><dt>First case</dt><dd>Wed 7 Oct, 10:42 am</dd></div>
+                <div><dt>Window for this reason</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Inside, until Wed 4 Nov</span></dd></div>
+                <div><dt>Investigated by</dt><dd>Amaka K., Mon 12 Oct, 10:55 am</dd></div>
+                <div><dt>Finding</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Fault confirmed</span></dd></div>
+                <div><dt>Her notes</dt><dd style="font-weight:400">No image output on either lens. Firmware reset did not help.</dd></div>
+                <div><dt>Warranty until</dt><dd>3 Oct 2028</dd></div>
+              </dl>
+              <p class="after">You did not investigate this return, so you can decide it. If you had, the button below would be off.</p>
+            </section>
+            <section aria-labelledby="d2">
+              <h2 id="d2">The decision</h2>
+              <ul class="opts">
+                <li class="on"><span class="rad"></span><span><b>Replacement from stock</b><small>First choice for a unit that does not work out of the box. 14 on hand. It ships as a zero-value delivery on INT-0038 and keeps the original warranty.</small></span></li>
+                <li class="off"><span class="rad"></span><span><b>Repair by the maker</b><small>Next choice, if no stock. A reason is needed to choose it now.</small></span></li>
+                <li class="off"><span class="rad"></span><span><b>Credit note</b><small>Last choice. The price paid before VAT, with the VAT credited in full. A reason is needed to choose it now.</small></span></li>
+                <li class="off"><span class="rad"></span><span><b>Reject</b><small>The business is shown your reason.</small></span></li>
+              </ul>
+              <div class="field"><label>Pay back the courier cost?</label>
+                <ul class="opts" style="margin-top:4px"><li class="on"><span class="rad"></span><span><b>Yes, the fault is ours</b><small>Receipt ₦4,500.00. Cap ₦9,500.00. Goes to Finance as a credit note request, one claim for this return.</small></span></li></ul></div>
+              <div class="actions"><span class="b big">Decide: replacement and courier cost</span></div>
+              <p class="after">On deciding: RR-0087 is Decided. A replacement delivery is created on INT-0038, and Operations records its serial when it ships. Finance gets a credit note request for ₦4,500.00. The business reads the decision in plain words, and a Technician sees no amounts.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Approving a business</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Voucher suspended meanwhile</p><h4>The voucher's rights were suspended after this request</h4><p>A brass banner across the top. Approve is off until you tick "I have seen this and still want to approve", and say why.</p></div>
+      <div class="sc err"><p class="lab">Rejecting</p><h4>The reason is shown to the Owner</h4><p>The Reject button opens a box for a reason in plain words. He sees it on his Get approved screen. A reason is recorded on every decision, approvals too.</p></div>
+      <div class="sc"><p class="lab">A vouchee later suspended for fraud</p><h4>The voucher's vouching rights are suspended pending review</h4><p>Their waiting codes stop working at once. It appears in Approvals, and on the voucher's account page.</p></div>
+      <div class="sc"><p class="lab">Seeding the first cohort</p><h4>Make a business directly, and make platform vouch codes</h4><p>Name, contact and owner. It stays Pending Activation until the owner verifies a contact, passes the NIN check, gives a trade name and accepts the Terms. No order is possible before that. The creator is recorded.</p></div>
+      <div class="sc need"><p class="lab">Past 75% of target</p><h4>Escalated</h4><p>Level 3 and NIN reviews both aim for 1 business day. After 75% the owner of the queue and the deputy are named, and the item shows in Escalated.</p></div>
+    </div>
+
+    <h3 class="grp">Checking an identity</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Showing a NIN</p><h4>Pick a reason first</h4><p>Reasons: checking by hand, checking for a duplicate, a dispute, other with a note. The NIN is shown for as long as the page is open, and every show is a line in the record: who, when, why. Many shows in a day raise an alert.</p></div>
+      <div class="sc need"><p class="lab">Asking for a photo</p><h4>"Send a photo of your NIN slip or ID card"</h4><p>Proposed addition to Step 7: the applicant's Get approved screen shows this as a brass step only when Admin asks. Without it, the PRD gives Admin nothing to look at.</p></div>
+      <div class="sc"><p class="lab">No NIN at all</p><h4>Handled by phone, never from a screen</h4><p>As decided in Step 7: no route in the app. Admin records an alternative check done by phone or WhatsApp (a passport or residence permit and the business's CAC number) on the account page, with a reason.</p></div>
+      <div class="sc err"><p class="lab">Three tries used</p><h4>Resubmitting stops</h4><p>He sees "Call or WhatsApp us". The account page shows the three outcomes and the reasons you gave.</p></div>
+    </div>
+
+    <h3 class="grp">Acting on an account</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">What each action does to him</p><h4>Hold, revoke, disable, blocklist, vouching</h4><p>Hold: a banner on every screen, no new orders, no refunds. Revoke: back to the Get approved screen, with prices hidden again. Disable a person: signed out and their saved data cleared at the next connection. Vouching paused: waiting codes stop working at once.</p></div>
+      <div class="sc need"><p class="lab">Finance started a hold</p><h4>Ratify it within 1 business day</h4><p>Finance can hold an account for payment fraud. It stays, and it waits in Approvals until you ratify or lift it.</p></div>
+      <div class="sc"><p class="lab">Blocklist</p><h4>NIN, contact, or a sending bank account</h4><p>A NIN is kept only as a hash. A blocked item is refused at sign-up and at payment confirmation. The person is shown a neutral message, never why.</p></div>
+      <div class="sc need"><p class="lab">Acting as another role</p><h4>You are acting as Finance</h4><p>Any Admin use of another role's power, such as confirming a payment, shows this line first and is marked for the founder's weekly review.</p></div>
+    </div>
+
+    <h3 class="grp">Deciding a return</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">You investigated it</p><h4>Someone else decides this one</h4><p>The decide button is off and says why. When Operations investigated, Admin decides. When Admin investigated, Operations decides.</p></div>
+      <div class="sc"><p class="lab">Other reasons, other options</p><h4>The same page, a different list</h4><p>Damaged on the way or wrong item: replacement, otherwise a credit note. Warranty: the maker's process only, and never a cash refund. Counterfeit confirmed: a refund by bank transfer. Change of mind: a credit note less 15%. Non-delivery: a new dispatch, or a refund.</p></div>
+      <div class="sc need"><p class="lab">Counterfeit decisions</p><h4>Confirm or clear within 14 days</h4><p>Confirmed needs a maker's serial check or two people with photos. A hold on a whole product needs a second approver.</p></div>
+      <div class="sc"><p class="lab">Freight</p><h4>Who pays is recorded on every return</h4><p>If the fault is ours (our error, transit damage, dead on arrival, or counterfeit) we pay back actual courier cost up to the delivery rate for the same route. Otherwise the business pays.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: Today for Admin, approving a business, the identity check by hand, acting on an account, and deciding a return.</p>
+</main>
+</body>
+</html>

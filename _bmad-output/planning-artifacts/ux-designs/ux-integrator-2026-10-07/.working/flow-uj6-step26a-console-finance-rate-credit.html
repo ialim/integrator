@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 26A, Finance: the Platform Rate and credit notes (proposal)</title>
+<style>
+/*
+  STEP 26A WIREFRAMES: the staff console, Finance. Closes the gaps Step 24 found on Finance's rail:
+  the Platform Rate page (FR-20), Credit note requests (FR-43, FR-78), Credit notes and refunds (FR-43, FR-77).
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; nothing is decided until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+  Colour rule: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Two days are used so the numbers agree with earlier steps. The rate frames are Mon 12 Oct (Step 16 approves
+  the same 1,368.00 to 1,414.50 change). The credit-note frames are Thu 8 Oct (Step 9: CN-0004, CN-0012, INT-0044).
+  Rate arithmetic: 68,400.00 x 1,414.50 / 1,368.00 = 70,725.00; 142,500.00 gives 147,343.75; 96,000.00 gives 99,263.16.
+  Credit note VAT: 68,400.00 / 1.075 = 63,627.91 goods and 4,772.09 VAT.
+  Frames are 1240 px wide, for a desktop browser. Text is 12 px or larger everywhere (Step 21).
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.sr{position:absolute;left:-9999px}
+.nw{white-space:nowrap}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:920px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 12px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:640px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cards.pair{grid-template-columns:repeat(2,minmax(0,1fr))}
+.qcard{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.qcard h3{font:700 16px/1.2 var(--serif)}
+.qcard .big{margin-top:6px;font:700 34px/1 var(--sans);font-variant-numeric:tabular-nums}
+.qcard .big small{font:600 14px var(--sans);color:var(--ink2)}
+.qcard p{margin-top:6px;font-size:13px}
+.qcard .small{color:var(--ink2)}
+.qcard ul{margin-top:8px;font-size:13.5px}
+.qcard li{display:flex;gap:10px;padding:5px 0;border-top:1px solid var(--rule)}
+.qcard li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--ink)}
+.meter{height:12px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0}
+.split .list{min-width:0;padding-right:20px}
+.q{width:100%;border-collapse:collapse;font-size:13px}
+.q th{padding:8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 12px/1.2 var(--sans);letter-spacing:.04em;color:var(--ink2);white-space:nowrap}
+.q td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.q .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.q .nw{white-space:nowrap}
+.q .mono{font:12px/1.3 var(--mono);white-space:nowrap}
+.q .age strong{display:block;font-weight:700;white-space:nowrap}
+.q td small{display:block;margin-top:2px;font-size:12px;color:var(--ink2)}
+.q tr.sel td{background:var(--paper);box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.q tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.q tr.draft td{background:var(--warn-tint)}
+.panel{padding:0 0 0 20px;border-left:1px solid var(--ink)}
+.panel h3{font:700 17px/1.2 var(--serif)}
+.panel .sub{margin:3px 0 12px}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.cmp .tot dt{font-weight:700;color:var(--ink)}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.trio > section{padding:0 20px;min-width:0}
+.trio > section:first-child{padding-left:0}
+.trio > section + section{border-left:1px solid var(--rule)}
+.trio h2,.duo h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:0}
+.duo > section{padding:0 22px;min-width:0}
+.duo > section:first-child{padding-left:0}
+.duo > section + section{border-left:1px solid var(--rule)}
+.crumbs{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.crumbs .b{min-height:34px;margin-left:auto}
+.checks li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.checks .i{margin-top:1px;color:var(--ok)}
+.checks .no .i{color:var(--bad)}
+.checks small{display:block;font-size:12.5px;color:var(--ink2)}
+.checks b{font:700 12.5px var(--sans);color:var(--ok)}
+.checks .no b{color:var(--bad)}
+.field{margin-top:12px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.field .in{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.ta{align-items:flex-start;min-height:70px;padding:9px 12px}
+.field .in.num{font:700 20px var(--sans);font-variant-numeric:tabular-nums}
+.field .hint{display:block;margin-top:4px;font-size:12.5px;color:var(--ink2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sw{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:700 13px var(--sans)}
+.sw i{display:inline-block;width:34px;height:18px;border:2px solid var(--control);background:var(--aged);position:relative}
+.sw i::after{content:"";position:absolute;left:2px;top:1px;width:10px;height:12px;background:var(--control)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 12px/1.2 var(--sans);letter-spacing:.04em;color:var(--ink2);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.tile{padding:11px 13px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.tile h3{font:700 13.5px/1.25 var(--sans)}
+.tile .v{margin-top:4px;font:700 22px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.tile p{margin-top:3px;font-size:12.5px;color:var(--ink2)}
+.tile.need{background:var(--warn-tint);border-color:var(--brass)}
+.tg{margin:18px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.steps{display:flex;margin:0 0 14px}
+.steps li{flex:1;padding:8px 12px;border:1px solid var(--control);border-right:0;background:var(--sheet);font:600 13px var(--sans);color:var(--ink2)}
+.steps li:last-child{border-right:1px solid var(--control)}
+.steps li.on{background:var(--green);border-color:var(--green);color:#fff}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:920px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .b{margin:8px 8px 0 0}
+.notes{max-width:920px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 26A of the walk-through</p>
+  <h1 class="top">Finance: the Platform Rate, credit note requests, and credit notes and refunds</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Step 24 found three items on Finance’s rail with no screen: the Platform Rate, Credit note requests, and Credit notes and refunds. This sheet draws them, in the same console shell as Steps 13 to 16. Two days are used so the numbers agree with what you confirmed: Monday 12 October for the rate (Step 16 approves the same change), and Thursday 8 October for the credit notes (Step 9 is the business side of the same requests). Six desktop frames, then a sheet of states. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. The Platform Rate<span>One page for the number every price depends on. It says what is in force, how old it is, the exact time new orders would stop, who changed it and why, and the few rules that bind Finance. Reconfirming is a daily act, so the page makes it a single clear button.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Platform Rate · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 8:58 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a on">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Platform Rate</h1>
+          <p class="sub">One rate sets every naira price on the platform. Reconfirm it each business day. If it is more than 48 hours old, new orders stop.</p>
+          <div class="cards pair">
+            <section class="qcard" aria-labelledby="r1">
+              <h3 id="r1">In force now</h3>
+              <p class="big">₦1,368.00 <small>to the dollar</small></p>
+              <p>Reconfirmed today at 8:55 am by Ngozi A. Reference: our bank’s dollar rate at 8:40 am. Spread ₦6.00.</p>
+              <div class="chips" style="margin-top:8px"><span class="chip good">Reconfirmed today</span><span class="chip">New orders: open</span></div>
+              <div class="meter" role="progressbar" aria-label="The rate is 3 minutes old of the 48 hours allowed" aria-valuemin="0" aria-valuemax="48" aria-valuenow="0"><i style="width:1%"></i></div>
+              <p class="small">3 minutes old. New orders stop at 48 hours, which is <b>Wed 14 Oct, 8:55 am</b>.</p>
+              <div class="actions"><span class="b off">Reconfirm the rate</span><span class="b o">Change the rate…</span><span class="b danger">Pause new orders…</span></div>
+              <p class="small" style="margin-top:6px">Reconfirm is off because it was done at 8:55 am. The next one is due tomorrow.</p>
+            </section>
+            <section class="qcard" aria-labelledby="r2">
+              <h3 id="r2">The rules</h3>
+              <ul>
+                <li>Change the rate when the market has moved more than ₦5 from the rate in force.</li>
+                <li>A change above 3% needs a second person to approve it. You cannot approve your own.</li>
+                <li>A change above 10% is refused as a probable typing error. Only Admin can override it, with a reason.</li>
+                <li>A new rate shows on prices at once. An order still inside its price hold keeps the rate it was made at.</li>
+                <li>Pausing new orders shows businesses “Prices are being updated”. Finance or Admin can pause and resume.</li>
+              </ul>
+            </section>
+          </div>
+          <h2 class="tg">History</h2>
+          <table class="q">
+            <caption class="sr">Every reconfirmation and change of the Platform Rate, newest first</caption>
+            <thead><tr><th scope="col">When</th><th scope="col">By</th><th scope="col">What</th><th scope="col" class="num">Rate</th><th scope="col" class="num">Change</th><th scope="col">Reference and spread</th><th scope="col">Second person</th></tr></thead>
+            <tbody>
+              <tr><td class="nw">Mon 12 Oct, 8:55 am</td><td>Ngozi A.</td><td>Reconfirmed</td><td class="num">₦1,368.00</td><td class="num">No change</td><td>Our bank, 8:40 am · ₦6.00</td><td>Not needed</td></tr>
+              <tr><td class="nw">Sat 10 Oct, 9:30 am</td><td>Tolu K.</td><td>Reconfirmed</td><td class="num">₦1,368.00</td><td class="num">No change</td><td>Our bank, 9:15 am · ₦6.00</td><td>Not needed</td></tr>
+              <tr><td class="nw">Fri 9 Oct, 8:52 am</td><td>Ngozi A.</td><td>Reconfirmed</td><td class="num">₦1,368.00</td><td class="num">No change</td><td>Our bank, 8:40 am · ₦6.00</td><td>Not needed</td></tr>
+              <tr><td class="nw">Thu 8 Oct, 8:49 am</td><td>Ngozi A.</td><td>Reconfirmed</td><td class="num">₦1,368.00</td><td class="num">No change</td><td>Our bank, 8:35 am · ₦6.00</td><td>Not needed</td></tr>
+              <tr><td class="nw">Wed 7 Oct, 8:55 am</td><td>Ngozi A.</td><td>Reconfirmed</td><td class="num">₦1,368.00</td><td class="num">No change</td><td>Our bank, 8:40 am · ₦6.00</td><td>Not needed</td></tr>
+              <tr><td class="nw">Mon 5 Oct, 9:02 am</td><td>Tolu K.</td><td>Changed</td><td class="num">₦1,368.00</td><td class="num">+₦18.00 · +1.3%</td><td>Our bank, 8:50 am · ₦5.00</td><td>Not needed, under 3%</td></tr>
+              <tr><td class="nw">Wed 23 Sep, 9:10 am</td><td>Ngozi A.</td><td>Changed</td><td class="num">₦1,350.00</td><td class="num">+₦20.00 · +1.5%</td><td>Our bank, 9:00 am · ₦5.00</td><td>Not needed, under 3%</td></tr>
+            </tbody>
+          </table>
+          <p class="after" style="max-width:900px">Every line is a record nobody can edit. A correction is a new line. The same record appears in the audit trail with its chain check.</p>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Changing the rate<span>What Ngozi sees before she asks for approval: the new rate and how far it moves, the reference she must write down, what it would do to a few real prices, what it touches, and the checks. Above 3% it goes to a second person, and nothing changes until they approve it. A switch lets her pause new orders meanwhile.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Change the Platform Rate · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:16 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a on">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Platform Rate</span><span>›</span><b>Change the rate</b></div>
+          <h1>Change the Platform Rate</h1>
+          <p class="sub">A change above 3% needs a second person. Nothing changes on prices until they approve it.</p>
+          <div class="duo">
+            <section aria-labelledby="f1">
+              <h2 id="f1">The new rate</h2>
+              <div class="field"><label>New rate, naira to the dollar</label><div class="in num">1,414.50</div><span class="hint">Up ₦46.50, which is <b>3.4%</b>, from ₦1,368.00. Above 3%, so a second person approves it.</span></div>
+              <div class="row2">
+                <div class="field"><label>Where it comes from</label><div class="in">Our bank’s dollar rate<svg class="i"><use href="#i-check"/></svg></div></div>
+                <div class="field"><label>At what time</label><div class="in">10:45 am</div></div>
+              </div>
+              <div class="field"><label>Spread <small>the difference between the quote and what we can actually buy at</small></label><div class="in num">₦6.00</div></div>
+              <div class="field"><label>Why <small>kept on record. The second person reads it.</small></label><div class="in ta">The bank moved after the 10:30 am announcement. Their quote at 10:45 am.</div></div>
+              <div class="field"><label>While this waits</label><div style="display:flex;align-items:center;gap:12px"><span class="sw"><i></i>Pause new orders: Off</span><span class="hint" style="margin:0">Orders keep being made at ₦1,368.00. Turn it on and businesses see “Prices are being updated”.</span></div></div>
+            </section>
+            <section aria-labelledby="f2">
+              <h2 id="f2">What it will do</h2>
+              <table class="tbl">
+                <caption class="sr">What a business would pay, before and after</caption>
+                <thead><tr><th scope="col">Price preview, Base tier, VAT included</th><th scope="col" class="num">Now</th><th scope="col" class="num">After</th></tr></thead>
+                <tbody>
+                  <tr><td>4MP PoE dome camera</td><td class="num">₦68,400.00</td><td class="num">₦70,725.00</td></tr>
+                  <tr><td>8-channel PoE NVR with 2 TB drive</td><td class="num">₦142,500.00</td><td class="num">₦147,343.75</td></tr>
+                  <tr><td>Cat6 cable, 305 m box</td><td class="num">₦96,000.00</td><td class="num">₦99,263.16</td></tr>
+                </tbody>
+              </table>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">What it touches</h3>
+              <dl class="cmp">
+                <div><dt>Open carts</dt><dd>7</dd></div>
+                <div><dt>Projects with items</dt><dd>23</dd></div>
+                <div><dt>Orders past their price hold</dt><dd>3</dd></div>
+                <div><dt>Orders still inside their hold</dt><dd>Not changed</dd></div>
+              </dl>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">Checks</h3>
+              <ul class="checks">
+                <li><svg class="i"><use href="#i-check"/></svg><span>Under 10%<small>Not a probable typing error</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Reference and spread written<small>Our bank, 10:45 am, ₦6.00</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Rate last confirmed today, 8:55 am<small>Less than 48 hours old</small></span><b>Clear</b></li>
+              </ul>
+              <div class="actions"><span class="b big">Ask a second person to approve</span><span class="b o">Cancel</span></div>
+              <p class="after">On sending: it waits in Approvals for another person in Finance, or Admin. Prices do not change until they approve. They see this same preview. If they decline, you see their reason. Both names go on the record.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Credit note requests<span>The queue the PRD gives a target to: one business day. Three kinds of request arrive here: a business asking to use a note on an order, an Owner asking for a refund, and Operations asking Finance to credit a line it could not fill. Oldest first, a preview beside the list, and the full review one click away.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Credit note requests · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Thu 8 Oct · 10:20 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a on">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Credit note requests</h1>
+          <p class="sub">Oldest first. Target: 1 business day. Time outside Business Hours does not count.</p>
+          <div class="split">
+            <div class="list">
+              <div class="filters"><span class="fchip on">All · 3</span><span class="fchip">Use on an order · 1</span><span class="fchip">Refund · 1</span><span class="fchip">From Operations · 1</span><span class="fchip">Over target · 0</span></div>
+              <table class="q">
+                <caption class="sr">Credit note requests waiting, oldest first</caption>
+                <thead><tr><th scope="col">Age</th><th scope="col">Business</th><th scope="col">What is asked</th><th scope="col" class="num">Amount</th><th scope="col">From</th></tr></thead>
+                <tbody>
+                  <tr class="sel" aria-current="true"><td class="age"><strong>2 h 15 min</strong></td><td>Adeyemi Integrated Systems<small class="mono">INT-0044</small></td><td>Use credit note CN-0004 on the order</td><td class="num">₦38,250.00</td><td>Funmi, Manager</td></tr>
+                  <tr><td class="age"><strong>1 h 10 min</strong></td><td>Adeyemi Integrated Systems</td><td>Refund CN-0012 to a bank account</td><td class="num">₦45,000.00</td><td>Tunde, Owner<small>Fresh code used</small></td></tr>
+                  <tr><td class="age"><strong>32 min</strong></td><td>Bright Link Ltd<small class="mono">INT-0039</small></td><td>Credit a line Operations could not fill</td><td class="num">₦68,400.00</td><td>Bola A., Operations</td></tr>
+                </tbody>
+              </table>
+              <p class="after" style="max-width:640px">A request to use a note counts as paid from the moment it was made, so the clock above is a promise to the business. The target is 1 business day.</p>
+            </div>
+            <aside class="panel" aria-label="Preview of the selected request">
+              <h3>Use CN-0004 on INT-0044</h3>
+              <p class="sub">Asked by Funmi (Manager) at 8:05 am today</p>
+              <dl class="cmp">
+                <div><dt>Credit note</dt><dd>CN-0004 · ₦38,250.00</dd></div>
+                <div><dt>Why the note exists</dt><dd>Uncollected pick-up</dd></div>
+                <div><dt>Expires</dt><dd>21 Oct 2026</dd></div>
+                <div><dt>Amount due on the order</dt><dd>₦48,600.00</dd></div>
+                <div><dt>Still to pay by transfer after</dt><dd>₦10,350.00</dd></div>
+              </dl>
+              <p class="after">Everything checks out. Open it to apply.</p>
+              <div class="actions"><span class="b big">Review and apply</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. Reviewing a request to use a credit note<span>Left to right in the order she reads: what was asked, what the order needs, and what the note can give. Every check is written in words. The request is judged as it stood when it was made, even if she gets to it later, which the PRD requires.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Request · CN-0004 on INT-0044 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Thu 8 Oct · 10:20 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a on">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Credit note requests</span><span>›</span><b>CN-0004 on INT-0044</b><span>· 1 of 3</span><span class="b o">‹ Previous</span><span class="b o">Next ›</span></div>
+          <div class="trio">
+            <section aria-labelledby="c1">
+              <h2 id="c1">What was asked</h2>
+              <p style="font:700 15px/1.3 var(--sans)">Use ₦38,250.00 of CN-0004</p>
+              <p class="sub" style="margin:2px 0 8px">Asked by Funmi (Manager) · Thu 8 Oct, 8:05 am</p>
+              <dl class="cmp">
+                <div><dt>Business</dt><dd>Adeyemi Integrated Systems</dd></div>
+                <div><dt>Order</dt><dd>INT-0044 · Cabling and connectors</dd></div>
+                <div><dt>Counts as paid from</dt><dd>8:05 am today</dd></div>
+                <div><dt>Promised answer</dt><dd>Fri 9 Oct, 8:05 am</dd></div>
+              </dl>
+              <p class="sub" style="margin-top:10px">The business was told it counts as paid the moment it asked, and that we complete it within 1 business day.</p>
+            </section>
+            <section aria-labelledby="c2">
+              <h2 id="c2">The order, after you apply</h2>
+              <dl class="cmp">
+                <div><dt>Amount due</dt><dd>₦48,600.00</dd></div>
+                <div><dt>Confirmed so far</dt><dd>₦0.00</dd></div>
+                <div><dt>Credit note CN-0004</dt><dd>−₦38,250.00</dd></div>
+                <div class="tot"><dt>Still to pay by transfer</dt><dd>₦10,350.00</dd></div>
+              </dl>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Timing</h3>
+              <dl class="cmp">
+                <div><dt>Price held until</dt><dd>Thu 8 Oct, 1:32 pm</dd></div>
+                <div><dt>Order status</dt><dd><span class="chip">Awaiting payment</span></dd></div>
+              </dl>
+              <p class="sub" style="margin-top:10px">A credit note counts as a payment for the price hold and for expiry, so applying it does not restart either clock.</p>
+            </section>
+            <section aria-labelledby="c3">
+              <h2 id="c3">The credit note, and the checks</h2>
+              <dl class="cmp">
+                <div><dt>CN-0004</dt><dd>₦38,250.00 · balance ₦38,250.00</dd></div>
+                <div><dt>Reason</dt><dd>Uncollected pick-up, order <span class="nw">INT-0027</span></dd></div>
+                <div><dt>Issued</dt><dd>21 Oct 2025</dd></div>
+                <div><dt>Expires</dt><dd>21 Oct 2026</dd></div>
+              </dl>
+              <ul class="checks">
+                <li><svg class="i"><use href="#i-check"/></svg><span>Belongs to this business<small>Adeyemi Integrated Systems</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>The balance covers it<small>₦38,250.00 of ₦38,250.00</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Not expired on the day asked<small>Judged on 8 Oct, not today</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>The order is still waiting for payment<small>INT-0044</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Your own accounts<small>You did not create, approve or vouch for this business</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Second person<small>Not needed, under ₦100,000.00</small></span><b>Clear</b></li>
+              </ul>
+              <div class="actions"><span class="b big">Apply ₦38,250.00</span><span class="b danger">Decline with a reason…</span></div>
+              <p class="after">On applying: INT-0044 shows ₦10,350.00 still to pay. CN-0004 becomes Applied. Funmi is told on WhatsApp and email. A ledger line is written. If INT-0044 is cancelled or expires, the amount goes back to CN-0004 with its original expiry.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. Reviewing a refund, and recording that it was paid<span>The Owner asked with a fresh code, to an account that already paid us. Finance does the transfer in the bank’s own portal, since the platform does not move money, then records the bank reference here. Only then does the note become Refunded and the Owner is told.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Request · refund CN-0012 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Thu 8 Oct · 10:20 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a on">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Credit note requests</span><span>›</span><b>Refund CN-0012</b><span>· 2 of 3</span><span class="b o">‹ Previous</span><span class="b o">Next ›</span></div>
+          <div class="trio">
+            <section aria-labelledby="d1">
+              <h2 id="d1">What was asked</h2>
+              <p style="font:700 15px/1.3 var(--sans)">Refund ₦45,000.00, the whole balance of CN-0012</p>
+              <p class="sub" style="margin:2px 0 8px">Asked by Tunde (Owner) · Thu 8 Oct, 9:10 am</p>
+              <dl class="cmp">
+                <div><dt>Business</dt><dd>Adeyemi Integrated Systems</dd></div>
+                <div><dt>Fresh code used</dt><dd>9:09 am, to the Owner’s phone</dd></div>
+                <div><dt>Pay it to</dt><dd>GTBank ••••7712</dd></div>
+                <div><dt>Promised answer</dt><dd>Fri 9 Oct, 9:10 am</dd></div>
+              </dl>
+              <p class="sub" style="margin-top:10px">He picked the account from a list of accounts that have paid us. He could not type one.</p>
+            </section>
+            <section aria-labelledby="d2">
+              <h2 id="d2">The credit note</h2>
+              <dl class="cmp">
+                <div><dt>CN-0012</dt><dd>₦45,000.00 · balance ₦45,000.00</dd></div>
+                <div><dt>Reason</dt><dd>Overpayment, order INT-0041</dd></div>
+                <div><dt>Issued</dt><dd>14 Sep 2026</dd></div>
+                <div><dt>Expires</dt><dd>14 Sep 2027</dd></div>
+                <div><dt>Can be refunded</dt><dd><span class="chip good">Yes, an overpayment</span></dd></div>
+              </dl>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">The account</h3>
+              <dl class="cmp">
+                <div><dt>GTBank ••••7712</dt><dd>ADEYEMI INTEGRATED SYSTEMS</dd></div>
+                <div><dt>Recorded on</dt><dd>Confirmed payment, INT-0042, 7 Oct</dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="d3">
+              <h2 id="d3">Checks, then the payout</h2>
+              <ul class="checks">
+                <li><svg class="i"><use href="#i-check"/></svg><span>The reason allows a refund<small>Overpayment</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>The account has paid us<small>On a confirmed payment of this business</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Fresh code<small>Entered 9:09 am</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>No hold, no blocklist<small>The business and the account are both clear</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Your own accounts<small>You did not create, approve or vouch for this business</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Second person<small>Not needed, under ₦100,000.00</small></span><b>Clear</b></li>
+              </ul>
+              <ol class="steps" style="margin-top:12px"><li class="on">1 Send it</li><li>2 Record it</li></ol>
+              <p style="font-size:13.5px">Send <b>₦45,000.00</b> to GTBank ••••7712 from the platform account, in the bank’s own portal. Then come back and record it.</p>
+              <div class="field"><label>Our bank reference for the transfer</label><div class="in" style="color:var(--ink2)">Not entered yet</div></div>
+              <div class="actions"><span class="b off">Mark as refunded</span><span class="b danger">Decline with a reason…</span></div>
+              <p class="after need">Mark as refunded stays off until the bank reference is entered. The business reads a decline reason, so write it for them.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>6. Credit notes and refunds, and issuing one<span>Every credit note with its age, so none expires unnoticed, and the form for issuing one. Here Bola, in Operations, could not find a camera on the shelf, so Finance issues the credit for that line. The reason decides whether it can ever be refunded, and the VAT is worked out for the document.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Credit notes and refunds · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Thu 8 Oct · 10:20 am · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">3</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a on">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Credit notes and refunds</h1>
+          <p class="sub">Every credit note, newest first. A credit note lasts 12 months. Owners are reminded 60 and 14 days before it expires.</p>
+          <div class="tiles">
+            <div class="tile"><h3>Open credit notes</h3><p class="v">31</p><p>₦4,236,750.00 left to use</p></div>
+            <div class="tile"><h3>Expire within 60 days</h3><p class="v">5</p><p>₦512,250.00</p></div>
+            <div class="tile need"><h3>Expire within 14 days</h3><p class="v">1</p><p>₦38,250.00 · CN-0004</p></div>
+            <div class="tile"><h3>Expired with a balance</h3><p class="v">2</p><p>₦96,000.00. Can be refunded on request.</p></div>
+          </div>
+          <div class="split" style="grid-template-columns:minmax(0,1fr) 340px">
+            <div class="list">
+              <div class="filters"><span class="fchip on">All</span><span class="fchip">Drafts · 2</span><span class="fchip">Expiring soon · 6</span><span class="fchip">Refund requests · 1</span><span class="fchip">Expired with a balance · 2</span></div>
+              <table class="q">
+                <caption class="sr">Credit notes</caption>
+                <thead><tr><th scope="col">Number</th><th scope="col">Business and reason</th><th scope="col">Expires</th><th scope="col" class="num">Balance</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                  <tr class="draft"><td class="mono">Draft</td><td>Bright Link Ltd<small>Cancelled order, INT-0034 · credit only</small></td><td class="nw">Not issued</td><td class="num">₦310,500.00</td><td><span class="chip warn">Waiting for a second person</span></td></tr>
+                  <tr class="draft"><td class="mono">Draft</td><td>Sade AV Systems<small>Overpayment, INT-0040 · can be refunded</small></td><td class="nw">Not issued</td><td class="num">₦2,950.00</td><td><span class="chip warn">Ready to issue</span></td></tr>
+                  <tr><td class="mono">CN-0012</td><td>Adeyemi Integrated Systems<small>Overpayment, INT-0041 · can be refunded</small></td><td class="nw">14 Sep 2027</td><td class="num">₦45,000.00</td><td><span class="chip warn">Refund request</span></td></tr>
+                  <tr><td class="mono">CN-0010</td><td>Bright Link Ltd<small>Unfulfillable line, INT-0030 · can be refunded</small></td><td class="nw">12 Aug 2027</td><td class="num">₦68,400.00</td><td><span class="chip">Issued</span></td></tr>
+                  <tr><td class="mono">CN-0009</td><td>Adeyemi Integrated Systems<small>Cancelled order, INT-0033 · credit only</small></td><td class="nw">2 Aug 2027</td><td class="num">₦120,000.00</td><td><span class="chip">Partly applied</span></td></tr>
+                  <tr><td class="mono">CN-0006</td><td>Sade AV Systems<small>Cancelled order, INT-0021 · credit only</small></td><td class="nw">3 Dec 2026</td><td class="num">₦52,000.00</td><td><span class="chip warn">Expires in 56 days</span></td></tr>
+                  <tr><td class="mono">CN-0004</td><td>Adeyemi Integrated Systems<small>Uncollected pick-up, INT-0027 · credit only</small></td><td class="nw">21 Oct 2026</td><td class="num">₦38,250.00</td><td><span class="chip warn">Use request waiting</span></td></tr>
+                  <tr><td class="mono">CN-0003</td><td>Okoro Homes Ltd<small>Non-delivery, INT-0012 · can be refunded</small></td><td class="nw">14 Apr 2026</td><td class="num">₦96,000.00</td><td><span class="chip bad">Expired, balance left</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <aside class="panel" aria-label="Issue a credit note">
+              <h3>Issue a credit note</h3>
+              <p class="sub">From Bola A.’s request at 9:48 am: a line she could not fill.</p>
+              <div class="field" style="margin-top:0"><label>Business</label><div class="in">Bright Link Ltd</div></div>
+              <div class="field"><label>Order line</label><div class="in">INT-0039 · 4MP PoE dome camera × 1<svg class="i"><use href="#i-check"/></svg></div></div>
+              <div class="field"><label>Reason</label><div class="in">An unfulfillable order line</div><span class="hint">The reasons are the PRD’s list of eight. This one can be refunded.</span></div>
+              <dl class="cmp" style="margin-top:12px">
+                <div><dt>Goods</dt><dd>₦63,627.91</dd></div>
+                <div><dt>VAT, 7.5%</dt><dd>₦4,772.09</dd></div>
+                <div class="tot"><dt>Credit note</dt><dd>₦68,400.00</dd></div>
+              </dl>
+              <ul class="checks" style="margin-top:6px">
+                <li><svg class="i"><use href="#i-check"/></svg><span>Your own accounts<small>You did not create, approve or vouch for this business</small></span><b>Clear</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Second person<small>Not needed, under ₦100,000.00</small></span><b>Clear</b></li>
+              </ul>
+              <div class="actions"><span class="b big">Issue credit note</span><span class="b o">Save as draft</span></div>
+              <p class="after">It is valid for 12 months and the document is made at once. Bright Link is told, and the reminders at 60 and 14 days are set.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is refused. Plain cards are information. Each says what happened and what to do, in the console’s short, imperative voice.</p>
+
+    <h3 class="tg">The Platform Rate</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Waiting for a second person</p><h4>Your change is waiting for another person</h4><p>₦1,368.00 to ₦1,414.50, asked at 11:16 am. Prices have not changed. You can withdraw it until it is approved.</p><span class="b o">Withdraw the request</span></div>
+      <div class="sc err"><p class="lab">Above 10%</p><h4>Refused: ₦1,368.00 to ₦1,540.00 is 12.6%</h4><p>That is probably a typing error. Only Admin can override it, with a reason. Check the number first.</p><span class="b o">Ask Admin to override…</span></div>
+      <div class="sc need"><p class="lab">New orders paused</p><h4>New orders have been paused since 11:20 am</h4><p>Businesses see “Prices are being updated”. Orders already made keep their price. Resume when the new rate is in force.</p><span class="b">Resume new orders</span></div>
+      <div class="sc need"><p class="lab">Closed on Sunday</p><h4>New orders will stop on Monday at 9:30 am</h4><p>The rate was reconfirmed on Saturday at 9:30 am, and nobody works on Sunday. The team starts at 8:00 am. Reconfirm early on Monday.</p></div>
+      <div class="sc err"><p class="lab">Rate is 46 hours old</p><h4>The Platform Rate is 46 hours old</h4><p>At 48 hours, new orders stop until it is reconfirmed. Shown on Today, as drawn in Step 13.</p><span class="b">Reconfirm the rate</span></div>
+      <div class="sc"><p class="lab">Your own change</p><h4>You cannot approve this</h4><p>You asked for it. Another person in Finance, or Admin, has to approve it. Drawn in Step 16.</p></div>
+    </div>
+
+    <h3 class="tg">Credit notes and refunds</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Judged on the day asked</p><h4>CN-0004 expired on 21 Oct. The request was made on 20 Oct.</h4><p>It is valid. A request is judged at the time it was made, even when Finance completes it later. The check says so in words.</p></div>
+      <div class="sc err"><p class="lab">The order has ended</p><h4>INT-0044 expired before you got to it</h4><p>You cannot apply it. The ₦38,250.00 stays on CN-0004 with its original expiry. Decline with that reason and the business is told.</p><span class="b o">Decline with this reason</span></div>
+      <div class="sc err"><p class="lab">Not enough balance</p><h4>The request is larger than the balance</h4><p>₦50,000.00 asked, ₦38,250.00 left. The app does not allow this, so it should not arrive. If it does, decline it and say why.</p></div>
+      <div class="sc err"><p class="lab">Refund refused: credit only</p><h4>A cancelled order cannot be refunded</h4><p>Credit notes for cancellations, change-of-mind returns and uncollected pick-ups are credit only. The Owner’s app does not offer a refund for them.</p></div>
+      <div class="sc err"><p class="lab">Refund refused: on hold</p><h4>This business is on hold</h4><p>No refunds are paid while a hold lasts. Payments are still checked. The request stays here until the hold is lifted.</p></div>
+      <div class="sc need"><p class="lab">Refund above ₦100,000.00</p><h4>A second person approves this one</h4><p>Above the set amount, a refund or a credit note needs two people. It goes to Approvals and you see “Waiting for a second person”.</p></div>
+      <div class="sc err"><p class="lab">Not your call</p><h4>You created, approved or vouched for this business</h4><p>You cannot issue or pay a credit note for it. Another person in Finance or Admin can. Drawn in Step 13.</p></div>
+      <div class="sc"><p class="lab">After issuing</p><h4>The document is made</h4><p>CN-0013 with a PDF that names the invoice it adjusts. The business can open it from its credit note. A ledger line is written, and a correction is always a new line.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the Platform Rate page and its change form, the request queue and the three kinds of review, and the list with the issuing form.</p>
+</main>
+</body>
+</html>

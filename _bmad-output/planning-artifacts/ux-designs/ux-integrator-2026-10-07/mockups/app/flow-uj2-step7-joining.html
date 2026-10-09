@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 7, joining and getting approved (proposal)</title>
+<style>
+/*
+  STEP 7 WIREFRAMES: Hammed joins (UJ-2): sign up, verify, confirm identity, vouch code, approved.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Terms key points are placeholder wording pending counsel review. Facts: PRD FR-1 to FR-8, FR-69, FR-71, FR-78.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:820px;margin:0 0 26px}
+.flow{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:100px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 17px/1.2 var(--serif)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.hero{padding:34px 20px 20px;background:var(--green);color:#fff}
+.hero .brand{font-size:34px}
+.hero p{margin-top:10px;font-size:15px;color:#D4E5DA}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 4px}
+.head h2{font:700 22px/1.2 var(--serif)}
+.head p{margin-top:5px;font-size:14px;color:var(--ink2)}
+.field{margin:14px 16px 0}
+.field label{display:block;margin-bottom:5px;font:600 14px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px}
+.in.ph{color:var(--ink2)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px 0}
+.pair .field{margin:0}
+.help{margin:6px 16px 0;font-size:13px;color:var(--ink2)}
+.tick{display:flex;gap:12px;align-items:flex-start;margin:16px 16px 0;min-height:48px;font:14.5px/1.4 var(--sans)}
+.tick .box{flex:none;width:26px;height:26px;border:2px solid var(--green);background:var(--green);color:#fff;display:grid;place-items:center}
+.tick u{color:var(--green);text-underline-offset:3px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:14px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.link{display:block;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.codebox{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:14px 16px 0}
+.codebox span{display:grid;place-items:center;height:56px;background:var(--sheet);border:1px solid var(--control);font:700 24px var(--mono)}
+.later{margin:22px 16px 0;padding:12px;background:var(--aged);border-left:4px solid var(--brass)}
+.later .lab{font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.later h4{margin-top:4px;font:700 15px/1.3 var(--sans)}
+.later p{margin-top:4px;font-size:13.5px}
+.later .btn{margin:10px 0 0;width:100%;min-height:48px;font-size:14px}
+.steps{margin:14px 16px 0}
+.steps li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule)}
+.steps .n{display:grid;place-items:center;width:30px;height:30px;border:2px solid var(--control);font:700 14px var(--sans)}
+.steps .done .n{background:var(--green);border-color:var(--green);color:#fff}
+.steps .now .n{border-color:var(--green);color:var(--green)}
+.steps b{display:block;font:600 15px/1.3 var(--sans)}
+.steps small{display:block;font-size:13px;color:var(--ink2)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;background:var(--aged);border-bottom:1px solid var(--brass);border-left:4px solid var(--brass);font-size:13.5px}
+.banner .i{width:20px;height:20px;margin-top:1px;color:var(--brass)}
+.banner u{color:var(--green);text-underline-offset:3px}
+.res{margin:6px 16px 0}
+.res li{padding:12px 0;border-top:1px solid var(--rule)}
+.res .n{font:600 15px/1.3 var(--sans)}
+.res .m{font-size:12.5px;color:var(--ink2)}
+.res .s{margin-top:2px;font:600 13px/1.3 var(--sans);color:var(--ok)}
+.res .s.bo{color:var(--warn)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;background:var(--sheet);border-top:2px solid var(--ink)}
+.tabbar.t2{grid-template-columns:repeat(2,1fr)}
+.tabbar.t5{grid-template-columns:repeat(5,1fr)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.priv{display:flex;gap:10px;align-items:flex-start;margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.priv .i{width:18px;height:18px;margin-top:1px;color:var(--green)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.kp{margin:8px 16px 0;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);font-size:13.5px}
+.kp li{display:flex;gap:8px;padding:4px 0}
+.kp li::before{content:"";flex:none;width:6px;height:6px;margin-top:7px;background:var(--green)}
+.kp li.fine{display:block;margin-top:6px;font-size:12.5px;color:var(--ink2)}
+.kp li.fine::before{display:none}
+.kp li.fine u{color:var(--green);text-underline-offset:3px}
+.okmark{display:grid;place-items:center;width:64px;height:64px;margin:26px auto 0;background:var(--green);color:#fff}
+.okmark .i{width:34px;height:34px}
+.welcome{text-align:center}
+.welcome h2{margin-top:14px;font:700 24px/1.2 var(--serif)}
+.welcome p{margin:8px 20px 0;font-size:14.5px;color:var(--ink2)}
+.lst{margin:18px 16px 0}
+.lst li{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:56px;border-top:1px solid var(--rule);font:600 15px var(--sans);color:var(--green)}
+.states{margin-top:38px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub{max-width:820px;margin:0 0 6px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .lab{margin-top:0}
+.sc .cta{display:inline-block;margin-top:8px;padding:9px 14px;border:1px solid var(--green);background:var(--sheet);color:var(--green);font:600 14px var(--sans)}
+.notes{max-width:820px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 7 of the walk-through</p>
+  <h1>Joining: sign up, confirm who you are, and get approved</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. This is Hammed's journey (UJ-2) on a phone: seven screens, then a sheet of the things that can go wrong along the way. Until his business is approved he sees the catalogue without prices and one "Get approved" checklist. He never sees the words "Level 1, 2 or 3": he sees four steps. Wording is placeholder where it is not quoted from the PRD, and the Terms summary is placeholder pending counsel. Nothing here is decided until you confirm it.</p>
+
+  <div class="flow">
+    <figure class="unit">
+      <figcaption>1. Sign up<span>One field for email or phone. The Terms and Privacy Notice are accepted here, before anything is stored. Logging in later uses the same field and a code, or a passkey where the phone supports it.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="hero"><span class="brand">integrator</span><p>Wholesale equipment and project tools for systems integrators in Nigeria.</p></div>
+        <div class="head"><h2>Create your account</h2><p>You can browse the catalogue as soon as you verify. Prices are shown once your business is approved.</p></div>
+        <div class="field"><label>Email or phone number</label><div class="in">0803 555 0142</div></div>
+        <p class="help">We will send you a 6-digit code.</p>
+        <div class="tick"><span class="box"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span>I accept the <u>Terms</u> and the <u>Privacy Notice</u>.</span></div>
+        <button class="btn" type="button">Send code</button>
+        <span class="link">I already have an account · Log in</span>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Enter the code<span>One field underneath, so pasting and auto-fill work. Then one question about WhatsApp, because messages need his agreement for each number.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Back</button><span class="title">Verify</span><span class="spacer"></span></div>
+        <div class="head"><h2>Enter the code</h2><p>We sent a 6-digit code to 0803 ••• 0142. It works for 10 minutes.</p></div>
+        <div class="codebox" role="group" aria-label="6-digit code"><span>4</span><span>7</span><span>1</span><span>9</span><span>0</span><span>2</span></div>
+        <button class="btn" type="button">Verify</button>
+        <span class="link">Resend the code in 0:42</span>
+        <div class="later"><p class="lab">Next screen</p><h4>Get updates on WhatsApp?</h4><p>We message you about payments, deliveries and approvals. You can change this any time. You will still see every update in the app.</p>
+          <button class="btn" type="button">Yes, use 0803 555 0142</button><button class="btn outline" type="button">No thanks</button></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Get approved: the one place until approval<span>He can browse the catalogue. Everything else waits on four steps, shown plainly.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Your account</p><h2>Get your business approved</h2><p>You can browse the catalogue now. Prices and ordering unlock when your business is approved.</p></div>
+        <ol class="steps">
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Verify your contact</b><small>0803 555 0142</small></span><span class="chip">Done</span></li>
+          <li class="now"><span class="n">2</span><span><b>Confirm who you are</b><small>Your name, date of birth and National Identification Number (NIN)</small></span><span class="chip warn">Next</span></li>
+          <li><span class="n">3</span><span><b>Enter a vouch code</b><small>From an established integrator you know</small></span><span class="chip">After step 2</span></li>
+          <li><span class="n">4</span><span><b>We review and approve</b><small>Within 1 business day</small></span><span class="chip">After step 3</span></li>
+        </ol>
+        <button class="btn" type="button">Confirm who you are</button>
+        <nav class="tabbar t2" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab on"><svg class="i"><use href="#ic-shield"/></svg>Get approved</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. The catalogue before approval<span>Same catalogue, no prices, and no way to sort or filter by price. One line at the top says why, and where to go.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><span class="spacer"></span></div>
+        <div class="banner"><svg class="i"><use href="#ic-info"/></svg><span>Prices are shown once your business is approved. <u>See what is left to do</u></span></div>
+        <div class="in ph" style="margin:14px 16px 0;font-size:15px">Search name, brand, model or SKU</div>
+        <ul class="res">
+          <li><div class="n">4MP PoE dome camera</div><div class="m">Northgate · DM4P · CAM-0412</div><div class="s">In stock</div></li>
+          <li><div class="n">8-channel PoE NVR with 2 TB drive</div><div class="m">Northgate · NV8P2 · NVR-0208</div><div class="s">In stock</div></li>
+          <li><div class="n">8-port PoE switch</div><div class="m">Meridian · SW8P · SWT-0108</div><div class="s bo">Back-order · about 3 weeks</div></li>
+          <li><div class="n">Cat6 cable, 305 m box</div><div class="m">Kable Co · C6-305 · CBL-0305</div><div class="s">In stock</div></li>
+        </ul>
+        <nav class="tabbar t2" aria-label="Main"><span class="tab on"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-shield"/></svg>Get approved</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Confirm who you are<span>Four required details, one optional, and a plain promise about the NIN.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Back</button><span class="title">Confirm who you are</span><span class="spacer"></span></div>
+        <div class="field" style="margin-top:12px"><label>Full name <small>as on your NIN slip or card</small></label><div class="in">Hammed Bello</div></div>
+        <div class="pair"><div class="field"><label>Date of birth</label><div class="in">14 Mar 1988</div></div><div class="field"><label>NIN <small>11 digits</small></label><div class="in" style="font-family:var(--mono)">••••••• 4821</div></div></div>
+        <div class="field"><label>Home address</label><div class="in">8 Allen Avenue, Ikeja, Lagos</div></div>
+        <div class="field"><label>Business address <small>optional</small></label><div class="in ph">Add</div></div>
+        <p class="priv"><svg class="i"><use href="#ic-shield"/></svg><span>We use your NIN only to confirm who you are. Only our verification team can see it, and every look is recorded.</span></p>
+        <button class="btn" type="button">Check my NIN</button>
+        <p class="help" style="text-align:center">Takes a few seconds.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. Ask for approval with a vouch code<span>A code from someone he knows, his trade name, and the key points of the Terms in plain words.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Back</button><span class="title">Ask for approval</span><span class="spacer"></span></div>
+        <div class="field" style="margin-top:12px"><label>Vouch code</label><div class="in" style="font:700 19px var(--mono);letter-spacing:.06em">7KQ4-M2XD-9PTA</div></div>
+        <p class="help">Ask an established integrator you know to make a code for you. Give them your full name and the phone or email you signed up with. It works only for you, for 48 hours.</p>
+        <div class="field"><label>Trade name <small>the name you trade under</small></label><div class="in">Bello Smart Systems</div></div>
+        <p class="help">It appears on the proposals you send your clients.</p>
+        <h4 class="sec">The Terms: key points for buying</h4>
+        <ul class="kp"><li>Report transit damage or a wrong item within 5 days. A dead-on-arrival unit within 30 days.</li><li>Change of mind: within 7 days, sealed items only, with a 15% restocking fee.</li><li>Back-order items cannot be cancelled once we have ordered them (unless more than 7 days late), and cannot be returned for a change of mind.</li><li>Credit notes can be used for 12 months.</li><li>Warranty follows the maker's terms. It does not cover misuse, power surges or installation labour.</li><li class="fine">Placeholder wording, to be reviewed by counsel. <u>Read the full Terms</u></li></ul>
+        <div class="tick"><span class="box"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span>I accept the Terms.</span></div>
+        <button class="btn" type="button">Ask for approval</button>
+        <span class="link">No code? Call or WhatsApp us</span>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>7. Approved<span>Prices and everything else appear. Three obvious next steps, not a tour.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><span class="spacer"></span></div>
+        <div class="welcome"><span class="okmark"><svg class="i"><use href="#ic-check"/></svg></span><h2>Your business is approved</h2><p>Bello Smart Systems can now see prices, make projects and place orders.</p></div>
+        <ul class="lst"><li><span>Add your team</span><svg class="i"><use href="#ic-chev"/></svg></li><li><span>Start your first project</span><svg class="i"><use href="#ic-chev"/></svg></li><li><span>Browse the catalogue with prices</span><svg class="i"><use href="#ic-chev"/></svg></li></ul>
+        <nav class="tabbar t5" aria-label="Main"><span class="tab on"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 id="ss">When something goes wrong on the way</h2>
+    <p class="sub">The messages for the checks that can fail, all from the PRD's rules. Brass cards ask him to do something. Red cards mean it did not work. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Signing up</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Code: wrong</p><h4>That code is not right</h4><p>Check the 6 digits and try again, or ask for a new code.</p></div>
+      <div class="sc err"><p class="lab">Code: too many tries</p><h4>Too many wrong codes</h4><p>Wait a few minutes, then ask for a new code. If it keeps happening, call or WhatsApp us.</p></div>
+      <div class="sc"><p class="lab">Already registered</p><h4>This number already has an account</h4><p>Log in instead. We will send you a code.</p><span class="cta">Log in</span></div>
+      <div class="sc err"><p class="lab">Sign-up refused</p><h4>We could not create an account with these details</h4><p>If you think this is a mistake, call or WhatsApp us.</p></div>
+    </div>
+
+    <h3 class="grp">Confirming who you are</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Identity: confirmed</p><h4>Identity confirmed</h4><p>Next, ask for approval with a vouch code.</p></div>
+      <div class="sc"><p class="lab">Identity: sent to our team</p><h4>Our team will check this</h4><p>We could not confirm it automatically. We will tell you within 1 business day. You do not need to do anything. This also applies to every later check on this account.</p></div>
+      <div class="sc"><p class="lab">Identity: service busy</p><h4>We could not reach the NIN service</h4><p>We will keep trying for up to 24 hours and tell you the result. You can close the app. If it still fails, our team will check it by hand.</p></div>
+      <div class="sc need"><p class="lab">Identity: team could not confirm</p><h4>We could not confirm your identity</h4><p>Reason from our team: the date of birth does not match. Check your details and send them again. You have 2 more tries.</p><span class="cta">Edit my details</span></div>
+      <div class="sc err"><p class="lab">Identity: no tries left</p><h4>We cannot take more tries here</h4><p>Call or WhatsApp us and we will help you.</p></div>
+    </div>
+
+    <h3 class="grp">Asking for approval</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Vouch code: expired</p><h4>This code has expired</h4><p>Codes work for 48 hours. Ask the person who gave it to you for a new one.</p></div>
+      <div class="sc err"><p class="lab">Vouch code: already used</p><h4>This code has already been used</h4><p>Each code works once. Ask for a new one.</p></div>
+      <div class="sc err"><p class="lab">Vouch code: not for you</p><h4>This code was made for someone else</h4><p>Ask for a code made for you, with your full name and the contact you signed up with.</p></div>
+      <div class="sc err"><p class="lab">Vouch code: locked</p><h4>Too many wrong tries</h4><p>This code is locked. Call or WhatsApp us and we will help.</p></div>
+      <div class="sc"><p class="lab">Waiting for approval</p><h4>We have your request</h4><p>We review requests within 1 business day. We work 8 am to 6 pm, Monday to Saturday. We will tell you on WhatsApp if you agreed to it, and in the app.</p></div>
+      <div class="sc err"><p class="lab">Not approved</p><h4>We could not approve your request</h4><p>Reason from our team. Call or WhatsApp us to talk it through.</p></div>
+      <div class="sc"><p class="lab">Account set up by our team</p><h4>Three steps, no code</h4><p>Our team created this account for you. Verify your contact, confirm who you are, then give your trade name and accept the Terms. There is no vouch code or review.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: sign-up, the two-tab state before approval, the identity step, and the approval request.</p>
+</main>
+</body>
+</html>

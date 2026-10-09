@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 4, creating the Order (proposal)</title>
+<style>
+/*
+  STEP 4 WIREFRAMES: creating the Order in three steps (Review, Delivery, Confirm) plus the changed-price sheet.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, caution #6E4400, caution tint #F6EACB, error #8A1C14, control #7A7258,
+  hairline #D9CFB5, bezel #2B281F, scrim rgba(26,24,18,.62).
+  Sample money: cost at Proposal ₦702,168.00; exchange rate 1,330 to 1,368 adds ₦20,061.94; equipment today
+  ₦722,229.94; delivery ₦9,500.00; Amount Due ₦731,729.94. At rate 1,375: ₦725,925.56 and ₦735,425.56.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:800px;margin:0 0 26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:150px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px;background:var(--green);color:#fff}
+.title{font:700 17px/1.2 var(--serif)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 16px 0}
+.steps li{padding-top:5px;border-top:4px solid var(--rule);font:600 12.5px/1.2 var(--sans);color:var(--ink2)}
+.steps li.on{border-top-color:var(--green);color:var(--ink)}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:14px 16px 4px}
+.head h3{font:700 19px/1.2 var(--serif)}
+.meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.chip{display:inline-block;margin-top:6px;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.panel{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass)}
+.panel dl div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.panel dd{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.panel .tot{border-bottom:0;border-top:3px double var(--ink);margin-top:3px;padding-top:8px;font-weight:700}
+.panel .tot dd{font-size:17px}
+.sub{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.say{margin:10px 16px 0;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.say b{font-variant-numeric:tabular-nums}
+.bo{margin:12px 16px 0;padding:11px 12px;background:var(--warn-tint);border:1px solid var(--brass)}
+.bo h4{font:700 15px/1.3 var(--sans)}
+.bo .tagline{margin-top:3px;font:600 13px var(--sans);color:var(--warn)}
+.bo ul{margin-top:8px}
+.bo li{display:flex;gap:8px;padding:5px 0;font-size:13.5px}
+.bo li::before{content:"";flex:none;width:6px;height:6px;margin-top:7px;background:var(--warn)}
+.tick{display:flex;gap:12px;align-items:flex-start;margin:12px 16px 0;min-height:48px;font:600 14.5px/1.35 var(--sans)}
+.tick .box{flex:none;width:26px;height:26px;margin-top:0;border:2px solid var(--control);background:var(--sheet)}
+.tick .box.on{border-color:var(--green);background:var(--green);color:#fff;display:grid;place-items:center}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:12px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:var(--sheet);border-top:2px solid var(--ink)}
+.bar .btn{width:100%;margin:0}
+.bar p{margin-top:6px;font-size:12.5px;color:var(--ink2);text-align:center}
+.bar .tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font:700 13px var(--sans)}
+.bar .tot b{font:700 20px var(--sans);font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:14px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:48px;background:var(--sheet);color:var(--green);font:600 15px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.field{margin:10px 16px 0}
+.field label{display:block;margin-bottom:4px;font:600 13.5px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0}
+.two .field{margin:0}
+.zone{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--green);font-size:14px}
+.zone b{font-variant-numeric:tabular-nums}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:12px;margin:10px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.opt.on{border:2px solid var(--green)}
+.opt h5{font:700 14.5px/1.3 var(--sans)}
+.opt p{margin-top:3px;font-size:13px;color:var(--ink2)}
+.radio{width:24px;height:24px;border:2px solid var(--control);border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.radio.on{border-color:var(--green)}
+.radio.on::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--green)}
+.hold{display:flex;gap:10px;align-items:flex-start;margin:12px 16px 0;padding:11px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.hold .i{width:20px;height:20px;margin-top:1px;color:var(--brass)}
+.hold b{display:block;font-size:14px}
+.fine{margin:10px 16px 0;font-size:13px;color:var(--ink2)}
+.fine u{color:var(--green);text-underline-offset:3px}
+.scrim{position:absolute;inset:0;background:rgba(26,24,18,.62)}
+.sheet{position:absolute;left:0;right:0;bottom:0;padding:16px 16px 18px;background:var(--paper);border-top:3px solid var(--green);border-radius:14px 14px 0 0}
+.sheet h3{font:700 19px/1.2 var(--serif)}
+.sheet p{margin-top:6px;font-size:14px}
+.sheet dl{margin-top:10px}
+.sheet dl div{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--rule);font-size:14px}
+.sheet dd{font-weight:700;font-variant-numeric:tabular-nums}
+.store{margin:12px 16px 0;padding:12px;background:var(--sheet);border:2px solid var(--green);display:grid;grid-template-columns:auto 1fr;gap:12px}
+.card{width:380px;padding:16px;background:var(--paper);border:1px solid var(--control);border-top:4px solid var(--green)}
+.card h4{font:700 16px/1.2 var(--serif);margin-bottom:6px}
+.card .store{margin:10px 0 0}
+.notes{max-width:800px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 4 of the Tunde walk-through</p>
+  <h1>Creating the Order: Review, Delivery, Confirm</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Three short steps on a phone, then the sheet that appears if prices move while Tunde is reviewing. The sample shows the harder case: the naira moved after the Proposal, so his cost went up. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="row">
+    <figure class="unit">
+      <figcaption>1. Review: what changed since the Proposal, and the back-order item<span>Shown when the Project has a Proposal. The Proposal to the client does not change on its own.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Project</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li class="on">1 Review</li><li>2 Delivery</li><li>3 Confirm</li></ol>
+        <div class="head"><p class="eyebrow">The whole Project</p><h3>Lekki Phase 1 duplex: CCTV and access control</h3><p class="meta">2 rooms · 9 items</p></div>
+        <h4 class="sec">Compared with your Proposal</h4>
+        <div class="panel"><dl>
+          <div><dt>Your cost when you made the Proposal</dt><dd>₦702,168.00</dd></div>
+          <div><dt>Exchange rate<span class="sub">₦1,330 then, ₦1,368 now</span></dt><dd>+₦20,061.94</dd></div>
+          <div><dt>Loyalty tier, items and stock</dt><dd>No change</dd></div>
+          <div class="tot"><dt>Your cost today</dt><dd>₦722,229.94</dd></div></dl></div>
+        <p class="say">Your cost is <b>₦20,061.94 higher</b>. Your Proposal to Mrs Okonkwo does not change. At today's cost your margin on this job is <b>16.67 %</b>, not 20 %.</p>
+        <h4 class="sec">One item is on back-order</h4>
+        <div class="bo"><h4>8-port PoE switch</h4><p class="tagline">Ships in about 3 weeks · 8% off</p>
+          <ul><li>We order it from the supplier once you have paid. After that you cannot cancel it, unless it is more than 7 days late.</li><li>You cannot return it if you change your mind.</li></ul></div>
+        <div class="tick"><span class="box"></span><span>I understand, and I want to order this item</span></div>
+        <div class="bar"><button class="btn" type="button" disabled>Continue</button><p>Tick the box above to continue.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Delivery or pick-up<span>Address in clear parts so the zone and price appear straight away. One delivery, or send what is ready first.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Review</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li>1 Review</li><li class="on">2 Delivery</li><li>3 Confirm</li></ol>
+        <div class="seg" role="tablist"><span class="on">Delivery</span><span>Pick-up</span></div>
+        <div class="two"><div class="field"><label>State</label><div class="in">Lagos<svg class="i"><use href="#ic-chev"/></svg></div></div><div class="field"><label>Local government</label><div class="in">Eti-Osa<svg class="i"><use href="#ic-chev"/></svg></div></div></div>
+        <div class="field"><label>Area</label><div class="in">Lekki Phase 1</div></div>
+        <div class="field"><label>Landmark <small>optional</small></label><div class="in">Near the Chevron roundabout</div></div>
+        <div class="two"><div class="field"><label>Receiver</label><div class="in">Mrs Okonkwo</div></div><div class="field"><label>Receiver phone</label><div class="in">0803 555 0142</div></div></div>
+        <p class="zone">Delivery zone: <b>Lagos Island and Lekki</b><br><b>₦9,500.00</b> for each delivery · usually 2 to 3 days</p>
+        <div class="opt on"><span class="radio on"></span><div><h5>One delivery, when everything is ready</h5><p>The switch takes about 3 weeks, so the whole order waits. After 14 days we offer to send what is ready.</p></div></div>
+        <div class="opt"><span class="radio"></span><div><h5>Send what is ready first</h5><p>2 deliveries · ₦19,000.00 in total</p></div></div>
+        <div class="bar"><button class="btn" type="button">Continue</button></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Confirm: the Amount Due and how the price is held<span>The last screen before the Order exists. The payment comes next.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Delivery</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li>1 Review</li><li>2 Delivery</li><li class="on">3 Confirm</li></ol>
+        <div class="head"><p class="eyebrow">Amount due</p><h3>Lekki Phase 1 duplex</h3><p class="meta">Delivery to Lekki Phase 1 · one delivery</p></div>
+        <div class="panel"><dl>
+          <div><dt>Equipment</dt><dd>₦722,229.94</dd></div>
+          <div><dt>Delivery, 1 delivery</dt><dd>₦9,500.00</dd></div>
+          <div class="tot"><dt>Amount due<span class="sub">VAT included</span></dt><dd>₦731,729.94</dd></div></dl></div>
+        <div class="hold"><svg class="i"><use href="#ic-clock"/></svg><span><b>Keep this price by paying within 24 hours</b>Upload your payment receipt within 24 hours of creating the order and we hold this price. Later than that, the price may change with the exchange rate. With no payment after 48 hours the order is cancelled.</span></div>
+        <p class="fine">By creating the order you accept the current <u>Terms</u>.</p>
+        <div class="bar"><button class="btn" type="button">Create order</button><p>You pay by bank transfer on the next screen.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. If the price moves while he is reviewing<span>The order is made at the price he confirmed. If that price is no longer right, he sees the new one first.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Delivery</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li>1 Review</li><li>2 Delivery</li><li class="on">3 Confirm</li></ol>
+        <div class="head"><p class="eyebrow">Amount due</p><h3>Lekki Phase 1 duplex</h3></div>
+        <div class="panel"><dl><div><dt>Equipment</dt><dd>₦722,229.94</dd></div><div><dt>Delivery</dt><dd>₦9,500.00</dd></div><div class="tot"><dt>Amount due</dt><dd>₦731,729.94</dd></div></dl></div>
+        <div class="scrim"></div>
+        <div class="sheet" role="alertdialog" aria-label="The price changed">
+          <h3>The price changed</h3>
+          <p>The exchange rate moved while you were reviewing. Check the new amount before you create the order.</p>
+          <dl><div><dt>Exchange rate</dt><dd>₦1,368 to ₦1,375</dd></div><div><dt>Equipment</dt><dd>₦725,925.56</dd></div><div><dt>Delivery</dt><dd>₦9,500.00</dd></div><div><dt>New amount due</dt><dd>₦735,425.56</dd></div></dl>
+          <button class="btn" type="button" style="width:100%;margin:12px 0 0">Confirm new price and create order</button>
+          <button class="btn outline" type="button" style="width:100%;margin:8px 0 0">Back to review</button>
+        </div>
+      </div></div>
+    </figure>
+
+    <figure>
+      <figcaption style="margin:0 0 10px;font:600 14px/1.3 var(--sans)">If he chooses Pick-up<span style="display:block;font-weight:400;font-size:13px;color:var(--ink2)">Step 2 changes only here. The price has no delivery charge.</span></figcaption>
+      <div class="card"><div class="seg" style="margin:0"><span>Delivery</span><span class="on">Pick-up</span></div>
+        <div class="store"><span class="radio on"></span><div><b>Main Store</b><br>14 Admiralty Way, Lekki Phase 1<br><span style="font-size:13px;color:var(--ink2)">Open Monday to Saturday, 8 am to 6 pm. We tell you when your order is ready to collect.</span></div></div>
+        <p class="fine" style="margin:10px 0 0">No delivery charge. You can bring someone to collect it, with their name and ID.</p></div>
+    </figure>
+  </div>
+
+  <p class="notes">Questions for you are in the chat: three steps, the Review panel, the Delivery step, and the Confirm step with the changed-price sheet.</p>
+</main>
+</body>
+</html>

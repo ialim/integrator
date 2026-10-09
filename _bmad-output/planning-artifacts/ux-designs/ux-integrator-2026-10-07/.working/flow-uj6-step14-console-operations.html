@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 14, the staff console and Operations' day (proposal)</title>
+<style>
+/*
+  STEP 14 WIREFRAMES: the staff console, Operations. Bola approves a paid order after a stock check, then dispatches it
+  with serial numbers. Amaka, who holds the Support duties, handles a faulty-device case and checks the returned device.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-16 to FR-18, FR-37, FR-39, FR-44, FR-45, FR-47, FR-52, FR-56, FR-57, FR-60 to FR-68, FR-75, FR-78, FR-79, UJ-6, UJ-7.
+  Frames are 1240 px wide, for a desktop browser. Now is Wed 7 Oct 2026, 2:00 pm, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:640px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.nav .deputy{margin:16px 18px 0;padding:10px 12px;border:1px dashed var(--control);font-size:12.5px;color:var(--ink2)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.notice .b{margin-left:auto}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cards + .cards{margin-top:16px}
+.qcard{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.qcard h3{font:700 16px/1.2 var(--serif)}
+.qcard .big{margin-top:6px;font:700 34px/1 var(--sans);font-variant-numeric:tabular-nums}
+.qcard .big small{font:600 14px var(--sans);color:var(--ink2)}
+.qcard p{margin-top:6px;font-size:13px}
+.qcard .small{color:var(--ink2)}
+.qcard .b{margin-top:10px}
+.qcard dl div{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--rule);font-size:13px}
+.qcard dl{margin-top:8px}
+.qcard dd{font-weight:700;font-variant-numeric:tabular-nums}
+.meter{height:12px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.md{display:grid;grid-template-columns:290px minmax(0,1fr);gap:0}
+.md .ql{padding-right:18px;min-width:0}
+.md .detail{padding-left:20px;border-left:1px solid var(--ink);min-width:0}
+.ql li{padding:10px 10px;border-bottom:1px solid var(--rule)}
+.ql li.sel{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.ql .t{display:flex;justify-content:space-between;gap:8px;font:700 14px/1.3 var(--sans)}
+.ql .t span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ql small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.ql .chips{margin-top:5px}
+.detail h2.dh{font:700 20px/1.2 var(--serif)}
+.detail .meta{margin:3px 0 12px;font-size:13px;color:var(--ink2)}
+.lines{width:100%;border-collapse:collapse;font-size:13px}
+.lines th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.lines td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.lines td:first-child{min-width:210px}
+.lines .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines small{display:block;font-size:12px;color:var(--ink2)}
+.lines .mono{font:12px/1.3 var(--mono);color:var(--ink2)}
+.okmark{display:inline-flex;align-items:center;gap:5px;font:700 12.5px var(--sans);color:var(--ok)}
+.okmark.no{color:var(--bad)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 14px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0}
+.two > section{padding:0 20px}
+.two > section:first-child{padding-left:0}
+.two > section + section{border-left:1px solid var(--rule);padding-right:0}
+.two h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.serials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;margin-top:8px;font:12.5px/1.3 var(--mono)}
+.serials li{display:flex;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid var(--rule)}
+.serials .okmark{font-size:12px}
+.scan{display:flex;align-items:center;min-height:42px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:13.5px var(--mono);color:var(--ink2)}
+.field{margin-top:10px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field .in{display:flex;align-items:center;min-height:42px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14.5px}
+.field .in.mono{font-family:var(--mono)}
+.field .in.ph{color:var(--ink2)}
+.tl{margin-top:8px}
+.tl li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:0 0 12px;position:relative;font-size:13px}
+.tl li::before{content:"";position:absolute;left:11px;top:24px;bottom:0;width:2px;background:var(--rule)}
+.tl li:last-child::before{display:none}
+.tl .n{display:grid;place-items:center;width:24px;height:24px;border:2px solid var(--control);background:var(--sheet);font:700 12px var(--sans)}
+.tl .done .n{background:var(--green);border-color:var(--green);color:#fff}
+.tl .now .n{border-color:var(--green);color:var(--green)}
+.tl b{display:block;font:600 13.5px/1.3 var(--sans)}
+.tl small{display:block;font-size:12.5px;color:var(--ink2)}
+.steps{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0}
+.steps nav{padding-right:18px}
+.steps nav li{padding:10px 12px;border:1px solid var(--control);border-bottom:0;background:var(--sheet);font:600 13.5px var(--sans);color:var(--ink2)}
+.steps nav li:last-child{border-bottom:1px solid var(--control)}
+.steps nav li.on{background:var(--green);border-color:var(--green);color:#fff}
+.steps nav li.done{color:var(--green)}
+.steps .body{padding-left:20px;border-left:1px solid var(--ink);min-width:0}
+.photos{display:flex;gap:8px;margin-top:6px}
+.thumb{display:grid;place-items:center;width:84px;height:64px;background:var(--aged);border:1px solid var(--control);color:var(--ink2);font-size:12px;text-align:center}
+.codebig{margin-top:10px;padding:10px 12px;background:var(--sheet);border-top:3px double var(--ink);border-bottom:3px double var(--ink);text-align:center}
+.codebig b{display:block;font:700 22px/1.2 var(--mono);letter-spacing:.05em}
+.codebig small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 14 of the walk-through</p>
+  <h1 class="top">The staff console, Operations: approving, dispatching, and looking after a faulty device</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell as Step 13, now for Operations. Bola approves a paid order after a stock check and dispatches it with serial numbers (UJ-6). Amaka, who holds the Support duties, takes a call about a faulty camera, makes the issue code, and checks the device when it arrives (UJ-7). Five desktop frames, then a sheet of states. Support duties are shown as a group inside Operations, as the PRD says, so a separate Support role can be split out later. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Today, Operations<span>The same Today page as Finance, with Operations' queues: order approvals (target 4 business hours), devices to investigate (2 business days from arrival), shipments that need a hand, cases, and back-orders running late.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Today · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 2:00 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a on">Today</span>
+          <span class="a">Order approvals<span class="n">3</span></span>
+          <span class="a">Returns<span class="n">1</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+          <p class="deputy">Your deputy is Kayode M. Your queues go to him if you switch on out of office.</p>
+        </nav>
+        <div class="main">
+          <h1>Good afternoon, Bola</h1>
+          <p class="sub">Operations · 4 things need you today</p>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>1 back-order is running late: INT-0031, 8-port PoE switch, promised Tue 29 Sep. The business can now cancel that line for a credit note.<span class="b">Open back-orders</span></p>
+          <div class="cards">
+            <section class="qcard"><h3>Order approvals</h3><p class="big">3 <small>waiting</small></p><p>Oldest: <b>1 h 08 min</b> of a 4 business hour target</p><div class="meter" role="progressbar" aria-label="Oldest order has used 28 percent of its target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="28"><i style="width:28%"></i></div><p class="small"><b>0</b> over target · 98% on time this week</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>Returns to investigate</h3><p class="big">1 <small>device arrived</small></p><p>RR-0084, arrived Tue 6 Oct, 4:40 pm. Due Thu 8 Oct, 4:40 pm.</p><p class="small">Target: 2 business days from arrival. Issue codes still waiting for a device: 1.</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>Support cases</h3><p class="big">3 <small>open</small></p><p>1 call back due at 3:00 pm.</p><p class="small">Every call or message opens a case, including ones fixed on the phone.</p><span class="b">Open the desk</span></section>
+          </div>
+          <div class="cards">
+            <section class="qcard"><h3>Shipments</h3><dl><div><dt>To dispatch (Processing)</dt><dd>4</dd></div><div><dt>Ready for pickup, waiting</dt><dd>2</dd></div><div><dt>In transit</dt><dd>6</dd></div><div><dt>Needs a look (failed, lost, uncollected)</dt><dd>1</dd></div></dl><span class="b">Open shipments</span></section>
+            <section class="qcard"><h3>Back-orders</h3><p class="big">1 <small>running late</small></p><p>3 more are on time. A back-order promise starts the day payment is confirmed.</p><p class="small">At 7 days past its promised date, the business may cancel the line.</p><span class="b">Open back-orders</span></section>
+            <section class="qcard"><h3>Stock</h3><p class="big">5 <small>products at or below threshold</small></p><p>2 are enabled for back-order. 3 are held as safety stock.</p><p class="small">Stock changes are always ledger entries. Drawn in Step 16.</p><span class="b o">Open products and stock</span></section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Order approvals, with the stock check<span>A list on the left, the order on the right. The system reserved the stock when the order became Paid. Bola confirms it is physically there, or credits the line. Approve is the only primary button, and it says what will happen.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Order approvals · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 2:00 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a on">Order approvals<span class="n">3</span></span>
+          <span class="a">Returns<span class="n">1</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+        </nav>
+        <div class="main">
+          <h1>Order approvals</h1>
+          <p class="sub">Paid orders, oldest first. Target: 4 business hours.</p>
+          <div class="md">
+            <ul class="ql" aria-label="Orders waiting for approval">
+              <li class="sel" aria-current="true"><div class="t"><span>Adeyemi Integrated Systems</span><span>1 h 08 min</span></div><small>INT-0042 · 4 lines · courier, Lagos Island and Lekki</small><div class="chips"><span class="chip">Back-order line</span></div></li>
+              <li><div class="t"><span>Okoro Homes Ltd</span><span>52 min</span></div><small>INT-0043 · 3 lines · pick-up, Main Store</small></li>
+              <li><div class="t"><span>Bright Link Ltd</span><span>31 min</span></div><small>INT-0039 · 7 lines · courier, Abuja</small></li>
+            </ul>
+            <section class="detail" aria-labelledby="od">
+              <h2 class="dh" id="od">INT-0042 · Adeyemi Integrated Systems</h2>
+              <p class="meta">Paid at 12:52 pm, confirmed by Ngozi A. · Courier to 12 Palm Avenue, Lekki Phase 1 · receiver K. Balogun, 0805 555 0190 · ships in parts: in-stock lines first</p>
+              <table class="lines">
+                <caption style="position:absolute;left:-9999px">Lines to check before approving</caption>
+                <thead><tr><th scope="col">Product</th><th scope="col" class="num">Ordered</th><th scope="col" class="num">Reserved</th><th scope="col" class="num">Left after</th><th scope="col">Shelf check</th></tr></thead>
+                <tbody>
+                  <tr><td>4MP PoE dome camera<small class="mono">CAM-0412 · serialised</small></td><td class="num">6</td><td class="num">6</td><td class="num">14</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Found on the shelf</span></td></tr>
+                  <tr><td>8-channel PoE NVR with 2 TB drive<small class="mono">NVR-0208 · serialised</small></td><td class="num">1</td><td class="num">1</td><td class="num">5</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Found on the shelf</span></td></tr>
+                  <tr><td>Cat6 cable, 305 m box<small class="mono">CBL-0305</small></td><td class="num">1</td><td class="num">1</td><td class="num">22</td><td><span class="b o sm">Check it</span> <span class="b danger sm">Not found: credit this line…</span></td></tr>
+                  <tr><td>8-port PoE switch<small class="mono">SWT-0108 · back-order, about 3 weeks, ship by Wed 28 Oct</small></td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td><span class="b o sm">Mark ordered from supplier</span></td></tr>
+                </tbody>
+              </table>
+              <p class="after need" style="margin-top:12px">Approve is off until every in-stock line is marked found, or credited. 1 line is still unchecked.</p>
+              <div class="actions"><span class="b big" aria-disabled="true">Approve order</span><span class="b o">Credit a line…</span></div>
+              <p class="after">On approving: INT-0042 becomes <b>Approved</b>. Delivery 1 (3 lines) moves to Processing. Delivery 2 (the back-order switch) waits for the supplier order. He is told on WhatsApp and email.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. One shipment: serial numbers, then status<span>Left: what is in the box and its serial numbers, scanned or pasted. Right: the status, and the evidence each move needs. A move cannot be saved until its evidence is there, and a wrong jump is not offered.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Shipment INT-0042 / 1 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 2:40 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">1</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a on">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+        </nav>
+        <div class="main">
+          <h1>Delivery 1 of INT-0042</h1>
+          <p class="sub">Adeyemi Integrated Systems · courier · dispatched from the Main Store · <span class="chip">Processing</span></p>
+          <div class="two">
+            <section aria-labelledby="s1">
+              <h2 id="s1">What is in the box</h2>
+              <table class="lines"><thead><tr><th scope="col">Product</th><th scope="col" class="num">Quantity</th><th scope="col">Serial numbers</th></tr></thead>
+                <tbody>
+                  <tr><td>4MP PoE dome camera</td><td class="num">6</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>6 of 6</span></td></tr>
+                  <tr><td>8-channel PoE NVR with 2 TB drive</td><td class="num">1</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>1 of 1</span></td></tr>
+                  <tr><td>Cat6 cable, 305 m box</td><td class="num">1</td><td>Not serialised</td></tr>
+                </tbody></table>
+              <div class="field"><label>Scan or paste serial numbers</label><div class="scan">Ready. Scan a barcode, or paste a list.</div></div>
+              <ul class="serials" aria-label="Serial numbers captured">
+                <li><span>NG4P-77201</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NG4P-77202</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NG4P-77203</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NG4P-77204</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NG4P-77205</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NG4P-77206</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+                <li><span>NV8P2-55018</span><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Unique</span></li>
+              </ul>
+              <p class="after">7 serial numbers for 7 serialised units. Each is unique across everything we have dispatched, and each fits the product's format. The business sees these on the order.</p>
+            </section>
+            <section aria-labelledby="s2">
+              <h2 id="s2">Status</h2>
+              <ol class="tl">
+                <li class="done"><span class="n"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Processing</b><small>Approved 2:05 pm by Bola A.</small></span></li>
+                <li class="now"><span class="n">2</span><span><b>In transit</b><small>Needs the courier's name and a tracking reference.</small></span></li>
+                <li><span class="n">3</span><span><b>Delivered</b><small>Needs a proof reference from the courier, or the receiver's one-time code.</small></span></li>
+              </ol>
+              <div class="field"><label>Courier</label><div class="in">Courier partner</div></div>
+              <div class="field"><label>Tracking reference</label><div class="in mono">CP-88213</div></div>
+              <div class="field"><label>What the courier charged us <small>for our own reporting only</small></label><div class="in">₦6,200.00</div></div>
+              <div class="actions"><span class="b big">Mark in transit</span></div>
+              <p class="after">He is told it is on its way, with the tracking reference. The charge he pays does not change after payment. Any extra courier cost is ours, and is reported.</p>
+              <p style="margin-top:12px;font-size:13px">Other moves: <span class="b o sm">Delivery failed</span> <span class="b o sm">Lost</span> <span class="b o sm">Returned to store</span></p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. The support desk: a call about a faulty camera<span>Amaka's desk, UJ-7. The caller is checked first, then the serial number, and only then are the order details shown. Notes, the remote fix, and the issue code all live in the case.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Case C-0231 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 10:55 am · open until 6:00 pm</span><span class="me"><span class="role">Operations · Support</span>Amaka K.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">3</span></span>
+          <span class="a">Returns<span class="n">1</span></span>
+          <span class="a on">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+        </nav>
+        <div class="main">
+          <h1>Support cases</h1>
+          <p class="sub">Every contact is a case. Opened from the app or by Support when a call or WhatsApp message arrives.</p>
+          <div class="md">
+            <ul class="ql" aria-label="Open cases">
+              <li class="sel" aria-current="true"><div class="t"><span>C-0231 · Faulty camera</span><span>13 min</span></div><small>Chidi O. · Adeyemi Integrated Systems · from the app</small><div class="chips"><span class="chip">Remote fix tried</span></div></li>
+              <li><div class="t"><span>C-0230 · Late delivery question</span><span>1 h 20 min</span></div><small>Okoro Homes Ltd · by phone</small><div class="chips"><span class="chip warn">Call back at 3:00 pm</span></div></li>
+              <li><div class="t"><span>C-0229 · Which guide for the NVR</span><span>Closed</span></div><small>Bright Link Ltd · by WhatsApp · fixed remotely</small></li>
+            </ul>
+            <section class="detail" aria-labelledby="cd">
+              <h2 class="dh" id="cd">C-0231 · Faulty camera</h2>
+              <p class="meta">Opened Wed 7 Oct, 10:42 am from the business's own report. This time starts the reporting window and cannot be moved.</p>
+              <div class="two">
+                <section aria-labelledby="c1">
+                  <h2 id="c1">Who is calling, and which device</h2>
+                  <dl class="cmp">
+                    <div><dt>Caller</dt><dd>Chidi O., Technician</dd></div>
+                    <div><dt>Verified</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>In-app code read out, 10:46 am</span></dd></div>
+                  </dl>
+                  <div class="field"><label>Serial number</label><div class="in mono">NG4P-77124</div></div>
+                  <h3 style="margin:12px 0 4px;font:700 14px var(--serif)">What we dispatched</h3>
+                  <dl class="cmp">
+                    <div><dt>Product</dt><dd>4MP PoE dome camera</dd></div>
+                    <div><dt>Order and delivery</dt><dd>INT-0038 · delivery 1</dd></div>
+                    <div><dt>Business</dt><dd>Adeyemi Integrated Systems</dd></div>
+                    <div><dt>Dispatched · delivered</dt><dd>Sat 3 Oct · Mon 5 Oct</dd></div>
+                    <div><dt>Warranty until</dt><dd>3 Oct 2028</dd></div>
+                  </dl>
+                  <h3 style="margin:12px 0 4px;font:700 14px var(--serif)">Windows for this case, kept as they were today</h3>
+                  <dl class="cmp">
+                    <div><dt>Damaged or wrong item</dt><dd>until Sat 10 Oct</dd></div>
+                    <div><dt>Does not work out of the box</dt><dd>until Wed 4 Nov</dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="c2">
+                  <h2 id="c2">What was done</h2>
+                  <ol class="tl">
+                    <li class="done"><span class="n"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Report received</b><small>10:42 am, from the app</small></span></li>
+                    <li class="done"><span class="n"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Caller checked</b><small>10:46 am, in-app code</small></span></li>
+                    <li class="done"><span class="n"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Remote fix tried, not fixed</b><small>"Power cycled, new PoE port, firmware reset. Still no picture." 10:50 am</small></span></li>
+                    <li class="now"><span class="n">4</span><span><b>Make an issue code, or close the case</b></span></li>
+                  </ol>
+                  <p class="sub" style="margin:10px 0 0">Once you make it, it looks like this:</p>
+                  <div class="codebig" style="margin-top:4px"><b>IC-4829-QK7M</b><small>For serial NG4P-77124 · works once · valid 48 hours, until Fri 9 Oct, 10:55 am</small></div>
+                  <div class="actions"><span class="b">Make the issue code</span><span class="b o">Close: fixed remotely</span><span class="b o">Close: refused…</span></div>
+                  <p class="after">The code is also shown to Chidi in the app. 1 of 3 codes used for this order line. The first case time is kept even if a code lapses.</p>
+                </section>
+              </div>
+              <p class="after need" style="margin-top:14px">Serial not found? Open a <b>serial exception</b> with photos of the label and the box. It needs both Operations and Admin to approve, and you cannot approve your own.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. A returned device arrives: check it<span>Four steps in order: scan, photograph, test, hand over. Whoever investigates does not decide, so the last step sends it to Admin. The business sees "We are checking it" while this is open.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Return RR-0087 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Fri 9 Oct · 10:30 am · open until 6:00 pm</span><span class="me"><span class="role">Operations · Support</span>Amaka K.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">3</span></span>
+          <span class="a on">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+        </nav>
+        <div class="main">
+          <h1>RR-0087 · 4MP PoE dome camera</h1>
+          <p class="sub">Adeyemi Integrated Systems · reason: does not work out of the box · arrived Fri 9 Oct, 10:20 am · investigate by Mon 12 Oct, 10:20 am</p>
+          <div class="steps">
+            <nav aria-label="Steps"><ol>
+              <li class="done">1 Scan the device</li>
+              <li class="done">2 Photograph it</li>
+              <li class="on">3 Test it and record</li>
+              <li>4 Hand over to decide</li>
+            </ol></nav>
+            <div class="body">
+              <div class="two">
+                <section aria-labelledby="r1">
+                  <h2 id="r1">Done so far</h2>
+                  <dl class="cmp">
+                    <div><dt>Serial on the device</dt><dd class="mono" style="font-family:var(--mono)">NG4P-77124</dd></div>
+                    <div><dt>Serial on the issue code IC-4829-QK7M</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Matches</span></dd></div>
+                    <div><dt>Received</dt><dd>At the Main Store, by Amaka K.</dd></div>
+                  </dl>
+                  <h3 style="margin:12px 0 2px;font:700 14px var(--serif)">Photographs</h3>
+                  <div class="photos"><span class="thumb">The unit</span><span class="thumb">The label</span><span class="thumb">The packaging</span></div>
+                  <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">What the business sent</h3>
+                  <p style="font-size:13px">Does not work out of the box. "Powers on, status light is green, no picture on the NVR." 3 photos. Approved by Funmi, Wed 7 Oct, 12:10 pm.</p>
+                  <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Courier cost to pay back</h3>
+                  <dl class="cmp">
+                    <div><dt>Courier receipt</dt><dd>₦4,500.00</dd></div>
+                    <div><dt>Cap: our delivery rate for the same route</dt><dd>₦9,500.00</dd></div>
+                    <div><dt>Pay back, if the fault is ours</dt><dd>₦4,500.00</dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="r2">
+                  <h2 id="r2">Test it and write down what you find</h2>
+                  <div class="field"><label>Tests <small>tick each one you did</small></label>
+                    <ul style="font-size:13.5px"><li style="padding:4px 0">☑ Powers on with a PoE injector</li><li style="padding:4px 0">☑ Picture on a test monitor: none</li><li style="padding:4px 0">☑ Firmware reset: no change</li><li style="padding:4px 0">☐ Other test, say which</li></ul></div>
+                  <div class="field"><label>What you found</label>
+                    <ul style="font-size:13.5px"><li style="padding:4px 0">◉ Fault confirmed</li><li style="padding:4px 0">○ No fault found</li><li style="padding:4px 0">○ Misuse or damage by the business</li><li style="padding:4px 0">○ I think it is fake</li></ul></div>
+                  <div class="field"><label>Notes</label><div class="in" style="min-height:64px;align-items:flex-start;padding-top:10px">No image output on either lens. Firmware reset did not help.</div></div>
+                  <div class="actions"><span class="b big">Next: hand over to decide</span></div>
+                  <p class="after need">You investigated this return, so you cannot decide it. In step 4 it goes to Admin, with your findings. The business is told when it is decided.</p>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Approving an order</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">A line is not on the shelf</p><h4>Credit this line</h4><p>The line is cancelled, its reservation is released, a credit note is requested from Finance, and the business is told. The rest of the order is approved.</p></div>
+      <div class="sc need"><p class="lab">Every line missing</p><h4>The order becomes Cancelled</h4><p>With a credit note for the full confirmed amount. An order is never left Paid with no shipments.</p></div>
+      <div class="sc"><p class="lab">Back-order line</p><h4>Mark ordered from supplier</h4><p>Supplier orders are placed only after payment. Operations marks "ordered from supplier" and later "received", and a line cannot be marked received without a goods-in record.</p></div>
+      <div class="sc"><p class="lab">Ship in full</p><h4>In-stock lines held for up to 14 days</h4><p>After 14 days from approval the business is offered shipping in parts. The queue shows the day count on the line.</p></div>
+      <div class="sc need"><p class="lab">Change request before approval</p><h4>New address, receiver, store, or parts or full</h4><p>Shown at the top of the order with the old and new values side by side. A change never alters goods prices. A different zone changes only the delivery charge.</p></div>
+      <div class="sc need"><p class="lab">Cancel request after approval</p><h4>Shipments are frozen until you decide, within 1 business day</h4><p>Consent or refuse. A back-order line already ordered from the supplier cannot be cancelled. Shipped goods follow the returns rules.</p></div>
+      <div class="sc err"><p class="lab">Over target</p><h4>Over 75% of 4 business hours</h4><p>Escalated to Admin. The row shows "Escalated", and the rail count turns brass.</p></div>
+    </div>
+
+    <h3 class="grp">Shipments</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Wrong jump</p><h4>Processing cannot go straight to Delivered</h4><p>Only the allowed moves are offered. Undoing a move is Admin only, with a reason.</p></div>
+      <div class="sc err"><p class="lab">Serial number problems</p><h4>Already dispatched, wrong count, or wrong format</h4><p>"NG4P-77124 was dispatched on INT-0038." "6 entered, 7 needed." "This does not fit the NG4P format." A correction needs a reason and a second person.</p></div>
+      <div class="sc"><p class="lab">Pick-up</p><h4>Ready for pickup only when the goods are at the store</h4><p>Signed for records the collector's name and the type and last four digits of their ID. Reminders at 7 days, Uncollected at 14, cancel and restock after 30 days with a credit-only credit note less the restocking fee.</p></div>
+      <div class="sc need"><p class="lab">Delivery failed, lost, returned</p><h4>Delivery failed goes back to Processing for another dispatch</h4><p>Lost opens a non-delivery case by itself, and the order cannot be Completed while a shipment is lost or failed.</p></div>
+      <div class="sc"><p class="lab">Dispatch store</p><h4>The Main Store unless you pick another</h4><p>A different store is chosen on the shipment. The store's address and hours are shown to the business for pick-ups.</p></div>
+    </div>
+
+    <h3 class="grp">The support desk</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Caller not verified</p><h4>Order and serial details stay hidden</h4><p>Until the caller reads out the in-app code, or you call back the verified phone. Nothing about a serial or an order is shown before that. Both ways are recorded.</p></div>
+      <div class="sc err"><p class="lab">Serial not found</p><h4>This number was never dispatched by us</h4><p>No issue code can be made. Open a serial exception, which Operations and Admin both approve.</p></div>
+      <div class="sc need"><p class="lab">Third code, then stop</p><h4>1 of 3 codes used for this order line</h4><p>A new code after a lapse keeps the first case time. The fourth is refused.</p></div>
+      <div class="sc"><p class="lab">WhatsApp</p><h4>Only through the platform's WhatsApp Business account</h4><p>Never a personal number. The conversation is attached to the case.</p></div>
+    </div>
+
+    <h3 class="grp">Returns</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Serial does not match</p><h4>Rejected at once, and the account is flagged</h4><p>The serial scanned is not the one on the issue code. The business sees a plain reason. The flag is for Admin only.</p></div>
+      <div class="sc need"><p class="lab">Arrived after it lapsed</p><h4>Held</h4><p>The device came after the issue code ran out. Support contacts the business before anything else happens.</p></div>
+      <div class="sc"><p class="lab">No fault found</p><h4>It goes back at the business's cost</h4><p>The cost is added to their next amount due, or taken from an open credit note, and shown in the decision.</p></div>
+      <div class="sc need"><p class="lab">I think it is fake</p><h4>Flag it with evidence</h4><p>Operations or Admin can mark a product or batch as Suspected. That stops its sale, quarantines stock, flags orders and proposals, and tells everyone affected. A whole-product hold needs a second approver.</p></div>
+      <div class="sc"><p class="lab">Reclassify the reason</p><h4>"Transit damage" becomes "dead on arrival"</h4><p>With a note. It re-checks the window, exclusions and remedy, and the business sees the change.</p></div>
+      <div class="sc"><p class="lab">Waiting for the maker</p><h4>RMA number, date sent, date back</h4><p>For repairs and warranty claims. The business sees "Waiting for the maker", never the RMA detail. A warranty claim never ends in a cash refund.</p></div>
+      <div class="sc need"><p class="lab">Time to investigate</p><h4>2 business days from arrival</h4><p>The queue shows the due time. Past 75%, it goes to Admin.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: Today for Operations, approving with the stock check, the shipment and serial numbers, the support desk, and checking a returned device.</p>
+</main>
+</body>
+</html>

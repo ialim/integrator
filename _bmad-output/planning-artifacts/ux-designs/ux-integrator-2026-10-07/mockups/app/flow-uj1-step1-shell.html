@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 1, the app shell (proposal)</title>
+<style>
+/*
+  STEP 1 WIREFRAMES: Owner or Manager shell on a phone, Direction A (Ledger) look, light only.
+  Layout proposal for the owner's reaction; layouts are assumptions until confirmed.
+  Governing tokens (DESIGN.md once written): paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB,
+  ink #1A1812, secondary #4A4434, green #153D2E, brass #6B4E0C, caution #6E4400, caution tint #F6EACB,
+  control border #7A7258, hairline #D9CFB5, bezel #2B281F. Neutral state chips: outline only.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--warn:#6E4400;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,p,ul,dl,dd,figure{margin:0}
+ul{padding:0;list-style:none}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1272px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:760px;margin:0 0 26px;font-size:15px;color:var(--ink)}
+.phones{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:760px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:88px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 18px 0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 18px/1 var(--serif)}
+.iconbtn{position:relative;display:grid;place-items:center;min-width:48px;min-height:48px;background:none;border:0;color:#fff}
+.count{position:absolute;top:5px;right:3px;min-width:18px;padding:1px 5px;border-radius:2px;background:#fff;color:var(--green);font:700 11.5px/1.3 var(--sans);text-align:center}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-height:48px;padding:0 10px 0 4px;background:none;border:0;color:#fff;font:600 15px var(--sans)}
+.who{padding:16px 16px 4px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.who h2{font:700 21px/1.2 var(--serif)}
+.who p{margin-top:2px;font-size:13px;color:var(--ink2)}
+.sec{margin:18px 16px 0;padding-bottom:6px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.att{margin:0 16px}
+.att li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
+.att .t{font:600 15px/1.3 var(--sans)}
+.att .m{grid-column:1;font-size:13px;color:var(--ink2)}
+.att .m b{color:var(--warn)}
+.att .go{grid-column:2;grid-row:1/3;display:inline-flex;align-items:center;justify-content:center;min-width:76px;min-height:46px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;color:var(--green);font:600 14px var(--sans)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:16px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans)}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.plist{margin:0 16px}
+.plist li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pname{font:700 16px/1.25 var(--serif)}
+.pamt{font:700 15px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pmeta{margin-top:3px;font-size:13px;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink)}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--sheet);border-top:2px solid var(--ink)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.field{margin:18px 16px 0}
+.field label{display:block;margin-bottom:6px;font:600 14px var(--sans)}
+.field .in{display:flex;align-items:center;min-height:52px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px;color:var(--ink2)}
+.hint{margin:8px 16px 0;font-size:13px;color:var(--ink2)}
+.hint.off{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);color:var(--ink)}
+.hint.off .i{width:18px;height:18px;margin-top:1px;color:var(--brass)}
+.link{display:block;margin:6px 16px 0;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.notes{max-width:760px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-offline" viewBox="0 0 24 24"><path d="M3 9a14 14 0 0 1 18 0M6 13a9 9 0 0 1 12 0M10 17a4 4 0 0 1 4 0M4 4l16 16"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 1 of the Tunde walk-through</p>
+  <h1>The app shell: where Tunde lands and how he moves around</h1>
+  <p class="lede">Proposal for your reaction, drawn in the Direction A look. Three screens for an Owner or Manager on a phone: Home, Projects, and New project. Wording on the screens is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="phones">
+    <figure class="unit">
+      <figcaption>1. Home, the first screen after sign-in<span>Needs your attention first, then recent projects. Five tabs; the cart sits in the top bar.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span>
+          <button class="iconbtn" type="button" aria-label="Cart, 2 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">2</span></button></div>
+        <div class="who"><p class="eyebrow">Owner</p><h2>Adeyemi Integrated Systems</h2><p>Signed in as Tunde</p></div>
+        <h3 class="sec">Needs your attention</h3>
+        <ul class="att">
+          <li><span class="t">Pay for order INT-0042</span><span class="m"><b>Price held for 3 h 12 min</b> · ₦731,729.94 due</span><button class="go" type="button">Pay now</button></li>
+          <li><span class="t">Return request waiting for you</span><span class="m">Raised by Chidi · 4MP PoE dome camera</span><button class="go" type="button">Review</button></li>
+          <li><span class="t">Credit note expires in 14 days</span><span class="m">₦38,250.00 available</span><button class="go" type="button">View</button></li>
+        </ul>
+        <h3 class="sec">Recent projects</h3>
+        <ul class="plist">
+          <li><div class="prow"><span class="pname">Banana Island villa: networking</span><span class="pamt">₦1,284,300.00</span></div><div class="chips"><span class="chip">Proposal valid until 21 Oct</span></div></li>
+          <li><div class="prow"><span class="pname">Surulere shop: alarm and CCTV</span><span class="pamt">₦96,450.00</span></div><div class="chips"><span class="chip">Draft</span></div></li>
+        </ul>
+        <button class="btn" type="button"><svg class="i"><use href="#ic-plus"/></svg>New project</button>
+        <button class="btn outline" type="button">Buy parts without a project</button>
+        <nav class="tabbar" aria-label="Main">
+          <span class="tab on"><svg class="i"><use href="#ic-home"/></svg>Home</span>
+          <span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span>
+          <span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span>
+          <span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span>
+          <span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span>
+        </nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Projects, every job in one list<span>Each row shows the project total (VAT included) and where it stands. Statuses are neutral outlined labels; only a clock or a problem is tinted.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span>
+          <button class="iconbtn" type="button" aria-label="Cart, 2 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">2</span></button></div>
+        <div class="who"><h2>Projects</h2><p>4 projects</p></div>
+        <ul class="plist">
+          <li><div class="prow"><span class="pname">Lekki Phase 1 duplex: CCTV and access control</span><span class="pamt">₦702,168.00</span></div><div class="pmeta">2 rooms · edited today</div><div class="chips"><span class="chip">Ordered: INT-0042</span><span class="chip warn">Awaiting payment</span></div></li>
+          <li><div class="prow"><span class="pname">Banana Island villa: networking</span><span class="pamt">₦1,284,300.00</span></div><div class="pmeta">5 rooms · edited 3 days ago</div><div class="chips"><span class="chip">Proposal valid until 21 Oct</span></div></li>
+          <li><div class="prow"><span class="pname">Ikoyi Marina office: access control</span><span class="pamt">₦538,900.00</span></div><div class="pmeta">3 rooms · edited 12 days ago</div><div class="chips"><span class="chip warn">Proposal expired</span></div></li>
+          <li><div class="prow"><span class="pname">Surulere shop: alarm and CCTV</span><span class="pamt">₦96,450.00</span></div><div class="pmeta">1 room · edited 2 weeks ago</div><div class="chips"><span class="chip">Draft</span></div></li>
+        </ul>
+        <button class="btn" type="button"><svg class="i"><use href="#ic-plus"/></svg>New project</button>
+        <nav class="tabbar" aria-label="Main">
+          <span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span>
+          <span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span>
+          <span class="tab on"><svg class="i"><use href="#ic-folder"/></svg>Projects</span>
+          <span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span>
+          <span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span>
+        </nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. New project, one question<span>Only a name. The first room is created for you and can be renamed. Works offline.</span></figcaption>
+      <div class="phone"><div class="screen" style="padding-bottom:24px">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Projects</button><span class="title">New project</span><span style="min-width:48px"></span></div>
+        <div class="field"><label for="pn">Project name</label><div class="in" id="pn">For example: Lekki Phase 1 duplex</div></div>
+        <p class="hint">You can change the name later. Your first room is created for you.</p>
+        <button class="btn" type="button">Create project</button>
+        <span class="link">Cancel</span>
+        <p class="hint off"><svg class="i"><use href="#ic-offline"/></svg><span>No signal? You can still create the project. It is saved on this phone and syncs when you are back online.</span></p>
+      </div></div>
+    </figure>
+  </div>
+
+  <p class="notes">Questions for you are in the chat: the five tabs, what Home shows, whether Projects shows money, and the one-field New project.</p>
+</main>
+</body>
+</html>

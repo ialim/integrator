@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 24, the map and the coverage check (proposal)</title>
+<style>
+/*
+  STEP 24 SHEET: information architecture and coverage. The map of the app and of the staff console, where each thing
+  lives, then every PRD requirement and every journey set against what Steps 1 to 23 drew. Where a stated need has no
+  screen, this sheet says so and proposes how to close it. It does not invent the missing screen.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction. Nothing here is decided until you confirm it.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.page{max-width:1160px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;max-width:980px;margin:0 0 12px;font-size:14px;color:var(--ink2)}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 26px;font-size:14px}
+.toc a{color:var(--green);font-weight:600}
+section{margin:0 0 44px}
+h2{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+h3.grp{margin:22px 0 8px;font:700 17px/1.3 var(--serif);color:var(--green)}
+.sub{max-width:900px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+tbody th{width:210px;font-weight:600}
+tr.gh th{background:var(--aged);font:700 13px var(--sans);width:auto;color:var(--green)}
+td.fr{width:96px;font:12.5px/1.5 var(--mono);color:var(--ink2)}
+.st{display:inline-block;flex:none;padding:0 7px;border:1px solid var(--control);font:700 12px/1.6 var(--sans);white-space:nowrap;color:var(--ink2)}
+.st.p{border-color:var(--brass);color:var(--warn)}
+.st.s{border-style:dashed}
+.st.g{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.st.o{border-color:var(--brass);border-style:dashed;color:var(--warn)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 22px}
+.stat{padding:12px 14px;background:var(--sheet);border:1px solid var(--control)}
+.stat .n{font:700 30px/1.1 var(--serif);color:var(--green)}
+.stat p{margin-top:4px;font-size:14px}
+.stat.g{background:var(--warn-tint);border-color:var(--brass)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.card,.node{padding:12px 14px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.card h3,.node h3{font:700 16px/1.3 var(--serif)}
+.card p{margin-top:6px;font-size:14px}
+.node ul{margin-top:8px}
+.node li{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.node li:last-child{border-bottom:0}
+.node h4{margin:12px 0 2px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.node.who{border-top-color:var(--green)}
+.cap{margin-top:8px;font-size:13.5px;color:var(--ink2)}
+.scroll{overflow-x:auto}
+details{margin:0 0 16px}
+summary{cursor:pointer;padding:10px 14px;background:var(--paper);border:1px solid var(--control);font:700 16px/1.3 var(--serif);color:var(--green)}
+details[open] summary{border-bottom:0}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:900px){.map,.cols,.stats{grid-template-columns:1fr 1fr}}
+@media (max-width:620px){.map,.cols,.stats{grid-template-columns:1fr}tbody th{width:auto}td.fr{width:auto}}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="kicker">Step 24 of the walk-through</p>
+  <h1>The map, and the coverage check</h1>
+  <p class="lede">Proposal for your reaction. Steps 1 to 23 drew the screens one journey at a time. This step steps back and checks the whole. It lays out the map of the app and of the staff console, says where each thing lives, and then sets every PRD requirement and every journey against what we have drawn. Where a stated need has no screen, it says so and proposes how to close it. It does not invent the missing screen. Nothing here is decided until you confirm it.</p>
+  <p class="legend"><span><span class="st">Drawn</span> a wireframe or a state card exists</span><span><span class="st p">Partly</span> some of it is drawn</span><span><span class="st s">Spine only</span> no wireframe; built from the patterns and a table</span><span><span class="st g">Gap</span> a need with no screen yet</span><span><span class="st o">Outside input</span> waits for the accountant or counsel</span></p>
+  <nav class="toc" aria-label="Sections on this sheet"><a href="#s1">1 How the app is organised</a><a href="#s2">2 The app map</a><a href="#s3">3 The console map</a><a href="#s4">4 Journeys</a><a href="#s5">5 Coverage by section</a><a href="#s6">6 What has no screen yet</a><a href="#s7">7 Plan from here</a><a href="#s8">Appendix: every requirement</a></nav>
+
+  <div class="stats" aria-label="The result in four numbers">
+    <div class="stat"><p class="n" id="n-drawn">65</p><p>of 80 requirements fully drawn</p></div>
+    <div class="stat"><p class="n" id="n-partly">8</p><p>partly drawn, one or two surfaces missing</p></div>
+    <div class="stat"><p class="n" id="n-spine">1</p><p>needs only the patterns and a table</p></div>
+    <div class="stat g"><p class="n" id="n-gap">6</p><p>have no screen yet. All six are Priority 1, first-order critical</p></div>
+  </div>
+
+  <!-- 1 ORGANISATION -->
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. How the app is organised</h2>
+    <p class="sub">Six rules, all taken from the steps you have already confirmed. They are the information architecture in one place.</p>
+    <div class="cols">
+      <div class="card"><h3>Five tabs, always in this order</h3><p>Home, Catalogue, Projects, Orders, Account. Before approval there are only two: Catalogue and Get approved. A Technician has the same five, with Orders showing status and no amounts. A role sees only the tabs it can use.</p></div>
+      <div class="card"><h3>The cart is not a tab</h3><p>It is an icon with a count in the top bar, for Owners and Managers only. A Technician and an Owner who is not yet approved have none. On a laptop it moves to the top right.</p></div>
+      <div class="card"><h3>One home for each thing</h3><p>A thing lives in one tab. Other places link to it and never copy it. The table below says where.</p></div>
+      <div class="card"><h3>Help is always the same place</h3><p>“Call or WhatsApp us” is the last block of every screen and a row in Account. The Help sheet is where a person gives Support a code.</p></div>
+      <div class="card"><h3>On a laptop the tab bar becomes a rail</h3><p>Lists with an item behind them become a list and a detail side by side: Orders, Projects, Credit notes. The order of reading never changes.</p></div>
+      <div class="card"><h3>The console is organised by work</h3><p>A left rail in groups (Queues, Work, Money, Catalogue, People, Rules, Watch). Each role sees only its own groups. Today comes first. A queue opens as a list with a preview, and the full page opens from it.</p></div>
+    </div>
+    <h3 class="grp">Where each thing lives</h3>
+    <div class="scroll" role="region" aria-label="Where each thing lives, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:620px">
+      <caption class="sr">Where each thing lives in the app</caption>
+      <thead><tr><th scope="col">Thing</th><th scope="col">Lives in</th><th scope="col">Also reachable from</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Project, rooms and items</th><td>Projects tab</td><td>Home (recent projects); the product page (“Add to” a room); the orders made from it</td></tr>
+        <tr><th scope="row">Parts list</th><td>Inside the Project</td><td>The Technician’s view of the Project</td></tr>
+        <tr><th scope="row">Proposal</th><td>Inside the Project</td><td>The order made from it (“what changed since the Proposal”)</td></tr>
+        <tr><th scope="row">Cart</th><td>Top-bar icon</td><td>Home (“Buy parts without a project”); the product page</td></tr>
+        <tr><th scope="row">Order</th><td>Orders tab</td><td>Home (needs your attention); the Project; every message about it</td></tr>
+        <tr><th scope="row">Payments and receipts</th><td>Inside the order</td><td>Home (a payment due, with its clock)</td></tr>
+        <tr><th scope="row">Credit notes</th><td>Account</td><td>The order’s payment screen (“Use some on this order”); Home (a note about to expire)</td></tr>
+        <tr><th scope="row">Cases, return requests, issue codes</th><td>Orders, Problems</td><td>The order the device came with; Home; the Help sheet</td></tr>
+        <tr><th scope="row">Manuals and guides</th><td>The product page</td><td>Project rows; Saved on this phone</td></tr>
+        <tr><th scope="row">Vouch codes</th><td>Account</td><td>Get approved (where the new person enters one)</td></tr>
+        <tr><th scope="row">Team and invitations</th><td>Account</td><td>Home (a Manager’s request for a vouch code)</td></tr>
+        <tr><th scope="row">Loyalty tier, business profile</th><td>Account</td><td>None</td></tr>
+        <tr><th scope="row">Notification settings</th><td>Account</td><td>The footer of every message</td></tr>
+        <tr><th scope="row">Saved on this phone</th><td>Account</td><td>A Project (“Save for offline”); the check-in banner</td></tr>
+        <tr><th scope="row">Terms and Privacy Notice</th><td>Account</td><td>Sign-up; the New Terms screen</td></tr>
+        <tr><th scope="row">Help</th><td>Last block of every screen</td><td>Account</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 2 APP MAP -->
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. The app map</h2>
+    <p class="sub">Every screen the app needs, by where it lives. The number is the step that drew it. Seven places and 53 screens or groups of screens: 41 drawn, 5 spine only, 1 waiting for outside input, and 6 gaps.</p>
+    <div class="map">
+      <section class="node" aria-labelledby="m-pre"><h3 id="m-pre">Before sign-in and approval</h3>
+        <ul>
+          <li><span>Sign up, log in, enter the code</span><span class="st">Drawn · 7</span></li>
+          <li><span>WhatsApp question</span><span class="st">Drawn · 7</span></li>
+          <li><span>Accept an invitation</span><span class="st">Drawn · 11</span></li>
+          <li><span>Get approved, four steps</span><span class="st">Drawn · 7</span></li>
+          <li><span>Catalogue without prices</span><span class="st">Drawn · 7</span></li>
+          <li><span>Confirm who you are</span><span class="st">Drawn · 7</span></li>
+          <li><span>Ask with a vouch code</span><span class="st">Drawn · 7</span></li>
+          <li><span>Approved</span><span class="st">Drawn · 7</span></li>
+          <li><span>Terms of use, Privacy Notice, accessibility statement</span><span class="st s">Spine only</span></li>
+          <li><span>Signed out, service down, not found</span><span class="st s">Spine only</span></li>
+        </ul></section>
+      <section class="node" aria-labelledby="m-home"><h3 id="m-home">Home</h3>
+        <ul>
+          <li><span>Needs your attention</span><span class="st">Drawn · 1</span></li>
+          <li><span>Recent projects</span><span class="st">Drawn · 1</span></li>
+          <li><span>New project</span><span class="st">Drawn · 1</span></li>
+          <li><span>A Technician’s Home</span><span class="st">Drawn · 11</span></li>
+          <li><span>Buy parts without a project</span><span class="st g">Gap</span></li>
+        </ul>
+        <h3 id="m-cat" style="margin-top:16px">Catalogue</h3>
+        <ul>
+          <li><span>Browse, search, filters, sort</span><span class="st">Drawn · 2, 7</span></li>
+          <li><span>Product page</span><span class="st">Drawn · 2</span></li>
+          <li><span>Manuals and guides list</span><span class="st">Drawn · 11</span></li>
+          <li><span>Written guide, one step at a time</span><span class="st">Drawn · 11</span></li>
+        </ul></section>
+      <section class="node" aria-labelledby="m-proj"><h3 id="m-proj">Projects</h3>
+        <ul>
+          <li><span>Projects list</span><span class="st">Drawn · 1</span></li>
+          <li><span>A Project with its rooms</span><span class="st">Drawn · 2</span></li>
+          <li><span>Add products to a room</span><span class="st">Drawn · 2</span></li>
+          <li><span>Save for offline</span><span class="st">Drawn · 2</span></li>
+          <li><span>Parts list</span><span class="st">Drawn · 3</span></li>
+          <li><span>Proposal: build, ready, on the Project, PDF</span><span class="st">Drawn · 3</span></li>
+          <li><span>Order: review, delivery, confirm, price moved</span><span class="st">Drawn · 4</span></li>
+          <li><span>Checks before an order can be made</span><span class="st g">Gap</span></li>
+          <li><span>Delete or restore a room or a project</span><span class="st s">Spine only</span></li>
+        </ul></section>
+      <section class="node" aria-labelledby="m-ord"><h3 id="m-ord">Orders</h3>
+        <ul>
+          <li><span>List: Open, Done, Problems</span><span class="st">Drawn · 6, 12</span></li>
+          <li><span>One order, deliveries, documents</span><span class="st">Drawn · 6</span></li>
+          <li><span>Pay, upload the receipt, waiting, signal drops</span><span class="st">Drawn · 5</span></li>
+          <li><span>A payment problem</span><span class="st">Drawn · 6</span></li>
+          <li><span>Use a credit note on an order</span><span class="st">Drawn · 9</span></li>
+          <li><span>Report a problem, the Case, return request, outcome</span><span class="st">Drawn · 12</span></li>
+          <li><span>Cancel or change an order; ask to cancel; late back-order line</span><span class="st g">Gap</span></li>
+          <li><span>Delivery failed: update the receiver; ship in parts instead</span><span class="st g">Gap</span></li>
+          <li><span>Tax invoice and credit-note documents</span><span class="st o">Outside input</span></li>
+        </ul></section>
+      <section class="node" aria-labelledby="m-acc"><h3 id="m-acc">Account</h3>
+        <ul>
+          <li><span>Account home</span><span class="st">Drawn · 8</span></li>
+          <li><span>Vouch codes: list, make, made</span><span class="st">Drawn · 8</span></li>
+          <li><span>Team: list, invite</span><span class="st">Drawn · 8</span></li>
+          <li><span>Credit notes: list, one note, refund</span><span class="st">Drawn · 9</span></li>
+          <li><span>Loyalty tier</span><span class="st">Drawn · 9</span></li>
+          <li><span>Business profile</span><span class="st">Drawn · 9</span></li>
+          <li><span>Notifications</span><span class="st">Drawn · 10</span></li>
+          <li><span>Sign-in and security, getting back in</span><span class="st">Drawn · 10</span></li>
+          <li><span>New Terms; closing the business</span><span class="st">Drawn · 10</span></li>
+          <li><span>Saved on this phone</span><span class="st">Drawn · 11</span></li>
+          <li><span>Install the app, with iPhone steps</span><span class="st s">Spine only</span></li>
+          <li><span>Terms and Privacy pages; Help sheet</span><span class="st s">Spine only</span></li>
+        </ul></section>
+      <section class="node" aria-labelledby="m-top"><h3 id="m-top">Top bar and banners</h3>
+        <ul>
+          <li><span>Cart, with its count</span><span class="st g">Gap</span></li>
+          <li><span>Offline, update available, slow connection</span><span class="st">Drawn · 20</span></li>
+          <li><span>“Prices are being updated”, rate too old</span><span class="st g">Gap</span></li>
+          <li><span>Laptop layouts: Home, add products, Project, Orders</span><span class="st">Drawn · 22</span></li>
+        </ul>
+        <p class="cap">The cart and the banner that stops ordering belong with the first two gaps in section 6.</p></section>
+    </div>
+  </section>
+
+  <!-- 3 CONSOLE MAP -->
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. The staff console map</h2>
+    <p class="sub">Three roles, each seeing only its own rail. 35 screens or groups of screens: 22 drawn, 7 spine only, and 6 gaps. A rail item with no drawing is either a plain list that follows the Receipts pattern, or a real gap. Three of the gaps have a state card in Steps 15 and 16 but no page.</p>
+    <div class="map">
+      <section class="node who" aria-labelledby="c-fin"><h3 id="c-fin">Finance</h3>
+        <h4>Queues</h4>
+        <ul>
+          <li><span>Today</span><span class="st">Drawn · 13</span></li>
+          <li><span>Receipts: queue and review</span><span class="st">Drawn · 13</span></li>
+          <li><span>Credit note requests</span><span class="st g">Gap</span></li>
+          <li><span>Unmatched credits</span><span class="st">Drawn · 13</span></li>
+        </ul>
+        <h4>Money</h4>
+        <ul>
+          <li><span>Orders and payments</span><span class="st s">Spine only</span></li>
+          <li><span>Credit notes and refunds</span><span class="st g">Gap</span></li>
+          <li><span>Platform Rate</span><span class="st g">Gap</span></li>
+          <li><span>Bank statements: import</span><span class="st">Drawn · 13</span></li>
+          <li><span>Reports and exports</span><span class="st s">Spine only</span></li>
+        </ul></section>
+      <section class="node who" aria-labelledby="c-ops"><h3 id="c-ops">Operations, with Support duties</h3>
+        <h4>Queues</h4>
+        <ul>
+          <li><span>Today</span><span class="st">Drawn · 14</span></li>
+          <li><span>Order approvals</span><span class="st">Drawn · 14</span></li>
+          <li><span>Returns: check a device</span><span class="st">Drawn · 14</span></li>
+          <li><span>Returns: the list</span><span class="st s">Spine only</span></li>
+          <li><span>Support cases: the desk</span><span class="st">Drawn · 14</span></li>
+          <li><span>Support cases: the list</span><span class="st s">Spine only</span></li>
+        </ul>
+        <h4>Work</h4>
+        <ul>
+          <li><span>Shipments: one shipment</span><span class="st">Drawn · 14</span></li>
+          <li><span>Shipments, Back-orders, Orders: lists</span><span class="st s">Spine only</span></li>
+          <li><span>Stores and zones</span><span class="st">Drawn · 18</span></li>
+        </ul>
+        <h4>Catalogue</h4>
+        <ul>
+          <li><span>Products and stock; one product</span><span class="st">Drawn · 17</span></li>
+          <li><span>Goods in; bulk upload</span><span class="st">Drawn · 17</span></li>
+          <li><span>Documentation; the guide editor</span><span class="st">Drawn · 18</span></li>
+        </ul></section>
+      <section class="node who" aria-labelledby="c-adm"><h3 id="c-adm">Admin</h3>
+        <h4>Queues</h4>
+        <ul>
+          <li><span>Today</span><span class="st">Drawn · 15</span></li>
+          <li><span>Level 3 requests; NIN reviews</span><span class="st">Drawn · 15</span></li>
+          <li><span>Return decisions</span><span class="st">Drawn · 15</span></li>
+          <li><span>Approvals</span><span class="st">Drawn · 16</span></li>
+          <li><span>Escalated</span><span class="st s">Spine only</span></li>
+        </ul>
+        <h4>People</h4>
+        <ul>
+          <li><span>One business account; the Hold dialog</span><span class="st">Drawn · 15</span></li>
+          <li><span>Business accounts: the list</span><span class="st s">Spine only</span></li>
+          <li><span>Holds and blocklist</span><span class="st g">Gap</span></li>
+          <li><span>Create the first businesses</span><span class="st g">Gap</span></li>
+          <li><span>Staff, deputies</span><span class="st">Drawn · 16</span></li>
+        </ul>
+        <h4>Rules and watch</h4>
+        <ul>
+          <li><span>Pricing and rules; Business Hours</span><span class="st">Drawn · 16</span></li>
+          <li><span>Terms and policies: publish a version</span><span class="st g">Gap</span></li>
+          <li><span>Suppliers</span><span class="st">Drawn · 18</span></li>
+          <li><span>Audit trail; weekly review; dashboard</span><span class="st">Drawn · 16</span></li>
+        </ul></section>
+    </div>
+  </section>
+
+  <!-- 4 JOURNEYS -->
+  <section aria-labelledby="s4">
+    <h2 id="s4">4. Does every journey land somewhere?</h2>
+    <p class="sub">The test for a finished map: every stated need has a screen, and every screen has a journey that lands on it. Three journeys are drawn complete. Three are drawn except for one edge case each. One has no screens.</p>
+    <div class="scroll" role="region" aria-label="Journeys against the steps, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:760px">
+      <caption class="sr">The seven journeys against what was drawn</caption>
+      <thead><tr><th scope="col">Journey</th><th scope="col">Drawn in</th><th scope="col">Lands on</th><th scope="col">Missing</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">UJ-1 Tunde designs, quotes and orders</th><td>Steps 1 to 6, 13, 14</td><td>An order reaching Delivered</td><td><span class="st p">Edge case</span> His client withdraws and he cancels before approval: only an “Ask to cancel” button exists</td></tr>
+        <tr><th scope="row">UJ-2 Hammed joins</th><td>Steps 7, 8, 11, 15</td><td>Approved, then invite your team</td><td>Nothing</td></tr>
+        <tr><th scope="row">UJ-3 Funmi buys direct</th><td>None</td><td>None</td><td><span class="st g">Gap</span> The whole journey: the Cart, and ordering from it. The change-of-mind return is drawn (Step 12)</td></tr>
+        <tr><th scope="row">UJ-4 Tunde and a back-order item</th><td>Steps 2, 4, 6, 14</td><td>Each delivery Delivered on its own</td><td><span class="st p">Edge case</span> Cancelling a line that is more than 7 days late</td></tr>
+        <tr><th scope="row">UJ-5 Chidi finds the guide on site</th><td>Steps 2, 11</td><td>A guide, one step at a time</td><td>Nothing</td></tr>
+        <tr><th scope="row">UJ-6 Ngozi confirms a payment</th><td>Steps 13 to 16</td><td>Confirmed, then Order approvals</td><td><span class="st p">Edge case</span> Issuing the credit note for an overpayment (only the draft is shown)</td></tr>
+        <tr><th scope="row">UJ-7 Chidi returns a faulty camera</th><td>Steps 12, 14, 15</td><td>The outcome, with its dates</td><td>Nothing</td></tr>
+        <tr><th scope="row">No single journey: Account and settings</th><td>Steps 8 to 11</td><td>Each row of Account</td><td>Nothing. Each realises one requirement (FR-22, FR-51, FR-70, FR-71, FR-72)</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 5 COVERAGE BY SECTION -->
+  <section aria-labelledby="s5">
+    <h2 id="s5">5. Coverage against the PRD, by section</h2>
+    <p class="sub">The full list, one line per requirement, is in the appendix at the bottom. This is the same reading by PRD section.</p>
+    <div class="scroll" role="region" aria-label="Coverage by PRD section, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:760px">
+      <caption class="sr">Coverage by PRD section</caption>
+      <thead><tr><th scope="col">PRD section</th><th scope="col">Drawn in</th><th scope="col">Not yet covered</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">4.1 Accounts, access, teams (15)</th><td>Steps 7, 8, 10, 11, 15</td><td>First-cohort seeding is a state card only (FR-8). The Holds and blocklist page is not drawn (FR-72)</td></tr>
+        <tr><th scope="row">4.2 Catalogue, suppliers, stock (9)</th><td>Steps 2, 7, 14, 16, 17, 18</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.3 Pricing, rate, loyalty (6)</th><td>Steps 2, 4, 9, 16</td><td>The page where Finance sets and reconfirms the Platform Rate (FR-20)</td></tr>
+        <tr><th scope="row">4.4 Project designer (4)</th><td>Steps 1, 2, 3, 11, 22</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.5 Proposals (4)</th><td>Step 3</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.6 Cart and orders (9)</th><td>Steps 4, 5, 6 (from a Project)</td><td>The Cart (FR-33). Ordering from it, and the checks before any order (FR-34, FR-37). Cancel and change an order (FR-57, FR-75). The 14-day offer to ship in parts (FR-39)</td></tr>
+        <tr><th scope="row">4.7 Payments and credit notes (5)</th><td>Steps 5, 6, 9, 13</td><td>Finance side of credit notes (FR-43). Tax invoice and credit-note documents (FR-77)</td></tr>
+        <tr><th scope="row">4.8 Fulfilment and tracking (6)</th><td>Steps 6, 14, 17, 18</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.9 Documentation (3)</th><td>Steps 2, 11, 18</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.10 Notifications (1)</th><td>Steps 10, 19</td><td>The twelve message texts (FR-51)</td></tr>
+        <tr><th scope="row">4.11 Staff, queues, audit (4)</th><td>Steps 13 to 16</td><td>Queue lists other than Receipts (FR-78)</td></tr>
+        <tr><th scope="row">4.12 Installable app (2)</th><td>Steps 5, 22, 23</td><td>The install prompt and the iPhone steps (FR-54)</td></tr>
+        <tr><th scope="row">4.13 Returns and warranty (11)</th><td>Steps 12, 14, 15, 16</td><td>Nothing</td></tr>
+        <tr><th scope="row">4.14 Reporting and exports (1)</th><td>Step 16</td><td>The Finance exports page (FR-80)</td></tr>
+        <tr><th scope="row">4.15 Cross-cutting needs</th><td>Steps 19 to 23</td><td>Nothing</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="cap">The PRD’s build priorities make this matter. Cart and orders, cancellation and amendment, the Platform Rate, credit notes and tax invoices are all Priority 1, first-order critical (PRD section 6.1).</p>
+  </section>
+
+  <!-- 6 GAPS -->
+  <section aria-labelledby="s6">
+    <h2 id="s6">6. What has no screen yet, and how to close it</h2>
+    <p class="sub">Four groups. What I would draw next, what needs no drawing, and what waits for someone outside. Priority is the PRD’s own.</p>
+    <h3 class="grp">Draw next: the app (Step 25)</h3>
+    <div class="scroll" role="region" aria-label="Gaps in the app, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:760px">
+      <caption class="sr">Gaps in the app and the proposal for each</caption>
+      <thead><tr><th scope="col">Need</th><th scope="col">PRD</th><th scope="col">What is missing</th><th scope="col">Proposed</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Cart and direct buy (Funmi, UJ-3)</th><td class="fr">FR-33<br>FR-34<br>P1</td><td>No Add to cart on the product page, no Cart, and “Buy parts without a project” on Home leads nowhere. An item that sells out in the Cart has no state.</td><td>Draw adding to the cart, the Cart (lines, quantities, remove, unavailable or back-order, total with VAT included), the empty Cart, then the same delivery and confirm screens as Step 4.</td></tr>
+        <tr><th scope="row">Checks before an order can be made</th><td class="fr">FR-34<br>FR-37<br>FR-20<br>FR-72<br>P1</td><td>Step 4 draws the good path only. Nothing shows lines that cannot be ordered, an address in a zone we do not serve, prices being updated, a rate that is too old, two unpaid orders on one Project, or a business on hold.</td><td>One sheet of blocks, each saying what is wrong, why, and what to do next. They also appear on the Cart.</td></tr>
+        <tr><th scope="row">Cancel and change an order</th><td class="fr">FR-57<br>FR-75<br>FR-39<br>P1</td><td>UJ-1 says Tunde cancels if his client withdraws, but only an “Ask to cancel” button exists. No cancel before approval, no change of delivery details, no request once paid, no cancel of a late back-order line, no update of the receiver after a failed delivery, no offer to ship in parts after 14 days.</td><td>Draw each: Cancel order (what comes back as a credit note), Change delivery details, Ask to cancel after approval (shipments frozen, an answer within 1 business day), Cancel a late back-order line, Update the receiver, Ship in parts instead.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3 class="grp">Draw next: the console (Step 26)</h3>
+    <div class="scroll" role="region" aria-label="Gaps in the console, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:760px">
+      <caption class="sr">Gaps in the console and the proposal for each</caption>
+      <thead><tr><th scope="col">Need</th><th scope="col">PRD</th><th scope="col">What is missing</th><th scope="col">Proposed</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">The Platform Rate page</th><td class="fr">FR-20<br>P1</td><td>Finance sees a card on Today, and the second approver sees a preview. Nobody has a page to set or reconfirm the rate, record its source and spread, see who it affects, freeze order creation, or read the history.</td><td>Draw the Platform Rate page, with the 3% and 10% rules and the freeze.</td></tr>
+        <tr><th scope="row">Credit notes: requests, issuing, refunds</th><td class="fr">FR-43<br>P1</td><td>The business side is drawn (Step 9). Finance has two rail items with no screen: Credit note requests, and Credit notes and refunds. Applying a note to an order, issuing one, finishing the draft from an overpayment, and paying a refund to the recorded account.</td><td>Draw the request review, issuing a credit note, the refund payout, and the list with its ageing.</td></tr>
+        <tr><th scope="row">Holds, blocklist, Terms, first businesses</th><td class="fr">FR-72<br>FR-69<br>FR-8<br>P1</td><td>The Hold dialog is drawn. The Holds and blocklist page, publishing a Terms version, and creating the first businesses with platform vouch codes exist only as state cards or rail items. The founder needs the last one on the first day.</td><td>Draw Holds and blocklist, Publish a Terms version, and Create a business with its first vouch codes.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3 class="grp">Spine only: built from the patterns and a table, no wireframe</h3>
+    <div class="cols">
+      <div class="card"><h3>Queue lists</h3><p>Returns, Support cases, Shipments, Back-orders, Level 3 requests, NIN reviews, Return decisions, Escalated. Same list-and-preview pattern as the Receipts queue (Step 13). The spine gives the columns, filters, target and owner for each.</p></div>
+      <div class="card"><h3>Lookups</h3><p>Orders and payments (Finance), Orders (Operations), Business accounts (Admin). A search, a table, and the detail page already drawn.</p></div>
+      <div class="card"><h3>Reports and exports</h3><p>The five CSV exports (orders, payments, credit notes with ageing, monthly VAT output, bank reconciliation) with a date range. FR-80.</p></div>
+      <div class="card"><h3>Text pages</h3><p>Terms of use, Privacy Notice, accessibility statement, Install the app with iPhone steps, signed out, service down, not found. The page template and the words from Steps 19 and 20.</p></div>
+      <div class="card"><h3>The twelve messages</h3><p>The launch events of FR-51 as one table: event, who gets it, channel, the text, the link. Written to the voice rules of Step 19.</p></div>
+      <div class="card"><h3>Small sheets</h3><p>Delete or restore a room or a project (undo for 30 days, Step 20). The Help sheet: Call or WhatsApp us, and Give Support a code.</p></div>
+    </div>
+    <h3 class="grp">Waits for someone outside</h3>
+    <div class="cols">
+      <div class="card"><h3>Tax invoice and credit-note document <span class="st o">Outside input</span></h3><p>FR-77, Priority 1. The PRD says the fields are settled with the accountant. The layout follows the Proposal PDF. I would draw it once the accountant gives the fields, and the spine records that.</p></div>
+      <div class="card"><h3>Wording for counsel <span class="st o">Outside input</span></h3><p>The nine items on the Step 19 register (Terms key points, credit note expiry and refund terms, NIN lines, VAT wording, validity sentence, recall notices, hold messages, closing records, bank-details banner).</p></div>
+    </div>
+  </section>
+
+  <!-- 7 PLAN -->
+  <section aria-labelledby="s7">
+    <h2 id="s7">7. Plan from here</h2>
+    <div class="cols">
+      <div class="card"><h3>Step 25: close the app gaps</h3><p>Cart and direct buy. The checks before an order. Cancel and change an order, with the delivery exceptions. About three sheets of screens, with states.</p></div>
+      <div class="card"><h3>Step 26: close the console gaps</h3><p>The Platform Rate page. Credit note requests, credit notes and refunds. Holds and blocklist, publishing Terms, creating the first businesses.</p></div>
+    </div>
+    <p class="cap">After Step 26 the map is closed: every requirement has a screen, a pattern, or a named outside input. Then the two documents are written from the confirmed steps.</p>
+  </section>
+
+  <!-- APPENDIX -->
+  <section aria-labelledby="s8">
+    <h2 id="s8">Appendix: every requirement, one line each</h2>
+    <p class="sub">Eighty requirements in the PRD’s order. “Where” names the step and the screen. The status is counted in the four numbers at the top.</p>
+    <details>
+      <summary>Show the 80 lines</summary>
+      <div class="scroll" role="region" aria-label="Every requirement and where it is drawn, scrolls sideways on a narrow screen" tabindex="0">
+      <table style="min-width:760px" id="fr-table">
+        <caption class="sr">Every functional requirement and where it is drawn</caption>
+        <thead><tr><th scope="col">Requirement</th><th scope="col">Name</th><th scope="col">Where</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.1 Accounts, Access Levels and Teams</th></tr>
+          <tr><th scope="row">FR-1</th><td>Sign up and verify a contact</td><td>Step 7: sign up; enter the code</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-2</th><td>Level 1 access</td><td>Step 7: Get approved; the Catalogue before approval</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-3</th><td>Complete the profile for Level 2</td><td>Step 7: Confirm who you are</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-4</th><td>NIN verification</td><td>Step 7: Confirm who you are, and its states; Step 15: an identity check by hand</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-5</th><td>Generate a Vouch Code</td><td>Step 8: Vouch codes; make a code; the code is made</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-6</th><td>Request Level 3</td><td>Step 7: Ask for approval with a vouch code</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-7</th><td>Approve Level 3</td><td>Step 15: approving a business</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-8</th><td>Seed the first cohort</td><td>Step 15: a state card only</td><td><span class="st g">Gap</span></td></tr>
+          <tr><th scope="row">FR-9</th><td>Suspend vouching rights</td><td>Step 15: one business account</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-10</th><td>Invite and manage team members</td><td>Step 8: Team; invite someone; Step 11: the invitation</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-11</th><td>Role permissions</td><td>Step 8: what each person sees; Step 23: the visibility table</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-69</th><td>Terms and privacy acceptance</td><td>Step 7: sign up, ask for approval; Step 10: new Terms; Step 16: publishing a version (a state card)</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-70</th><td>Business profile</td><td>Step 9: Business profile</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-71</th><td>Authentication and recovery</td><td>Step 7: sign up, code; Step 8: the fresh code; Step 10: sign-in and security, getting back in</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-72</th><td>Holds, revocation, blocklist and closure</td><td>Step 15: the Hold dialog and state cards; Step 10: closing the business. No Holds and blocklist page</td><td><span class="st p">Partly</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.2 Catalogue, Suppliers and Stock</th></tr>
+          <tr><th scope="row">FR-12</th><td>Maintain Products</td><td>Step 17: one product</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-13</th><td>Platform Markup by Product Range, and the margin floor</td><td>Step 16: Pricing and rules</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-14</th><td>Multiple Suppliers, one active</td><td>Step 18: Suppliers</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-15</th><td>Bulk upload of Products</td><td>Step 17: bulk upload with a dry run</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-16</th><td>Stock quantities and status</td><td>Step 17: Products and stock; stock and goods in</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-17</th><td>Back-order configuration</td><td>Step 17: one product</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-18</th><td>Stock reservation and shortages</td><td>Step 14: order approvals, credit a line</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-73</th><td>Catalogue search, filters and stock display</td><td>Step 2: add product, product page; Step 7: the Catalogue before approval</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-74</th><td>Goods-in record and stock ledger</td><td>Step 17: stock and goods in</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.3 Pricing, Platform Rate and Loyalty</th></tr>
+          <tr><th scope="row">FR-19</th><td>Price computation</td><td>Steps 2 and 4 show it; Step 23: the money rules</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-20</th><td>Set the Platform Rate</td><td>Step 13: a card on Today; Step 16: approving a change. No page to set it</td><td><span class="st g">Gap</span></td></tr>
+          <tr><th scope="row">FR-21</th><td>Loyalty Tiers</td><td>Step 9: Loyalty tier</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-22</th><td>Tier visibility</td><td>Step 9: Loyalty tier</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-23</th><td>Discount rule and caps</td><td>Step 2: back-order tag; Step 4: review; Step 17: one product</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-24</th><td>Tier timing</td><td>Step 4: what changed since the Proposal</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.4 Project Designer</th></tr>
+          <tr><th scope="row">FR-25</th><td>Projects, Rooms and the Parts List</td><td>Step 1: Projects, New project; Step 2: the Project; Step 3: Parts list</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-26</th><td>Project Items</td><td>Step 2: the Project; add product</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-27</th><td>Price visibility in Projects</td><td>Step 2: the Project; Step 11: the Project on site</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-28</th><td>Offline design</td><td>Step 2: Save for offline; Step 11: on site, Saved on this phone; Step 23</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.5 Proposals</th></tr>
+          <tr><th scope="row">FR-29</th><td>Generate a Proposal</td><td>Step 3: Proposal builder; Proposal ready</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-30</th><td>Proposal PDF</td><td>Step 3: the PDF</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-31</th><td>Regenerate overwrites</td><td>Step 3: the Proposal on the Project</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-32</th><td>Proposal expiry</td><td>Step 3: the Proposal on the Project</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.6 Cart and Orders</th></tr>
+          <tr><th scope="row">FR-33</th><td>Cart for direct buy</td><td>None</td><td><span class="st g">Gap</span></td></tr>
+          <tr><th scope="row">FR-34</th><td>Create an Order</td><td>Step 4: from a Project. Not from a Cart. No screen for lines that cannot be ordered or for two unpaid orders</td><td><span class="st p">Partly</span></td></tr>
+          <tr><th scope="row">FR-35</th><td>Order pricing against the Proposal</td><td>Step 4: review</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-36</th><td>Back-order opt-in</td><td>Step 4: review</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-37</th><td>Fulfilment Method and delivery cost</td><td>Step 4: delivery or pick-up. No screen for an address in a zone we do not serve</td><td><span class="st p">Partly</span></td></tr>
+          <tr><th scope="row">FR-38</th><td>Price Lock and expiry</td><td>Step 4: confirm; Step 5; Step 6: state cards</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-39</th><td>Ship in parts or in full</td><td>Step 4: delivery. No offer to ship in parts after 14 days</td><td><span class="st p">Partly</span></td></tr>
+          <tr><th scope="row">FR-57</th><td>Cancel an Order</td><td>Step 6: an “Ask to cancel” button and the cancelled and expired cards. No cancel flow</td><td><span class="st g">Gap</span></td></tr>
+          <tr><th scope="row">FR-75</th><td>Amend an Order before Approval</td><td>None</td><td><span class="st g">Gap</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.7 Payments and Credit Notes</th></tr>
+          <tr><th scope="row">FR-40</th><td>Pay by bank transfer</td><td>Step 5: all four screens</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-41</th><td>Confirm payments</td><td>Step 13: review a receipt; unmatched credits; import</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-42</th><td>Order payment progress</td><td>Step 5: receipt sent; Step 6: the order, part paid</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-43</th><td>Credit Notes</td><td>Step 9: the business side. Finance side (requests, issuing, refunds): none</td><td><span class="st p">Partly</span></td></tr>
+          <tr><th scope="row">FR-77</th><td>Tax invoices and credit-note documents</td><td>Download rows only (Steps 6 and 9). No document layout</td><td><span class="st g">Gap</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.8 Fulfilment and Order Tracking</th></tr>
+          <tr><th scope="row">FR-44</th><td>Approve Paid Orders</td><td>Step 14: order approvals</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-45</th><td>Shipments and statuses</td><td>Step 14: one shipment; Step 6: the order and its state cards</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-65</th><td>Serial numbers</td><td>Step 14: one shipment; Step 17: goods in</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-46</th><td>Track orders</td><td>Step 6: one order</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-47</th><td>Delivery Zones and Zone Rates</td><td>Step 18: stores and delivery zones</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-56</th><td>Stores</td><td>Step 18: stores and delivery zones; Step 4: pick-up</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.9 Installation Documentation</th></tr>
+          <tr><th scope="row">FR-48</th><td>Manage Documentation</td><td>Step 18: Documentation; writing a guide</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-49</th><td>Access Documentation</td><td>Step 11: the product and its documentation; the written guide</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-50</th><td>Documentation offline</td><td>Step 2: Save for offline; Step 11: Saved on this phone</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.10 Notifications</th></tr>
+          <tr><th scope="row">FR-51</th><td>Email and WhatsApp notifications</td><td>Step 10: Notifications; Step 19: message patterns. The twelve message texts are not drawn</td><td><span class="st p">Partly</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.11 Staff Roles, Work Queues and Audit</th></tr>
+          <tr><th scope="row">FR-52</th><td>Staff accounts and roles</td><td>Step 16: Staff</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-53</th><td>Audit trail</td><td>Step 16: the audit trail</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-76</th><td>Staff continuity</td><td>Step 16: Staff, deputies, Business Hours</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-78</th><td>Staff work queues</td><td>Steps 13 to 15: Today; the Receipts queue. The other queue lists are spine only</td><td><span class="st p">Partly</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.12 Installable, Offline-Capable App</th></tr>
+          <tr><th scope="row">FR-54</th><td>Installable app</td><td>Step 22: install rules. The install prompt and the iPhone steps are spine only</td><td><span class="st s">Spine only</span></td></tr>
+          <tr><th scope="row">FR-55</th><td>Low-bandwidth use</td><td>Step 5: the signal drops; Steps 22 and 23</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.13 Returns and Warranty</th></tr>
+          <tr><th scope="row">FR-79</th><td>Cases</td><td>Step 12: report a problem; the Case; Step 14: the support desk</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-67</th><td>Serial number lookup</td><td>Step 14: the support desk</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-68</th><td>Issue Codes</td><td>Step 12: the Case; Step 14: the support desk</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-58</th><td>Raise a Return Request</td><td>Step 12: raise the request; the Manager approves</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-59</th><td>Reporting windows</td><td>Step 12: report a problem; Step 16: return windows</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-60</th><td>Investigation and decision</td><td>Step 14: a returned device; Step 15: deciding a return</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-61</th><td>Remedies</td><td>Step 15: deciding a return; Step 12: the outcome</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-62</th><td>Return freight and handover</td><td>Step 12: bring the device back; Step 15: freight</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-63</th><td>Exclusions</td><td>Step 12: states, change of mind with exclusions</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-64</th><td>Warranty pass-through</td><td>Step 12: Warranty until on delivered lines</td><td><span class="st">Drawn</span></td></tr>
+          <tr><th scope="row">FR-66</th><td>Counterfeit procedure</td><td>Steps 14, 15 and 16: states and the whole-product hold</td><td><span class="st">Drawn</span></td></tr>
+          <tr class="gh"><th colspan="4" scope="colgroup">4.14 Reporting and Finance Exports</th></tr>
+          <tr><th scope="row">FR-80</th><td>Dashboard and exports</td><td>Step 16: the dashboard. The Finance exports are a state card</td><td><span class="st p">Partly</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </details>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the map and where each thing lives, how complete the coverage is, what to draw next, and what stays spine only.</p>
+</main>
+<script>
+/* Counts the chips in the appendix so the four numbers at the top can never disagree with the table. */
+(function(){
+  var rows = document.querySelectorAll('#fr-table tbody tr:not(.gh)');
+  var c = {d:0,p:0,s:0,g:0};
+  rows.forEach(function(r){
+    var chip = r.querySelector('td:last-child .st');
+    if(!chip) return;
+    if(chip.classList.contains('g')) c.g++;
+    else if(chip.classList.contains('p')) c.p++;
+    else if(chip.classList.contains('s')) c.s++;
+    else c.d++;
+  });
+  var set = function(id,v){var e=document.getElementById(id); if(e) e.textContent=v;};
+  set('n-drawn',c.d); set('n-partly',c.p); set('n-spine',c.s); set('n-gap',c.g);
+  document.documentElement.setAttribute('data-count', rows.length + ':' + c.d + ',' + c.p + ',' + c.s + ',' + c.g);
+})();
+</script>
+</body>
+</html>

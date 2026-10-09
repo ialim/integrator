@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 6, the Orders tab and order states (proposal)</title>
+<style>
+/*
+  STEP 6 WIREFRAMES: Orders list, Order detail in progress, a payment problem, and a reference sheet of
+  order and delivery states. Direction A (Ledger) look, light only. Layout proposal for the owner's reaction.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:800px;margin:0 0 26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:96px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 17px/1.2 var(--serif)}
+.iconbtn{position:relative;display:grid;place-items:center;min-width:48px;min-height:48px;background:none;border:0;color:#fff}
+.count{position:absolute;top:5px;right:3px;min-width:18px;padding:1px 5px;border-radius:2px;background:#fff;color:var(--green);font:700 11.5px/1.3 var(--sans);text-align:center}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 4px}
+.head h2{font:700 21px/1.2 var(--serif)}
+.head h3{font:700 19px/1.2 var(--serif)}
+.meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:12px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:46px;background:var(--sheet);color:var(--green);font:600 14.5px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.olist{margin:6px 16px 0}
+.olist li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.olist li.need{margin:0 -16px;padding:12px 16px;background:var(--bad-tint);border-left:4px solid var(--bad)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pname{font:700 15.5px/1.25 var(--serif)}
+.pamt{font:700 15px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pmeta{margin-top:2px;font-size:13px;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink)}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--sheet);border-top:2px solid var(--ink)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.dcard{margin:10px 16px 0;padding:11px 12px;background:var(--sheet);border:1px solid var(--control)}
+.dcard h4{display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 15px/1.3 var(--sans)}
+.dcard ul{margin-top:6px;font-size:13.5px;color:var(--ink2)}
+.dcard .trk{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule);font-size:13.5px}
+.dcard .trk b{font:700 14px var(--mono)}
+.dcard .more{display:flex;justify-content:space-between;align-items:center;min-height:44px;margin-top:6px;border-top:1px solid var(--rule);color:var(--green);font:600 14px var(--sans)}
+.copy{display:inline-flex;align-items:center;justify-content:center;min-width:64px;min-height:44px;padding:0 10px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;color:var(--green);font:600 13.5px var(--sans)}
+.prow2{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 16px;min-height:52px;border-bottom:1px solid var(--rule);font-size:14px}
+.prow2 b{font-variant-numeric:tabular-nums}
+.act{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px;min-height:52px;border-bottom:1px solid var(--rule);color:var(--green);font:600 15px var(--sans)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:12px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.banner{margin:12px 16px 0;padding:12px;border-left:4px solid var(--bad);background:var(--bad-tint);font-size:14px}
+.banner b{display:block;font-size:15px}
+.banner p{margin-top:4px}
+.due{margin:12px 16px 0;padding:10px 0;border-top:3px double var(--ink);border-bottom:3px double var(--ink)}
+.due .amt{font:700 26px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.due dl div{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--rule);font-size:14px}
+.due dl{margin-top:6px}
+.due dd{font-weight:600;font-variant-numeric:tabular-nums}
+.sheet{margin-top:34px}
+.sheet h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.sheet .sub{max-width:800px;margin:0 0 16px;font-size:14px;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px 12px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .who{margin-top:6px;font-size:12.5px;color:var(--ink2)}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.notes{max-width:800px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-up" viewBox="0 0 24 24"><path d="M12 19V6M7 11l5-5 5 5M5 21h14"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 6 of the Tunde walk-through</p>
+  <h1>The Orders tab: the list, one Order from start to finish, and every state</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Three phone screens, then a reference sheet of the states an Order and its deliveries can be in. Colour follows your rule: in-progress states are neutral outlined labels, and only something that needs action or has gone wrong is tinted. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="row">
+    <figure class="unit">
+      <figcaption>1. Orders list<span>Open and Done. An order that needs action is tinted and listed first.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><button class="iconbtn" type="button" aria-label="Cart, 2 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">2</span></button></div>
+        <div class="head"><h2>Orders</h2></div>
+        <div class="seg"><span class="on">Open · 3</span><span>Done · 12</span></div>
+        <ul class="olist">
+          <li class="need"><div class="prow"><span class="pname">INT-0045 · Banana Island villa: networking</span></div><div class="prow" style="margin-top:2px"><span class="pmeta">Created 7 Oct</span><span class="pamt">₦1,284,300.00</span></div><div class="chips"><span class="chip bad">Payment unconfirmed</span><span class="chip">Action needed</span></div></li>
+          <li><div class="prow"><span class="pname">INT-0044 · Cabling and connectors</span><span class="pamt">₦48,600.00</span></div><div class="pmeta">Direct buy · created today</div><div class="chips"><span class="chip">Awaiting payment</span><span class="chip warn">Price held for 3 h 12 min</span></div></li>
+          <li><div class="prow"><span class="pname">INT-0042 · Lekki Phase 1 duplex</span><span class="pamt">₦731,729.94</span></div><div class="pmeta">Created 7 Oct</div><div class="chips"><span class="chip">Approved</span><span class="chip">2 deliveries · 1 in transit</span></div></li>
+        </ul>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab on"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. One Order, approved and on its way<span>Deliveries first, each with its own status. Payments, documents, and the few things he can do.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0042</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Lekki Phase 1 duplex</p><h3>₦731,729.94</h3><div class="chips"><span class="chip">Approved</span><span class="chip">Paid in full</span></div></div>
+        <h4 class="sec">Deliveries · 2</h4>
+        <div class="dcard"><h4>Delivery 1<span class="chip">In transit</span></h4>
+          <ul><li>4MP PoE dome camera × 6</li><li>8-channel PoE NVR × 1</li><li>Cat6 cable, 305 m box × 1</li></ul>
+          <div class="trk"><span>Courier partner · tracking <b>CP-88213</b></span><button class="copy" type="button">Copy</button></div>
+          <div class="more"><span>Serial numbers · 7</span><svg class="i"><use href="#ic-chev"/></svg></div></div>
+        <div class="dcard"><h4>Delivery 2<span class="chip">Processing</span></h4>
+          <ul><li>8-port PoE switch × 1</li></ul>
+          <p class="pmeta" style="margin-top:6px">Back-order · expected in about 3 weeks, around 28 Oct.</p></div>
+        <h4 class="sec">Payments</h4>
+        <div class="prow2"><span>7 Oct · transfer</span><span><b>₦731,729.94</b> <span class="chip">Confirmed</span></span></div>
+        <h4 class="sec">Documents and guides</h4>
+        <div class="act"><span>Tax invoice (PDF)</span><svg class="i"><use href="#ic-up" style="transform:rotate(180deg);transform-origin:center"/></svg></div>
+        <div class="act"><span>Installation guides for these products</span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <button class="btn outline" type="button">Report a problem</button>
+        <button class="btn outline" type="button">Ask to cancel</button>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. A payment problem he can fix<span>The one state that asks him to act. The wording is the PRD's own.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Orders</button><span class="title">Order INT-0045</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Banana Island villa: networking</p><h3>₦1,284,300.00</h3><div class="chips"><span class="chip bad">Payment unconfirmed</span></div></div>
+        <div class="banner" role="alert"><b>Payment unconfirmed: please upload your receipt again or pay the full amount.</b><p>We could not match your transfer of ₦800,000.00 to our bank statement. Check the amount and the reference on your receipt.</p><p>Upload a corrected receipt within 24 hours and we keep your price.</p></div>
+        <button class="btn" type="button"><svg class="i"><use href="#ic-up"/></svg>Upload receipt again</button>
+        <div class="due"><dl><div><dt>Amount due</dt><dd>₦1,284,300.00</dd></div><div><dt>Confirmed so far</dt><dd>₦0.00</dd></div><div><dt>Still to pay</dt><dd>₦1,284,300.00</dd></div></dl></div>
+        <h4 class="sec">Payments</h4>
+        <div class="prow2"><span>7 Oct · transfer</span><span><b>₦800,000.00</b> <span class="chip bad">Unconfirmed</span></span></div>
+        <p class="pmeta" style="margin:10px 16px 0">Need help? Call or send us a WhatsApp message. We will find your payment.</p>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab on"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="sheet" aria-labelledby="ss">
+    <h2 id="ss">Reference sheet: the other states, as they appear at the top of an Order</h2>
+    <p class="sub">Neutral cards are information. Brass-tinted cards need him to act or watch a clock. Red-tinted cards mean something went wrong. Every state carries its words, never colour alone.</p>
+    <div class="grid">
+      <div class="sc"><p class="lab">Awaiting payment</p><h4>Price held for 3 h 12 min</h4><p>Send your receipt before 8 Oct, 10:42 am to keep this price.</p><span class="b">Upload receipt</span></div>
+      <div class="sc need"><p class="lab">Awaiting payment, 4 hours left</p><h4>4 hours left to keep your price</h4><p>After that the price may change with the exchange rate.</p><span class="b">Upload receipt</span></div>
+      <div class="sc need"><p class="lab">Awaiting payment, 8 hours left</p><h4>This order is cancelled in 8 hours</h4><p>We have not received a payment. Send your receipt to keep the order.</p><span class="b">Upload receipt</span></div>
+      <div class="sc"><p class="lab">Part paid</p><h4>₦400,000.00 confirmed. Still to pay ₦331,729.94.</h4><p>Send a receipt for each transfer you make.</p><span class="b o">Upload receipt</span></div>
+      <div class="sc need"><p class="lab">Price no longer held</p><h4>The amount due is now ₦735,425.56</h4><p>The exchange rate changed before your payment was complete. Confirmed so far ₦600,000.00. Still to pay ₦135,425.56.</p><span class="b">Upload receipt</span></div>
+      <div class="sc err"><p class="lab">Expired</p><h4>This order expired</h4><p>We did not receive a payment in time. Any money we did receive is kept for you as a credit note.</p><span class="b o">Make a new order from the Project</span></div>
+      <div class="sc err"><p class="lab">Cancelled</p><h4>This order was cancelled</h4><p>₦731,729.94 is in your credit notes.</p><span class="b o">View credit notes</span></div>
+      <div class="sc"><p class="lab">Delivery, ready for pickup</p><h4>Ready to collect at the Main Store</h4><p>Open Monday to Saturday, 8 am to 6 pm. Whoever collects it must give their name and show ID.</p></div>
+      <div class="sc err"><p class="lab">Delivery failed</p><h4>We could not deliver</h4><p>The courier could not reach the receiver. We will try again. Check the receiver's phone number.</p><span class="b o">Update receiver details</span></div>
+      <div class="sc err"><p class="lab">Delivery lost</p><h4>Your delivery is lost</h4><p>We have opened a case. We will send it again or refund you, and we will contact you.</p></div>
+      <div class="sc"><p class="lab">Delivered</p><h4>Delivered 11 Nov</h4><p>If something is wrong, report it within 5 days for damage or a wrong item. Your warranty is shown for each product.</p><span class="b o">Report a problem</span></div>
+      <div class="sc"><p class="lab">What a Technician sees</p><h4>Status and deliveries only</h4><p>No amounts, payments, bank details or documents. Deliveries, status, serial numbers and the installation guides.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the Orders list, the Order detail, the state wording and colour use, and what a Technician sees.</p>
+</main>
+</body>
+</html>
