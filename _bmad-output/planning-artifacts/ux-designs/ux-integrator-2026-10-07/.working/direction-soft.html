@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>integrator: Direction C, Soft</title>
 <style>
 /*
@@ -13,11 +14,14 @@
   Accent     indigo fill #4B2FC4 (white text 8.39:1), also icons and focus ring
   Lines      control border #6C679C (4.15:1 or better on every surface); dashed for add and unavailable
   Focus      3 px indigo #4B2FC4 outline, 3 px offset
+  Decor      hairline #E4E1F2 | divider on tint #D4CEF0 | window dots #D8D3F0 (decorative only, never text or a control edge); white text #FFFFFF on indigo fills
+  Device     phone bezel #26233D | 780 px bezel notch #C9BEFF (review annotation only, not part of the product UI)
   Type       system-ui sans, weights 500, 600 and 700; amounts large with the naira sign and kobo set smaller (still shown, still AA)
   Shape      20 to 28 px card radius, pill buttons and pill labels, soft two-layer shadows, product thumbnails
   Density    medium: 16 px item names, 44 to 54 px controls, one tile per item
 */
 :root{
+  color-scheme:light;
   --desk:#E5E2F4; --bg:#F3F2FB; --card:#FFFFFF; --tint:#E9E5FA; --neutral:#ECEAF5;
   --ok-tint:#DDF2E5; --warn-tint:#FCEBC6; --bad-tint:#FBE0E0;
   --ink:#17152B; --ink2:#403C63; --brand:#4B2FC4; --brand-text:#3B22A8;
@@ -205,6 +209,7 @@ table{border-collapse:collapse}
 .sw{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0}
 .sw li{display:flex;align-items:center;gap:8px;font:13px/1.2 var(--mono)}
 .sw i{width:24px;height:24px;background:var(--c);border:1px solid var(--control);border-radius:8px}
+.sample{display:flex;align-items:center;flex-wrap:wrap;gap:10px 20px}
 .demo-focus{width:auto;min-height:48px;padding:0 22px;outline:3px solid var(--brand);outline-offset:3px}
 </style>
 </head>
@@ -667,7 +672,8 @@ table{border-collapse:collapse}
 
 <footer class="foot">
   <h2 class="sec">Checks for this direction</h2>
-  <p><strong>Lowest body-text contrast: 6.00:1</strong> (placeholder, to be replaced after the final computation), against the 4.5:1 AA minimum for normal text.</p>
+  <p><strong>Lowest body-text contrast: 7.68:1</strong> (caution text #6A3F00 on caution tint #FCEBC6), against the 4.5:1 AA minimum for normal text. Every text and background pairing in this file was computed from the final styles. Lowest control-border contrast: 4.20:1 (control border #6C679C on indigo tint #E9E5FA); lowest icon contrast: 6.81:1; both against the 3:1 minimum for UI components.</p>
+  <p>Touch targets on the phone frames are at least 44 x 44 px (stepper buttons 44 x 44, section toggles 44 x 44, buttons 52 to 60 px tall). Every status carries its word, and most also carry an icon. The focus ring is a 3 px indigo outline with a 3 px gap (8.39:1 on white, 7.55:1 on the screen ground). Light mode only.</p>
   <ul class="sw" aria-label="Palette">
     <li style="--c:#F3F2FB"><i></i>ground #F3F2FB</li>
     <li style="--c:#E9E5FA"><i></i>tint #E9E5FA</li>
@@ -681,7 +687,7 @@ table{border-collapse:collapse}
     <li style="--c:#8B1B1B"><i></i>alert #8B1B1B</li>
     <li style="--c:#6C679C"><i></i>control #6C679C</li>
   </ul>
-  <p>Focus ring sample: <button type="button" class="btn demo-focus">Create order</button></p>
+  <p class="sample"><span>Focus ring sample:</span> <button type="button" class="btn demo-focus">Create order</button></p>
 </footer>
 </div>
 </body>

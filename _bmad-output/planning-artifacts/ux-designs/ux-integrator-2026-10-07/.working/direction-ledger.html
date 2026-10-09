@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>integrator: Direction A, Ledger</title>
 <style>
 /*
@@ -14,12 +15,14 @@
   On green   white #FFFFFF | soft #D4E5DA
   Lines      control border #7A7258 (3:1 or better on every surface) | hairline rule #D9CFB5 (decorative only, never the only edge of a control)
   Focus      3 px ledger green #153D2E outline, 2 px offset (white inside green bars)
+  Device     phone bezel #2B281F | 780 px bezel notch #FFD24D (review annotation only, not part of the product UI)
   Type       headings: "Palatino Linotype", Palatino, "Book Antiqua", "Noto Serif", "Times New Roman", serif
              body and every amount: system-ui sans, tabular figures
   Shape      2 px corners, hairline rules between rows, double rule under totals, no shadows
   Density    compact: 15 px body, 13 px captions, 46 px controls
 */
 :root{
+  color-scheme:light;
   --paper:#FAF6EC; --sheet:#FFFFFF; --aged:#F0E9D6; --desk:#E7DFCB;
   --bad-tint:#F6E4DE; --warn-tint:#F6EACB;
   --ink:#1A1812; --ink2:#4A4434;
@@ -163,7 +166,7 @@ table{border-collapse:collapse}
 .notice{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;background:var(--bad-tint);border-left:4px solid var(--bad);font:600 13px/1.3 var(--sans);color:var(--ink)}
 .notice .i{color:var(--bad)}
 .q{width:100%;font-size:13px}
-.q th{padding:8px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11.5px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.q th{padding:8px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
 .q th .i{display:inline-block;width:13px;height:13px;margin-left:4px;vertical-align:-2px}
 .q td{padding:7px 8px;border-bottom:1px solid var(--rule);vertical-align:middle;color:var(--ink)}
 .q .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -201,6 +204,7 @@ table{border-collapse:collapse}
 .sw{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0}
 .sw li{display:flex;align-items:center;gap:8px;font:13px/1.2 var(--mono);color:var(--ink)}
 .sw i{width:22px;height:22px;background:var(--c);border:1px solid var(--ink)}
+.sample{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px}
 .demo-focus{min-height:44px;padding:0 18px;outline:3px solid var(--green);outline-offset:2px}
 </style>
 </head>
@@ -635,8 +639,8 @@ table{border-collapse:collapse}
 
 <footer class="foot">
   <h2 class="sec">Checks for this direction</h2>
-  <p><strong>Lowest body-text contrast: 6.31:1</strong> (brass #6B4E0C on aged paper #F0E9D6), against the 4.5:1 AA minimum for normal text. Lowest control-border contrast: 3.96:1 (control border #7A7258 on aged paper), against the 3:1 minimum for UI components.</p>
-  <p>Touch targets on the phone frames are at least 46 x 46 px. Every status carries its word plus a mark or icon. The focus ring is a 3 px ledger-green outline with a 2 px gap (11.19:1 on paper); it turns white on green bars.</p>
+  <p><strong>Lowest body-text contrast: 7.05:1</strong> (caution text #6E4400 on caution tint #F6EACB), against the 4.5:1 AA minimum for normal text. Every text and background pairing in this file was computed from the final styles. Lowest control-border contrast: 3.96:1 (control border #7A7258 on aged paper #F0E9D6); lowest icon contrast: 6.37:1; both against the 3:1 minimum for UI components.</p>
+  <p>Touch targets on the phone frames are at least 44 x 44 px (stepper buttons 46 x 44, section toggles 48 x 48). Every status carries its word, and most also carry an icon or mark. The focus ring is a 3 px ledger-green outline with a 2 px gap (11.19:1 on paper); it turns white on green bars. Light mode only.</p>
   <ul class="sw" aria-label="Palette">
     <li style="--c:#FAF6EC"><i></i>paper #FAF6EC</li>
     <li style="--c:#F0E9D6"><i></i>aged #F0E9D6</li>
@@ -650,7 +654,7 @@ table{border-collapse:collapse}
     <li style="--c:#8A1C14"><i></i>alert #8A1C14</li>
     <li style="--c:#7A7258"><i></i>control #7A7258</li>
   </ul>
-  <p>Focus ring sample: <button type="button" class="btn demo-focus">Create order</button></p>
+  <p class="sample"><span>Focus ring sample:</span> <button type="button" class="btn demo-focus">Create order</button></p>
 </footer>
 </div>
 </body>

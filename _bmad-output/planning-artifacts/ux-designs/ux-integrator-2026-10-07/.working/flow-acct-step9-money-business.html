@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 9, credit notes, loyalty tier and business profile (proposal)</title>
+<style>
+/*
+  STEP 9 WIREFRAMES: Account, part 2. Credit notes (list, detail, use on an order, refund), loyalty tier, business profile.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Sample money: Tunde's account, Adeyemi Integrated Systems; sample Platform Rate NGN 1,368 as in Step 4.
+  Facts: PRD FR-21 to FR-24, FR-29, FR-30, FR-43, FR-70, FR-71, FR-72, FR-77.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:840px;margin:0 0 26px}
+.flow{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:96px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 17px/1.2 var(--serif)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 4px}
+.head h2{font:700 22px/1.2 var(--serif)}
+.head h3{font:700 24px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+.head p{margin-top:5px;font-size:14px;color:var(--ink2)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.field{margin:14px 16px 0}
+.field label{display:block;margin-bottom:5px;font:600 14px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px}
+.in.ph{color:var(--ink2)}
+.help{margin:6px 16px 0;font-size:13px;color:var(--ink2)}
+.pmeta{margin-top:2px;font-size:13px;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:14px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn.small{width:auto;min-height:44px;margin:0;padding:0 14px;font-size:14px}
+.link{display:block;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--sheet);border-top:2px solid var(--ink)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.due{margin:12px 16px 0;padding:10px 0;border-top:3px double var(--ink);border-bottom:3px double var(--ink)}
+.due .label{font:600 13px var(--sans);color:var(--ink2)}
+.due .amt{font:700 26px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.due dl{margin-top:6px}
+.due dl div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--rule);font-size:14px}
+.due dd{font-weight:600;font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:12px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:46px;background:var(--sheet);color:var(--green);font:600 14.5px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.olist{margin:6px 16px 0}
+.olist li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.olist li.need{margin:0 -16px;padding:12px 16px;background:var(--warn-tint);border-left:4px solid var(--brass)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pname{font:700 15.5px/1.25 var(--serif)}
+.pamt{font:700 15px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.foot{margin:12px 16px 0;font-size:13px;color:var(--ink2)}
+.prow2{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 16px;min-height:52px;border-bottom:1px solid var(--rule);font-size:14px}
+.prow2 b{font-variant-numeric:tabular-nums}
+.linkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px;min-height:52px;border-bottom:1px solid var(--rule);color:var(--green);font:600 15px var(--sans)}
+.body{margin:8px 16px 0;font-size:14px}
+.opt{display:flex;gap:12px;align-items:flex-start;margin:10px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control)}
+.opt.on{padding:11px;border:2px solid var(--green)}
+.opt .rad{display:grid;place-items:center;flex:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--control);border-radius:50%}
+.opt.on .rad{border-color:var(--green)}
+.opt.on .rad::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--green)}
+.opt b{display:block;font:700 15px/1.3 var(--sans)}
+.opt small{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.care{margin:14px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.meter{height:16px;margin:10px 0 0;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.ends{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:12.5px;color:var(--ink2)}
+.ladder{width:calc(100% - 32px);margin:8px 16px 0;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:13.5px}
+.ladder th,.ladder td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.ladder thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+.ladder tbody th{font-weight:600}
+.ladder tr.now th{border-left:4px solid var(--green)}
+.ladder small{display:block;font-weight:400;color:var(--ink2)}
+.logorow{display:flex;align-items:center;gap:12px;margin:14px 16px 0}
+.logorow .tile{display:grid;place-items:center;flex:none;width:64px;height:64px;background:var(--sheet);border:1px solid var(--control);font:700 18px var(--serif);color:var(--green)}
+.logorow b{display:block;font:600 14px var(--sans)}
+.logorow small{display:block;font-size:13px;color:var(--ink2)}
+.states{margin-top:38px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub{max-width:840px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.rt{width:100%;max-width:1100px;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.rt th,.rt td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.rt thead th{border-bottom:2px solid var(--ink);background:var(--aged);font:700 13px var(--sans)}
+.rt tbody th{font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .who{margin-top:6px;font-size:12.5px;color:var(--ink2)}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 0 0;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.notes{max-width:840px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-down" viewBox="0 0 24 24"><path d="M12 5v13M7 13l5 5 5-5M5 21h14"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 9 of the walk-through</p>
+  <h1>Account: credit notes, loyalty tier, and the business profile</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. This is Tunde's account, the Owner of Adeyemi Integrated Systems. Six phone screens, two reference tables, then a sheet of states. Credit notes are the platform's alternative to a wallet: our finance team issues them, they last 12 months, and they can only be used to buy from us. Naira amounts use the sample rate of ₦1,368 to the dollar from Step 4. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="flow">
+    <figure class="unit">
+      <figcaption>1. Credit notes<span>What he has to spend at the top. The note that expires first is tinted and listed first. Used and expired notes sit on the second tab.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Account</button><span class="title">Credit notes</span><span class="spacer"></span></div>
+        <div class="due"><p class="label">Available to use</p><p class="amt">₦203,250.00</p><p class="pmeta">3 credit notes. They can only be used to buy from us.</p></div>
+        <div class="seg"><span class="on">Available · 3</span><span>Used or expired · 2</span></div>
+        <ul class="olist">
+          <li class="need"><div class="prow"><span class="pname">CN-0004 · Uncollected pick-up</span><span class="pamt">₦38,250.00</span></div><div class="pmeta">Order INT-0027 · expires 21 Oct 2026</div><div class="chips"><span class="chip">Ready to use</span><span class="chip warn">Expires in 14 days</span></div></li>
+          <li><div class="prow"><span class="pname">CN-0009 · Cancelled order</span><span class="pamt">₦120,000.00</span></div><div class="pmeta">Order INT-0033 · expires 2 Aug 2027</div><div class="chips"><span class="chip">Partly used</span><span class="chip">₦190,500.00 of ₦310,500.00 used</span></div></li>
+          <li><div class="prow"><span class="pname">CN-0012 · Overpayment</span><span class="pamt">₦45,000.00</span></div><div class="pmeta">Order INT-0041 · expires 14 Sep 2027</div><div class="chips"><span class="chip">Ready to use</span></div></li>
+        </ul>
+        <p class="foot">Credit lasts 12 months from the day it is issued. The Owner is reminded 60 and 14 days before it expires.</p>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. One credit note<span>Where it came from in plain words, what is left, and the two things he can do. The refund button appears only for the Owner and only when the reason allows it.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Credit notes</button><span class="title">CN-0012</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Overpayment on order INT-0041</p><h3>₦45,000.00</h3><div class="chips"><span class="chip">Ready to use</span><span class="chip">Expires 14 Sep 2027</span></div></div>
+        <div class="due"><dl><div><dt>Issued</dt><dd>₦45,000.00</dd></div><div><dt>Used</dt><dd>₦0.00</dd></div><div><dt>Balance</dt><dd>₦45,000.00</dd></div></dl></div>
+        <button class="btn" type="button">Use on an order</button>
+        <button class="btn outline" type="button">Ask for a refund</button>
+        <p class="help">You can ask for a refund because this credit came from an overpayment.</p>
+        <h3 class="sec">What this is</h3>
+        <p class="body">We received ₦45,000.00 more than order INT-0041 needed, so we keep it for you as credit.</p>
+        <h3 class="sec">History</h3>
+        <div class="prow2"><span>14 Sep · issued by our finance team</span><b>₦45,000.00</b></div>
+        <h3 class="sec">Document</h3>
+        <div class="linkrow"><span>Credit note document (PDF)</span><svg class="i"><use href="#ic-down"/></svg></div>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Use a credit note on an order<span>Reached from the order's payment screen, or from "Use on an order" on a note. We suggest the note that expires first, and show exactly what is left to pay.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Use a credit note</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Order INT-0044 · Cabling and connectors</p><h3>₦48,600.00</h3><p>Still to pay</p></div>
+        <h3 class="sec">Choose a credit note</h3>
+        <div class="opt on"><span class="rad"></span><span><b>CN-0004 · ₦38,250.00</b><small>Uncollected pick-up · expires in 14 days. We suggest this one because it expires first.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>CN-0009 · ₦120,000.00</b><small>Cancelled order · expires 2 Aug 2027</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>CN-0012 · ₦45,000.00</b><small>Overpayment · expires 14 Sep 2027</small></span></div>
+        <div class="due"><dl><div><dt>Still to pay on this order</dt><dd>₦48,600.00</dd></div><div><dt>Credit note CN-0004</dt><dd>−₦38,250.00</dd></div><div><dt>Still to pay by transfer</dt><dd>₦10,350.00</dd></div></dl></div>
+        <p class="care">It counts as paid the moment you ask. Our finance team completes it within 1 business day. If this order is cancelled or expires, the credit goes back to CN-0004 with the same expiry date.</p>
+        <button class="btn" type="button">Ask us to use ₦38,250.00</button>
+        <p class="help">To use another credit note too, ask again after this request.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. Ask for a refund (Owner only)<span>Whole balance, to an account he has already paid us from, picked from a list and never typed. A fresh code comes next, the same sheet as for vouch codes.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>CN-0012</button><span class="title">Ask for a refund</span><span class="spacer"></span></div>
+        <div class="due"><p class="label">We will refund</p><p class="amt">₦45,000.00</p><p class="pmeta">The whole balance of CN-0012.</p></div>
+        <h3 class="sec">Pay it to</h3>
+        <div class="opt on"><span class="rad"></span><span><b>GTBank ••••7712</b><small>Adeyemi Integrated Systems · you paid us from here on 7 Oct</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Access Bank ••••4821</b><small>Tunde Adeyemi · you paid us from here on 12 Aug</small></span></div>
+        <p class="help">We can only refund to an account you have already paid us from.</p>
+        <p class="care">Our finance team checks every refund and sends it within 1 business day. Larger refunds can take a little longer. We ask for a fresh code first.</p>
+        <button class="btn" type="button">Ask for the refund</button>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Loyalty tier<span>The tier and what it is worth, spend toward the next tier in naira, the next review date, and the whole ladder.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Account</button><span class="title">Loyalty tier</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Your tier</p><h2>Tier 2</h2><p>Your prices already include 2% off.</p></div>
+        <div class="due"><p class="label">Counted spend, last 6 months</p><p class="amt">₦3,950,000.00</p>
+          <div class="meter" role="progressbar" aria-label="Counted spend toward Tier 3" aria-valuemin="0" aria-valuemax="6840000" aria-valuenow="3950000" aria-valuetext="₦3,950,000.00 of ₦6,840,000.00"><i style="width:57.7%"></i></div>
+          <div class="ends"><span>₦0.00</span><span>Tier 3 at ₦6,840,000.00</span></div>
+          <p class="pmeta" style="margin-top:6px"><b>₦2,890,000.00 more</b> to reach Tier 3, which is 4% off.</p></div>
+        <p class="help">Goods delivered to you in the last 6 months, before VAT and delivery, less returns and credits, at today's rate of ₦1,368. The figures move a little when the rate moves.</p>
+        <div class="prow2" style="margin-top:8px"><span>Next review</span><b>Sun 1 Nov 2026</b></div>
+        <p class="help">A change is shown 7 days before it happens.</p>
+        <h3 class="sec">The tiers</h3>
+        <table class="ladder"><thead><tr><th scope="col">Tier</th><th scope="col">Counted spend from</th><th scope="col">Discount</th></tr></thead>
+          <tbody><tr><th scope="row">Base</th><td>₦0.00</td><td>0%</td></tr>
+          <tr class="now"><th scope="row">Tier 2<small>you are here</small></th><td>₦2,052,000.00</td><td>2%</td></tr>
+          <tr><th scope="row">Tier 3</th><td>₦6,840,000.00</td><td>4%</td></tr>
+          <tr><th scope="row">Tier 4</th><td>₦16,416,000.00</td><td>6%</td></tr></tbody></table>
+        <p class="help">A back-order discount and your tier discount do not add up. The larger one applies.</p>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. Business profile<span>What appears on his proposals and tax invoices. The VAT answer decides whether he can show VAT on a proposal.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Account</button><span class="title">Business profile</span><span class="spacer"></span></div>
+        <div class="field"><label>Trade name</label><div class="in">Adeyemi Integrated Systems</div></div>
+        <p class="help">Shown on your proposals.</p>
+        <div class="logorow"><span class="tile" aria-hidden="true">AIS</span><span><b>Logo</b><small>PNG or JPG, up to 2 MB. Without one, proposals show your trade name.</small></span></div>
+        <div class="field" style="margin-top:10px"><button class="btn outline small" type="button">Change logo</button></div>
+        <div class="field"><label>Address</label><div class="in">14 Admiralty Way, Lekki Phase 1, Lagos</div></div>
+        <div class="field"><label>Phone</label><div class="in">0803 000 0000</div></div>
+        <div class="field"><label>Email</label><div class="in">hello@adeyemi-systems.example</div></div>
+        <div class="field"><label>TIN <small>optional</small></label><div class="in ph">Add</div></div>
+        <p class="help">Shown on your tax invoices if you add it.</p>
+        <h3 class="sec">Is your business registered for VAT?</h3>
+        <div class="opt on"><span class="rad"></span><span><b>Yes, registered</b><small>You can choose to show VAT on each proposal.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>No, not registered</b><small>Your proposals show VAT-inclusive prices only.</small></span></div>
+        <button class="btn" type="button">Save changes</button>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="rs">
+    <h2 id="rs">Credit note reasons, in plain words</h2>
+    <p class="sub">The reason decides what he reads on the note and whether the refund button exists. These are the PRD's reasons and its refund rule (FR-43). The words are placeholder.</p>
+    <table class="rt">
+      <thead><tr><th scope="col">Reason in the PRD</th><th scope="col">What he reads</th><th scope="col">Refund button</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Overpayment</th><td>"We received ₦X more than order INT-… needed."</td><td>Yes</td></tr>
+        <tr><th scope="row">Unfulfillable order line</th><td>"We could not supply an item you paid for."</td><td>Yes</td></tr>
+        <tr><th scope="row">Approved return, platform's fault</th><td>"We approved a return that was our fault."</td><td>Yes</td></tr>
+        <tr><th scope="row">Freight reimbursement</th><td>"We are paying back what you spent sending a faulty item to us."</td><td>Yes</td></tr>
+        <tr><th scope="row">Counterfeit credit</th><td>"A product on order INT-… turned out to be counterfeit."</td><td>Yes, as a bank transfer once confirmed</td></tr>
+        <tr><th scope="row">Non-delivery credit</th><td>"An order did not arrive."</td><td>Yes</td></tr>
+        <tr><th scope="row">Cancelled order</th><td>"You cancelled order INT-… after we had been paid."</td><td>No, credit only</td></tr>
+        <tr><th scope="row">Approved return, change of mind</th><td>"A change-of-mind return, less the 15% restocking fee."</td><td>No, credit only</td></tr>
+        <tr><th scope="row">Uncollected pick-up</th><td>"You did not collect order INT-… in time, less the 15% restocking fee."</td><td>No, credit only</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="states" aria-labelledby="st">
+    <h2 id="st">Status words</h2>
+    <p class="sub">What he reads, against the PRD's names for the same state.</p>
+    <table class="rt">
+      <thead><tr><th scope="col">What he reads</th><th scope="col">PRD status</th><th scope="col">When</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Ready to use</th><td>Issued</td><td>Nothing used yet.</td></tr>
+        <tr><th scope="row">Partly used</th><td>Partially applied</td><td>Some of it is on an order.</td></tr>
+        <tr><th scope="row">Fully used</th><td>Applied</td><td>All of it is on orders.</td></tr>
+        <tr><th scope="row">Refunded</th><td>Refunded</td><td>We sent the balance to his bank.</td></tr>
+        <tr><th scope="row">Expired</th><td>Expired</td><td>12 months have passed. Cannot be used, can still be refunded on request (counsel to confirm).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 id="ss">States</h2>
+    <p class="sub">Brass cards need something from someone. Red cards mean it did not work. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Credit notes</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Expiring</p><h4>Expires in 60 days, then in 14 days</h4><p>From 60 days out the note says "Expires in N days". From 14 days it is tinted and listed first, and the Owner gets a message.</p></div>
+      <div class="sc"><p class="lab">Credit only</p><h4>This credit can only be used to buy from us</h4><p>On a note with a credit-only reason, there is no refund button and this line takes its place.</p></div>
+      <div class="sc need"><p class="lab">Expired (counsel to confirm)</p><h4>This credit has expired</h4><p>You can no longer use it on an order. The Owner can ask us to refund what is left.</p><span class="b">Ask for a refund</span></div>
+      <div class="sc"><p class="lab">Refund requested</p><h4>Refund requested</h4><p>We will send ₦45,000.00 to GTBank ••••7712 after our finance team checks it. We will message you when it is sent. The balance is held until then.</p></div>
+      <div class="sc"><p class="lab">Refunded</p><h4>Refunded on 9 Oct</h4><p>₦45,000.00 was sent to GTBank ••••7712.</p></div>
+      <div class="sc err"><p class="lab">Use request: too much</p><h4>You can use up to ₦38,250.00 from this note</h4><p>That is the most this note holds, or the most this order still needs, whichever is less. The amount is checked when you ask.</p></div>
+      <div class="sc"><p class="lab">Order cancelled or expired</p><h4>The credit came back</h4><p>History line on the note: "9 Oct · order INT-0044 expired · ₦38,250.00 came back, same expiry date."</p></div>
+      <div class="sc"><p class="lab">Order covered by credit</p><h4>This order is paid by credit</h4><p>You do not need to upload a receipt. The order does not expire while the credit request is open.</p></div>
+      <div class="sc need"><p class="lab">Account on hold (all screens)</p><h4>We have paused new orders and refunds</h4><p>You can still pay for orders you have made. Call or WhatsApp us. A banner like this appears on every screen while an account is on hold.</p></div>
+      <div class="sc"><p class="lab">A Manager's view</p><h4>Only the Owner can ask for a refund</h4><p>A Manager sees the notes and "Use on an order". The refund button is replaced by this line.</p></div>
+      <div class="sc"><p class="lab">Amendment to the payment screen (Step 5)</p><h4>You have ₦203,250.00 in credit notes</h4><p>A row under the amount due, "Use some on this order", shown only when credit exists and only to an Owner or a Manager. After asking, the Payments list shows "Credit note CN-0004 · ₦38,250.00" with a "Requested" label, then "Applied".</p></div>
+    </div>
+
+    <h3 class="grp">Loyalty tier</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Moving up</p><h4>On 1 Nov you move to Tier 3, 4% off</h4><p>Shown from 25 Oct. Based on your counted spend so far.</p></div>
+      <div class="sc need"><p class="lab">Moving down</p><h4>On 1 Nov you move to Tier 2, 2% off</h4><p>Unless your counted spend gets back to ₦6,840,000.00 by then. Older orders are leaving the 6-month window.</p></div>
+      <div class="sc"><p class="lab">Top tier</p><h4>You are at Tier 4, the top tier</h4><p>Keep your counted spend above ₦16,416,000.00 to stay here.</p></div>
+      <div class="sc"><p class="lab">Base tier, no spend yet</p><h4>Spend ₦2,052,000.00 in 6 months to reach Tier 2</h4><p>Goods you receive count. Orders you have not yet received do not.</p></div>
+    </div>
+
+    <h3 class="grp">Business profile</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Logo problem</p><h4>We could not use that logo</h4><p>Use a PNG or JPG under 2 MB.</p></div>
+      <div class="sc"><p class="lab">VAT yes, no TIN</p><h4>You can leave your TIN blank</h4><p>Add it if you have one: it appears on your tax invoices.</p></div>
+      <div class="sc"><p class="lab">Saved</p><h4>Saved</h4><p>New proposals use these details.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: credit notes, using one on an order, refunds, and the loyalty tier with the business profile.</p>
+</main>
+</body>
+</html>

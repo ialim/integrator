@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>integrator: Direction B, Site Kit</title>
 <style>
 /*
@@ -13,11 +14,13 @@
   On black   white #FFFFFF | hazard yellow #FFC800
   Lines      3 px black outlines on every card, control and table row (17.3:1 on the ground)
   Focus      4 px black outline, 2 px offset (hazard yellow on black bars)
+  Device     phone bezel #1A1A18 | 780 px bezel notch uses hazard yellow #FFC800 (review annotation only)
   Type       system-ui sans at weight 800 for names, amounts and labels; 700 for body; tabular figures
   Shape      6 to 10 px corners, hard offset shadow (4 px) on primary actions, hazard stripes on alerts
   Density    roomy: 18 to 19 px item names, 56 to 60 px controls
 */
 :root{
+  color-scheme:light;
   --desk:#D8D6CB; --bg:#F1F0EA; --card:#FFFFFF; --concrete:#E2E0D6;
   --yellow:#FFC800; --yellow-soft:#FFF0B3; --black:#0A0A0A;
   --ink:#0A0A0A; --ink2:#2B2A26;
@@ -169,22 +172,22 @@ table{border-collapse:collapse}
 .topbar .brand{color:var(--black);font-size:26px}
 .topbar .area{padding:6px 10px;background:var(--black);color:var(--yellow);font:800 12px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase}
 .topbar .who{margin-left:auto;font:800 15px var(--sans)}
-.cbody{display:grid;grid-template-columns:minmax(0,1fr) 312px}
-.queue{padding:20px 18px 26px}
+.cbody{display:grid;grid-template-columns:minmax(0,1fr) 300px}
+.queue{padding:20px 16px 26px}
 .queue h3{font:800 32px/1.1 var(--sans);letter-spacing:-.01em}
 .queue .sub{margin:4px 0 12px;font:700 14px/1.3 var(--sans);color:var(--ink2)}
 .notice{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--black);color:#fff;border-radius:8px;font:700 14px/1.3 var(--sans)}
 .notice .i{color:var(--yellow)}
-.q{width:100%;font-size:14px}
-.q th{padding:10px 8px;background:var(--black);color:#fff;text-align:left;font:800 11.5px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.q{width:100%;font-size:13.5px}
+.q th{padding:10px 7px;background:var(--black);color:#fff;text-align:left;font:800 11px/1.2 var(--sans);letter-spacing:.05em;text-transform:uppercase}
 .q th .i{display:inline-block;width:13px;height:13px;margin-left:4px;vertical-align:-2px;color:var(--yellow)}
-.q td{padding:8px 8px;border-bottom:3px solid var(--black);vertical-align:middle;font-weight:700;background:#fff}
+.q td{padding:8px 7px;border-bottom:3px solid var(--black);vertical-align:middle;font-weight:700;background:#fff}
 .q .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:800}
 .q .mono{font:700 12.5px/1.3 var(--mono);white-space:nowrap}
 .q .age strong{display:block;font:800 15px/1.3 var(--sans);white-space:nowrap}
 .flag{display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:3px 7px 3px 5px;background:var(--bad);color:#fff;border-radius:4px;font:800 10.5px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .flag .i{width:13px;height:13px}
-.q tr.late td:first-child{padding-left:24px;background-image:repeating-linear-gradient(-45deg,var(--black) 0 6px,var(--yellow) 6px 12px);background-size:14px 100%;background-repeat:no-repeat;background-position:left top}
+.q tr.late td:first-child{padding-left:22px;background-image:repeating-linear-gradient(-45deg,var(--black) 0 6px,var(--yellow) 6px 12px);background-size:14px 100%;background-repeat:no-repeat;background-position:left top}
 .q tr.sel td{background-color:var(--yellow)}
 .st{display:inline-flex;align-items:center;gap:5px}
 .st.unc{padding:4px 8px 4px 6px;background:#fff;border:2px solid var(--black);border-radius:5px;font-weight:800}
@@ -210,6 +213,7 @@ table{border-collapse:collapse}
 .sw{display:flex;flex-wrap:wrap;gap:8px 18px;margin:14px 0}
 .sw li{display:flex;align-items:center;gap:8px;font:700 13px/1.2 var(--mono)}
 .sw i{width:24px;height:24px;background:var(--c);border:2px solid var(--black)}
+.sample{display:flex;align-items:center;flex-wrap:wrap;gap:10px 20px}
 .demo-focus{width:auto;min-height:48px;padding:0 20px;outline:4px solid var(--black);outline-offset:2px}
 </style>
 </head>
@@ -683,8 +687,8 @@ table{border-collapse:collapse}
 
 <footer class="foot">
   <h2 class="sec">Checks for this direction</h2>
-  <p><strong>Lowest body-text contrast: 5.97:1</strong> (secondary text #2B2A26 on desk #D8D6CB is lower than ink; the weakest pairing is the ok green #0B5A2A on concrete #E2E0D6), against the 4.5:1 AA minimum for normal text. Lowest control-border contrast: 12.74:1 (black #0A0A0A on hazard yellow #FFC800), against the 3:1 minimum for UI components.</p>
-  <p>Touch targets on the phone frames are at least 50 x 56 px. Every status carries its word plus an icon. The focus ring is a 4 px black outline with a 2 px gap (19.8:1 on white); it turns hazard yellow on black bars.</p>
+  <p><strong>Lowest body-text contrast: 6.82:1</strong> (In Stock green #0B5A2A on ok tint #D6EEDC), against the 4.5:1 AA minimum for normal text. Every text and background pairing in this file was computed from the final styles. Lowest control-border contrast: 12.74:1 (black #0A0A0A on hazard yellow #FFC800); lowest icon contrast: 6.82:1; both against the 3:1 minimum for UI components.</p>
+  <p>Touch targets on the phone frames are at least 50 x 50 px (stepper buttons 50 x 50, section toggles 56 x 56, buttons 56 to 60 px tall). Every status carries its word, and most also carry an icon. The focus ring is a 4 px black outline with a 2 px gap (19.80:1 on white); it turns hazard yellow on black bars. Light mode only.</p>
   <ul class="sw" aria-label="Palette">
     <li style="--c:#F1F0EA"><i></i>ground #F1F0EA</li>
     <li style="--c:#E2E0D6"><i></i>concrete #E2E0D6</li>
@@ -696,7 +700,7 @@ table{border-collapse:collapse}
     <li style="--c:#0B5A2A"><i></i>ok #0B5A2A</li>
     <li style="--c:#A3121A"><i></i>escalation #A3121A</li>
   </ul>
-  <p>Focus ring sample: <button type="button" class="btn demo-focus">Create order</button></p>
+  <p class="sample"><span>Focus ring sample:</span> <button type="button" class="btn demo-focus">Create order</button></p>
 </footer>
 </div>
 </body>
