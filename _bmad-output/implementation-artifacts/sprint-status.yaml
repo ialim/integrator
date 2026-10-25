@@ -1,0 +1,256 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 10-25-2026 12:00
+last_updated: 10-25-2026 12:00
+project: integrator
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: backlog
+  1-1-scaffold-the-project-with-its-rules-enforced: backlog
+  1-2-production-hosting-with-an-hourly-offsite-copy-and-founder-a: backlog
+  1-3-staff-sign-in-to-the-console-with-two-steps: backlog
+  1-4-admin-creates-and-deactivates-staff-accounts: backlog
+  1-5-each-role-sees-only-its-own-work: backlog
+  1-6-an-audit-trail-nobody-can-edit: backlog
+  1-7-the-integrator-app-installs-on-a-phone: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-admin-sets-up-product-ranges-and-their-markup: backlog
+  2-2-admin-records-and-approves-suppliers: backlog
+  2-3-operations-creates-and-edits-a-product: backlog
+  2-4-a-product-goes-live-and-leaves: backlog
+  2-5-product-images: backlog
+  2-6-finance-sets-and-reconfirms-the-platform-rate: backlog
+  2-7-a-rate-change-above-3-needs-a-second-person: backlog
+  2-8-selling-prices-computed-to-the-kobo: backlog
+  2-9-the-remaining-pricing-formulas-proven: backlog
+  2-10-admin-changes-a-markup-and-sees-what-it-will-do: backlog
+  2-11-stock-quantities-thresholds-and-the-ledger: backlog
+  2-12-operations-records-goods-in: backlog
+  2-13-back-order-terms-and-the-discount-rule: backlog
+  2-14-admin-switches-the-active-supplier-or-stops-a-supplier: backlog
+  2-15-bulk-upload-with-a-dry-run: backlog
+  2-16-a-bulk-price-file-waits-for-admin-and-can-be-rolled-back: backlog
+  2-17-the-rate-goes-stale-and-finance-can-pause-orders: backlog
+  2-18-acting-as-another-role-and-the-founder-s-weekly-review: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-sign-up-with-a-phone-or-email: backlog
+  3-2-sign-up-is-protected-from-abuse: backlog
+  3-3-log-in-and-see-where-you-are-logged-in: backlog
+  3-4-the-whatsapp-question: backlog
+  3-5-the-app-before-approval: backlog
+  3-6-browse-the-catalogue-without-prices: backlog
+  3-7-search-filter-and-sort: backlog
+  3-8-the-product-page: backlog
+  3-9-passkeys-and-the-fresh-code: backlog
+  3-10-change-your-phone-or-email: backlog
+  3-11-an-owner-gets-back-in-after-losing-their-contact: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-confirm-who-you-are: backlog
+  4-2-the-automatic-nin-check: backlog
+  4-3-business-hours-and-the-closed-day-calendar: backlog
+  4-4-the-nin-reviews-queue: backlog
+  4-5-admin-reviews-a-nin-by-hand: backlog
+  4-6-deputies-and-out-of-office: backlog
+  4-7-admin-creates-a-business-and-issues-a-platform-vouch-code: backlog
+  4-8-ask-for-approval-with-a-vouch-code: backlog
+  4-9-admin-reviews-a-level-3-request: backlog
+  4-10-approved-prices-appear: backlog
+  4-11-an-owner-makes-a-vouch-code: backlog
+  4-12-admin-pauses-or-grants-vouching-rights: backlog
+  4-13-admin-publishes-a-new-terms-version: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-the-business-profile: backlog
+  5-2-the-owner-invites-a-manager-or-technician: backlog
+  5-3-accept-an-invitation: backlog
+  5-4-each-role-sees-only-what-it-may: backlog
+  5-5-change-a-role-or-remove-a-person: backlog
+  5-6-a-manager-asks-the-owner-for-a-vouch-code: backlog
+  5-7-change-the-owner: backlog
+  5-8-put-a-business-on-hold: backlog
+  5-9-revoke-approval-or-disable-a-person: backlog
+  5-10-the-blocklist: backlog
+  5-11-the-owner-closes-the-business: backlog
+  5-12-admin-answers-a-personal-data-request: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-create-a-project: backlog
+  6-2-projects-sync-to-the-server-and-other-devices: backlog
+  6-3-add-rename-delete-and-restore-rooms: backlog
+  6-4-add-products-to-a-room: backlog
+  6-5-prices-and-totals-in-a-project: backlog
+  6-6-a-technician-s-project: backlog
+  6-7-a-removed-or-re-roled-person-s-phone-is-cleared: backlog
+  6-8-the-parts-list: backlog
+  6-9-home: backlog
+  6-10-generate-a-proposal: backlog
+  6-11-the-proposal-pdf: backlog
+  6-12-replace-and-expire-a-proposal: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-operations-sets-up-stores: backlog
+  7-2-operations-sets-up-delivery-zones-and-zone-rates: backlog
+  7-3-the-cart: backlog
+  7-4-review-an-order-from-a-project: backlog
+  7-5-compared-with-your-proposal: backlog
+  7-6-agree-to-a-back-order-item: backlog
+  7-7-choose-delivery-or-pick-up: backlog
+  7-8-confirm-and-create-the-order: backlog
+  7-9-order-from-a-cart: backlog
+  7-10-checks-before-an-order: backlog
+  7-11-the-orders-tab-and-one-order: backlog
+  7-12-an-unpaid-order-expires: backlog
+  7-13-cancel-an-unpaid-order: backlog
+  7-14-change-delivery-details-before-paying: backlog
+  7-15-ask-for-a-delivery-price: backlog
+  epic-7-retrospective: optional
+
+  epic-8: backlog
+  8-1-admin-sets-the-platform-s-bank-details: backlog
+  8-2-the-pay-by-transfer-screen: backlog
+  8-3-upload-a-receipt: backlog
+  8-4-finance-imports-the-bank-statement: backlog
+  8-5-finance-confirms-a-payment: backlog
+  8-6-a-payment-is-unconfirmed-and-corrected: backlog
+  8-7-finance-issues-a-credit-note: backlog
+  8-8-an-order-becomes-paid-and-its-stock-is-reserved: backlog
+  8-9-overpayments-and-the-underpayment-tolerance: backlog
+  8-10-the-price-lock-and-repricing: backlog
+  8-11-an-order-with-receipts-expires: backlog
+  8-12-a-second-reviewer-and-one-transfer-for-two-orders: backlog
+  8-13-unmatched-credits: backlog
+  8-14-finance-reverses-a-payment: backlog
+  8-15-cancel-an-order-that-holds-money: backlog
+  8-16-use-a-credit-note-on-an-order: backlog
+  8-17-the-owner-asks-for-a-refund: backlog
+  8-18-credit-notes-expire-with-warning: backlog
+  epic-8-retrospective: optional
+
+  epic-9: backlog
+  9-1-operations-approves-a-paid-order: backlog
+  9-2-credit-a-line-that-is-not-on-the-shelf: backlog
+  9-3-back-order-lines-ordered-from-the-supplier-and-received: backlog
+  9-4-dispatch-a-delivery: backlog
+  9-5-a-delivery-is-delivered: backlog
+  9-6-pick-up-ready-and-signed-for: backlog
+  9-7-follow-an-order-s-deliveries: backlog
+  9-8-when-a-delivery-goes-wrong: backlog
+  9-9-a-pick-up-nobody-collects: backlog
+  9-10-an-order-completes: backlog
+  9-11-ask-to-cancel-after-approval: backlog
+  9-12-ask-to-change-a-paid-order-s-delivery: backlog
+  9-13-shipping-in-full-has-waited-14-days: backlog
+  9-14-correct-a-serial-number-or-reverse-a-status: backlog
+  epic-9-retrospective: optional
+
+  epic-10: backlog
+  10-1-a-tax-invoice-for-every-paid-order: backlog
+  10-2-a-document-for-every-credit-note: backlog
+  10-3-invoices-after-a-reversal: backlog
+  10-4-a-delivery-note-with-serial-numbers: backlog
+  epic-10-retrospective: optional
+
+  epic-11: backlog
+  11-1-notification-settings: backlog
+  11-2-messages-by-email: backlog
+  11-3-messages-by-whatsapp-with-an-email-fallback: backlog
+  11-4-at-once-or-at-9-am: backlog
+  11-5-order-and-payment-messages: backlog
+  11-6-account-credit-and-back-order-messages: backlog
+  11-7-staff-alerts-on-whatsapp: backlog
+  epic-11-retrospective: optional
+
+  epic-12: backlog
+  12-1-the-catalogue-on-the-phone: backlog
+  12-2-saved-on-this-phone: backlog
+  12-3-the-14-day-check-in: backlog
+  12-4-conflicts-that-need-a-look: backlog
+  12-5-edits-held-from-a-removed-person: backlog
+  12-6-operations-attaches-documentation: backlog
+  12-7-the-guide-editor: backlog
+  12-8-read-documentation: backlog
+  12-9-make-this-project-available-offline: backlog
+  12-10-replaced-and-withdrawn-copies: backlog
+  epic-12-retrospective: optional
+
+  epic-13: backlog
+  13-1-give-support-a-code: backlog
+  13-2-support-opens-a-case-for-every-contact: backlog
+  13-3-report-a-problem-in-the-app: backlog
+  13-4-look-up-a-serial-number: backlog
+  13-5-a-serial-exception: backlog
+  13-6-a-non-delivery-case-opens-itself: backlog
+  13-7-the-support-cases-list: backlog
+  epic-13-retrospective: optional
+
+  epic-14: backlog
+  14-1-tiers-are-recalculated-each-month: backlog
+  14-2-prices-follow-the-tier: backlog
+  14-3-see-your-tier: backlog
+  14-4-a-coming-change-7-days-ahead: backlog
+  epic-14-retrospective: optional
+
+  epic-15: backlog
+  15-1-the-founder-s-dashboard: backlog
+  15-2-inputs-the-dashboard-cannot-work-out: backlog
+  15-3-finance-exports: backlog
+  15-4-the-monthly-vat-export: backlog
+  15-5-the-platform-holds-at-its-design-scale: backlog
+  epic-15-retrospective: optional
+
+  epic-16: backlog
+  16-1-return-windows: backlog
+  16-2-warranty-until: backlog
+  16-3-support-makes-an-issue-code: backlog
+  16-4-raise-a-return-request: backlog
+  16-5-a-technician-s-request-waits-for-approval: backlog
+  16-6-bring-the-device-back: backlog
+  16-7-a-returned-device-arrives: backlog
+  16-8-admin-decides-the-remedy: backlog
+  16-9-the-remedy-is-carried-out: backlog
+  16-10-freight-reimbursement: backlog
+  16-11-change-of-mind-returns: backlog
+  16-12-a-non-delivery-claim: backlog
+  16-13-a-suspected-counterfeit: backlog
+  16-14-confirm-or-clear-a-counterfeit: backlog
+  16-15-the-three-returns-messages: backlog
+  epic-16-retrospective: optional
