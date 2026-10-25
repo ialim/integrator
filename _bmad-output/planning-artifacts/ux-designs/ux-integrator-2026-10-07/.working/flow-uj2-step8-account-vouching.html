@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 8, the Account area and vouch codes (proposal)</title>
+<style>
+/*
+  STEP 8 WIREFRAMES: Segun's side of UJ-2. Account home, vouch codes, making a code, team and invitations.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-5, FR-9, FR-10, FR-11, FR-21, FR-22, FR-43, FR-69 to FR-72.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:840px;margin:0 0 26px}
+.flow{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:96px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 17px/1.2 var(--serif)}
+.iconbtn{position:relative;display:grid;place-items:center;min-width:48px;min-height:48px;background:none;border:0;color:#fff}
+.count{position:absolute;top:5px;right:3px;min-width:18px;padding:1px 5px;border-radius:2px;background:#fff;color:var(--green);font:700 11.5px/1.3 var(--sans);text-align:center}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 4px}
+.head h2{font:700 21px/1.2 var(--serif)}
+.head p{margin-top:5px;font-size:14px;color:var(--ink2)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.field{margin:14px 16px 0}
+.field label{display:block;margin-bottom:5px;font:600 14px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px}
+.in.ph{color:var(--ink2)}
+.help{margin:6px 16px 0;font-size:13px;color:var(--ink2)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:14px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.link{display:block;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.quiet{display:block;margin:10px 16px 0;min-height:46px;line-height:46px;color:var(--ink2);font:600 14px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--sheet);border-top:2px solid var(--ink)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.biz{display:flex;gap:12px;align-items:center;margin:12px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control)}
+.biz .logo{display:grid;place-items:center;flex:none;width:48px;height:48px;background:var(--green);color:#fff;font:700 20px var(--serif)}
+.biz b{display:block;font:700 16px/1.25 var(--serif)}
+.biz small{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.lrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px;min-height:60px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.lrow b{display:block;font:600 15px/1.3 var(--sans);color:var(--green)}
+.lrow small{display:block;font-size:13px;color:var(--ink2)}
+.lrow.plain b{color:var(--ink)}
+.limits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px 0}
+.limits div{padding:10px 12px;background:var(--aged);border-top:3px double var(--ink)}
+.limits b{display:block;font:700 22px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.limits span{font-size:12.5px;color:var(--ink2)}
+.vcard{margin:10px 16px 0;padding:11px 12px;background:var(--sheet);border:1px solid var(--control)}
+.vcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.vcard b{font:700 15px/1.3 var(--sans)}
+.vcard small{display:block;font-size:13px;color:var(--ink2)}
+.vcard .code{margin-top:6px;font:700 14px var(--mono);letter-spacing:.04em}
+.vcard .more{display:flex;justify-content:space-between;align-items:center;min-height:44px;margin-top:6px;border-top:1px solid var(--rule);color:var(--green);font:600 14px var(--sans)}
+.care{margin:14px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.care b{display:block;font-size:14px}
+.codebox{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:12px 16px 0}
+.codebox span{display:grid;place-items:center;height:52px;background:var(--sheet);border:1px solid var(--control);font:700 22px var(--mono)}
+.scrim{position:absolute;inset:0;background:rgba(26,24,18,.6)}
+.bsheet{position:absolute;left:0;right:0;bottom:0;padding:16px 0 20px;background:var(--sheet);border-top:3px solid var(--ink)}
+.bsheet h3{padding:0 16px;font:700 19px/1.2 var(--serif)}
+.bsheet p{margin-top:5px;padding:0 16px;font-size:14px;color:var(--ink2)}
+.okmark{display:grid;place-items:center;width:56px;height:56px;margin:22px auto 0;background:var(--green);color:#fff}
+.okmark .i{width:30px;height:30px}
+.made{text-align:center}
+.made h2{margin-top:12px;font:700 22px/1.2 var(--serif)}
+.made p{margin:6px 20px 0;font-size:14px;color:var(--ink2)}
+.bigcode{margin:16px 16px 0;padding:16px 8px;text-align:center;background:var(--sheet);border-top:3px double var(--ink);border-bottom:3px double var(--ink);font:700 26px/1.1 var(--mono);letter-spacing:.05em}
+.next{margin:14px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--green);font-size:13.5px}
+.next b{display:block;margin-bottom:4px;font-size:14px}
+.next ol{list-style:decimal;padding-left:20px}
+.people{margin:6px 16px 0}
+.people li{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:62px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.people b{display:block;font:600 15px/1.3 var(--sans)}
+.people small{display:block;font-size:13px;color:var(--ink2)}
+.textbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--green);font:600 14px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.opt{display:flex;gap:12px;align-items:flex-start;margin:10px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control)}
+.opt.on{padding:11px;border:2px solid var(--green)}
+.opt .rad{display:grid;place-items:center;flex:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--control);border-radius:50%}
+.opt.on .rad{border-color:var(--green)}
+.opt.on .rad::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--green)}
+.opt b{display:block;font:700 15px/1.3 var(--sans)}
+.opt small{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.states{margin-top:38px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub{max-width:840px;margin:0 0 6px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.rt{width:100%;max-width:1100px;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.rt th,.rt td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.rt thead th{border-bottom:2px solid var(--ink);background:var(--aged);font:700 13px var(--sans)}
+.rt tbody th{font-weight:600}
+.rt .no{color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc ul{margin-top:6px;font-size:13.5px}
+.sc li{padding:3px 0;border-top:1px solid var(--rule)}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 0 0;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.notes{max-width:840px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 8 of the walk-through</p>
+  <h1>Account: your business, your team, and vouch codes</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. This is Segun's side of UJ-2: he is the Established Integrator who vouches for Hammed. Six phone screens, a table of who sees what, then a sheet of states. Credit notes, the loyalty tier, the business profile, notifications and security appear here only as rows. Their own screens come in the next step. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="flow">
+    <figure class="unit">
+      <figcaption>1. Account home, as the Owner sees it<span>Three groups: the business, the money, and the person. Every row says in one line what is behind it.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><button class="iconbtn" type="button" aria-label="Cart, 2 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">2</span></button></div>
+        <div class="head"><h2>Account</h2></div>
+        <div class="biz"><span class="logo" aria-hidden="true">O</span><span><b>Ogunleye Networks &amp; Security</b><small>You are the Owner · Segun Ogunleye</small></span></div>
+        <h3 class="sec">Your business</h3>
+        <div class="lrow"><span><b>Business profile</b><small>Trade name, logo, address, VAT</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Team</b><small>3 people · 1 invitation waiting</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Vouch codes</b><small>1 waiting · you can make 1 more</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <h3 class="sec">Money</h3>
+        <div class="lrow"><span><b>Credit notes</b><small>₦45,000.00 available</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Loyalty tier</b><small>Tier 2 · 2% off · next review 1 Nov</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <h3 class="sec">You</h3>
+        <div class="lrow"><span><b>Notifications</b><small>WhatsApp on for 0802 555 0188</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Sign-in and security</b><small>Passkey on this phone</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Saved on this phone</b><small>2 projects · 15.8 MB</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Terms and Privacy</b><small>Accepted on 12 Sep</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <div class="lrow"><span><b>Help</b><small>Call or WhatsApp us</small></span><svg class="i"><use href="#ic-chev"/></svg></div>
+        <span class="link">Sign out</span>
+        <span class="quiet">Close this business account</span>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Vouch codes<span>The limits sit at the top, so he knows before he tries. Waiting codes can be shown again. Old ones show only how they ended.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Account</button><span class="title">Vouch codes</span><span class="spacer"></span></div>
+        <div class="head"><p>A vouch code lets someone you know ask to join. You are telling us you know them.</p></div>
+        <div class="limits"><div><b>1 of 2</b><span>codes waiting</span></div><div><b>3 of 6</b><span>people in the last 90 days</span></div></div>
+        <button class="btn" type="button">Make a vouch code</button>
+        <h3 class="sec">Waiting</h3>
+        <div class="vcard"><div class="top"><span><b>Hammed Bello</b><small>0803 555 0142 · made 7 Oct, 4:10 pm</small></span><span class="chip">Not used yet</span></div><p class="code">7KQ4-M2XD-9PTA</p><small>Expires Fri 9 Oct, 4:10 pm</small><div class="more"><span>Show or share again</span><svg class="i"><use href="#ic-chev"/></svg></div></div>
+        <h3 class="sec">Earlier</h3>
+        <div class="vcard"><div class="top"><span><b>Chiamaka Eze</b><small>Code ending in K3VM · made 21 Sep</small></span><span class="chip">Used</span></div></div>
+        <div class="vcard"><div class="top"><span><b>Obinna Nwosu</b><small>Code ending in 8RTE · made 2 Sep</small></span><span class="chip">Expired</span></div></div>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Make a vouch code, and check it is him<span>Two details about the person, a plain note about what vouching means, then a fresh code sent to his own phone before anything is made.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Vouch codes</button><span class="title">Make a vouch code</span><span class="spacer"></span></div>
+        <div class="field"><label>Their full name <small>as on their NIN slip or card</small></label><div class="in">Hammed Bello</div></div>
+        <div class="field"><label>Their phone or email <small>the one they signed up with</small></label><div class="in">0803 555 0142</div></div>
+        <p class="care"><b>You are vouching for this person</b>If they are later suspended for fraud, your own vouching can be paused while we review it.</p>
+        <p class="help">The code works once, only for them, for 48 hours.</p>
+        <button class="btn" type="button">Continue</button>
+        <div class="scrim"></div>
+        <div class="bsheet" role="dialog" aria-label="Check it is you">
+          <h3>Check it is you</h3>
+          <p>We sent a 6-digit code to 0802 ••• 0188. It works for 10 minutes.</p>
+          <div class="codebox" role="group" aria-label="6-digit code"><span>3</span><span>8</span><span>5</span><span>1</span><span></span><span></span></div>
+          <button class="btn" type="button">Make the vouch code</button>
+          <span class="link">Resend the code in 0:30</span>
+        </div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. The code is made<span>Shown large, with Share on WhatsApp first. It says what the person does next, so Segun does not have to explain it.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><span class="spacer"></span><span class="title">Vouch code</span><span class="spacer"></span></div>
+        <div class="made"><span class="okmark"><svg class="i"><use href="#ic-check"/></svg></span><h2>Code made for Hammed Bello</h2><p>It works once, only for him, until Fri 9 Oct, 4:10 pm.</p></div>
+        <p class="bigcode" aria-label="Vouch code 7 K Q 4, M 2 X D, 9 P T A">7KQ4-M2XD-9PTA</p>
+        <button class="btn" type="button">Share on WhatsApp</button>
+        <button class="btn outline" type="button">Copy the code</button>
+        <div class="next"><b>What Hammed does next</b><ol><li>Signs up and confirms who he is.</li><li>Enters this code and his trade name.</li><li>We review his business within 1 business day.</li></ol></div>
+        <span class="link" style="margin-top:8px">Back to vouch codes</span>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Team<span>People by role, then invitations still waiting. A Manager sees the same list but can act only on Technicians.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Account</button><span class="title">Team</span><span class="spacer"></span></div>
+        <ul class="people">
+          <li><span><b>Segun Ogunleye (you)</b><small>0802 555 0188</small></span><span class="chip">Owner</span></li>
+          <li><span><b>Ifeoma Obi</b><small>ifeoma@ogunleye.example</small></span><span class="chip">Manager</span></li>
+          <li><span><b>Ifeanyi Eze</b><small>0805 555 0143</small></span><span class="chip">Technician</span></li>
+        </ul>
+        <h3 class="sec">Waiting to join · 1</h3>
+        <ul class="people">
+          <li><span><b>0805 555 0177</b><small>Technician · invited 6 Oct · expires 13 Oct</small></span><span class="textbtn">Cancel</span></li>
+        </ul>
+        <button class="btn" type="button">Invite someone</button>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab on"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. Invite someone<span>Phone or email, and a role chosen by what the person can do, in plain words. Inviting a Manager asks for a fresh code.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Team</button><span class="title">Invite someone</span><span class="spacer"></span></div>
+        <div class="field"><label>Their phone or email</label><div class="in">0805 555 0177</div></div>
+        <div class="field"><label>Their name <small>optional</small></label><div class="in ph">Add</div></div>
+        <h3 class="sec">What can they do?</h3>
+        <div class="opt on"><span class="rad"></span><span><b>Technician</b><small>Designs projects, reads installation guides, sees order and delivery status. Sees no prices, payments or money.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Manager</b><small>Sees prices, makes proposals and orders, pays, and manages Technicians. Cannot make vouch codes, ask for refunds, or manage other Managers.</small></span></div>
+        <p class="help">They get a link by WhatsApp or email. It works for 7 days, only for this contact. They verify it and accept the Terms when they first log in.</p>
+        <button class="btn" type="button">Send invitation</button>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="who">
+    <h2 id="who">What each person sees in Account</h2>
+    <p class="sub">Rows a role cannot use are not shown, not greyed out. The server enforces the same rules, so the screens are a convenience, not the lock.</p>
+    <table class="rt">
+      <thead><tr><th scope="col">Row in Account</th><th scope="col">Owner</th><th scope="col">Manager</th><th scope="col">Technician</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Business profile</th><td>Edit</td><td>Edit</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Team</th><td>Everyone</td><td>Technicians only</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Vouch codes</th><td>Make codes, once established</td><td>Ask the Owner for one</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Credit notes</th><td>See, ask to apply, ask for a refund</td><td>See, ask to apply</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Loyalty tier</th><td>See</td><td>See</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Notifications, Sign-in and security, Saved on this phone</th><td>Own settings</td><td>Own settings</td><td>Own settings</td></tr>
+        <tr><th scope="row">Terms and Privacy</th><td>Read, and accept a new version</td><td>Read</td><td>Read</td></tr>
+        <tr><th scope="row">Help, Sign out</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><th scope="row">Close the business account</th><td>Yes</td><td class="no">Not shown</td><td class="no">Not shown</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 id="ss">States</h2>
+    <p class="sub">Brass cards need something from someone. Red cards mean it did not work. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Vouch codes</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Not yet established</p><h4>Vouch codes unlock when you are an established integrator</h4><p>You need 3 completed orders of a good size, none with an open return. You have 1 so far.</p>
+        <ul><li>INT-0031 · counts</li><li>INT-0036 · too small to count</li><li>INT-0040 · has an open return, counts again once it is settled</li></ul></div>
+      <div class="sc"><p class="lab">Two codes waiting</p><h4>You have 2 codes waiting</h4><p>Wait until one is used or expires, then make another. The button stays visible but cannot be pressed.</p></div>
+      <div class="sc"><p class="lab">Six people in 90 days</p><h4>You have vouched for 6 people in the last 90 days</h4><p>You can make another code on 14 Oct.</p></div>
+      <div class="sc need"><p class="lab">Paused by us</p><h4>Vouch codes are not available right now</h4><p>Call or WhatsApp us. Waiting codes stop working, and the list says "Cancelled by us".</p></div>
+      <div class="sc"><p class="lab">Manager: ask the Owner</p><h4>Ask Segun for a vouch code</h4><p>Enter the person's full name and the phone or email they signed up with. Segun gets your request on his Home screen.</p><span class="b">Send request</span></div>
+      <div class="sc need"><p class="lab">Owner's Home: needs your attention</p><h4>Ifeoma asks you for a vouch code</h4><p>For Chiamaka Eze, 0806 555 0120. The form is already filled in. You confirm with a fresh code.</p><span class="b">Review request</span></div>
+      <div class="sc err"><p class="lab">Check it is you: problems</p><h4>That code is not right, or has expired</h4><p>Same messages as signing in. After too many wrong tries, wait before asking for a new code.</p></div>
+    </div>
+
+    <h3 class="grp">Team</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Invitation: waiting</p><h4>Waiting to join · expires 13 Oct</h4><p>It works only for this contact. Cancel it any time.</p></div>
+      <div class="sc need"><p class="lab">Invitation: expired</p><h4>This invitation has expired</h4><p>Invitations last 7 days. Send a new one.</p><span class="b o">Send again</span></div>
+      <div class="sc"><p class="lab">Invitation: accepted</p><h4>Ifeanyi joined as a Technician</h4><p>They verified their contact and accepted the Terms and Privacy Notice.</p></div>
+      <div class="sc err"><p class="lab">Invitee: contact already used</p><h4>This number is already on another business account</h4><p>It cannot join this team. Ask the person who invited you to use a different contact. The person who invited sees only "Waiting".</p></div>
+      <div class="sc need"><p class="lab">Remove a person: confirm</p><h4>Remove Ifeanyi Eze?</h4><p>They are signed out, and the saved projects on their phone are cleared the next time it connects. The projects stay with your business.</p><span class="b">Remove</span><span class="b o">Keep</span></div>
+      <div class="sc"><p class="lab">Change a role: check it is you</p><h4>Making Ifeoma a Technician</h4><p>We ask for a fresh code first. She is signed out and logs in again with the new role.</p></div>
+      <div class="sc"><p class="lab">A Manager's Team screen</p><h4>Technicians only</h4><p>A Manager can invite and remove Technicians. The Owner and other Managers appear as names, with no actions.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: Account home, vouch codes, the team, and a Manager asking the Owner.</p>
+</main>
+</body>
+</html>

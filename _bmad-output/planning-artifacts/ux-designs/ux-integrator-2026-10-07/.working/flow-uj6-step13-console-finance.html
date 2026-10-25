@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 13, the staff console and Finance's day (proposal)</title>
+<style>
+/*
+  STEP 13 WIREFRAMES: the staff console (desktop only) and UJ-6. Ngozi in Finance confirms a payment.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-20, FR-38, FR-40 to FR-43, FR-52, FR-53, FR-71, FR-76, FR-78, UJ-6. Sample: order INT-0042 from Step 5.
+  Frames are 1240 px wide, for a desktop browser. Now is Wed 7 Oct 2026, 12:50 pm, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:640px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.nav .deputy{margin:16px 18px 0;padding:10px 12px;border:1px dashed var(--control);font-size:12.5px;color:var(--ink2)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.notice .b{margin-left:auto}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cards.two{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+.qcard{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.qcard h3{font:700 16px/1.2 var(--serif)}
+.qcard .big{margin-top:6px;font:700 34px/1 var(--sans);font-variant-numeric:tabular-nums}
+.qcard .big small{font:600 14px var(--sans);color:var(--ink2)}
+.qcard p{margin-top:6px;font-size:13px}
+.qcard .small{color:var(--ink2)}
+.qcard .b{margin-top:10px}
+.meter{height:12px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.meter.hot i{background:var(--brass)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.filters{display:flex;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0}
+.split .list{min-width:0;padding-right:20px}
+.q{width:100%;border-collapse:collapse;font-size:13px}
+.q th{padding:8px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.q td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.q .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.q .nw{white-space:nowrap}
+.q .mono{font:12px/1.3 var(--mono);white-space:nowrap}
+.q .age strong{display:block;font-weight:700;white-space:nowrap}
+.q td small{display:block;margin-top:2px;font-size:12px;color:var(--ink2)}
+.q tr.late td{background:var(--bad-tint)}
+.q tr.late td:first-child{box-shadow:inset 4px 0 0 var(--bad)}
+.q tr.sel td{box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.q tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.panel{padding:0 0 0 20px;border-left:1px solid var(--ink)}
+.panel h3{font:700 17px/1.2 var(--serif)}
+.panel .sub{margin:3px 0 12px}
+.shot{display:grid;place-items:center;height:130px;margin-bottom:12px;border:1px solid var(--control);background:repeating-linear-gradient(135deg,var(--aged) 0 10px,var(--paper) 10px 20px);color:var(--ink2);font-size:13px;text-align:center}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 14px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.trio > section{padding:0 20px}
+.trio > section:first-child{padding-left:0}
+.trio > section + section{border-left:1px solid var(--rule)}
+.trio h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.crumbs{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.crumbs .b{min-height:34px;margin-left:auto}
+.crumbs .b + .b{margin-left:0}
+.checks li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.checks .i{margin-top:1px;color:var(--ok)}
+.checks .bad .i{color:var(--bad)}
+.checks small{display:block;font-size:12.5px;color:var(--ink2)}
+.checks b{font:700 12.5px var(--sans);color:var(--ok)}
+.checks .bad b{color:var(--bad)}
+.cand{margin:0 0 10px;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);border-left:6px solid var(--green)}
+.cand b{font:700 15px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.cand small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.amountbox{margin:12px 0 0}
+.amountbox label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.amountbox .in{display:flex;align-items:center;min-height:46px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font:700 20px var(--sans);font-variant-numeric:tabular-nums}
+.amountbox small{display:block;margin-top:4px;font-size:12.5px;color:var(--ink2)}
+.actions{display:grid;gap:8px;margin-top:14px}
+.after{margin-top:10px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.kb{margin-top:10px;font-size:12.5px;color:var(--ink2)}
+.kb kbd{padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:600 12px var(--mono)}
+.steps{display:flex;gap:0;margin:0 0 14px}
+.steps li{flex:1;padding:8px 12px;border:1px solid var(--control);border-right:0;background:var(--sheet);font:600 13px var(--sans);color:var(--ink2)}
+.steps li:last-child{border-right:1px solid var(--control)}
+.steps li.on{background:var(--green);border-color:var(--green);color:#fff}
+.steps li.done{color:var(--green)}
+.dropzone{display:grid;place-items:center;height:96px;margin:0 0 14px;border:2px dashed var(--control);background:var(--paper);font-size:14px;color:var(--ink2)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14"/><circle cx="9" cy="10" r="1.5"/><path d="M4 18l5-5 4 4 3-3 4 4"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 13 of the walk-through</p>
+  <h1 class="top">The staff console, and Finance's day: confirming a payment</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. The console is desktop only and organised around work queues. This is UJ-6: Ngozi in Finance starts her day, opens the oldest receipt, matches it to the bank statement, and confirms. Five desktop frames, then a sheet of states. The look is the same as the app, denser: tables, a side panel, and no decoration. Role-aware navigation shows each person only their own queues and tools. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Today, Finance's first screen<span>One screen answers "what needs me and how late is it". Each queue shows its count, the age of its oldest item against its target, and how often the team was on time. The shell: a left rail of her queues and tools, a top bar with the clock and Business Hours.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Today · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 12:50 pm · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a on">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">2</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+          <p class="deputy">Your deputy is Tolu K. If you switch on out of office, your queues go to her and her actions say "acting for Ngozi".</p>
+        </nav>
+        <div class="main">
+          <h1>Good afternoon, Ngozi</h1>
+          <p class="sub">Finance · 3 things need you today</p>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>The bank statement was last imported at 12:41 pm. Anything paid after that cannot be matched yet.<span class="b">Import the latest</span></p>
+          <div class="cards">
+            <section class="qcard"><h3>Receipts</h3><p class="big">5 <small>waiting</small></p><p>Oldest: <b>1 h 26 min</b> of a 2 business hour target</p><div class="meter" role="progressbar" aria-label="Oldest receipt has used 72 percent of its target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><i style="width:72%"></i></div><p class="small"><b>0</b> over target · 96% on time this week, goal 95%</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>Credit note requests</h3><p class="big">2 <small>waiting</small></p><p>Oldest: <b>5 h 10 min</b> of a 1 business day target</p><div class="meter" role="progressbar" aria-label="Oldest request has used 52 percent of its target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="52"><i style="width:52%"></i></div><p class="small"><b>0</b> over target · 100% on time this week</p><span class="b">Open the queue</span></section>
+            <section class="qcard"><h3>Unmatched bank credits</h3><p class="big">3 <small>with no payment</small></p><p>Oldest: <b>Mon 5 Oct</b>. No target, looked at every day.</p><p class="small">Money in our account that no receipt explains.</p><span class="b">Open the queue</span></section>
+          </div>
+          <div class="cards two">
+            <section class="qcard"><h3>Platform Rate</h3><p class="big">₦1,368.00 <small>to the dollar</small></p><p>Set today 8:55 am by you. Reconfirm each business day. New orders stop if it is not reconfirmed by Fri 9 Oct, 8:55 am.</p><span class="b">Reconfirm the rate</span> <span class="b o">Change the rate</span></section>
+            <section class="qcard"><h3>Waiting for you as second approver</h3><p class="big">1 <small>item</small></p><p>Credit note for cancelled order INT-0034, <b>₦310,500.00</b>. Asked by Tolu K. Above ₦100,000.00 a second person approves.</p><span class="b">Review it</span></section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. The Receipts queue<span>Oldest first, as in the PRD. A target flag and a tinted row for anything late. The side panel previews the selected receipt so she can often decide without opening it, and "Review" opens the full page. Filters are one tap.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Receipts · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 12:50 pm · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a on">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">2</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Receipts</h1>
+          <p class="sub">Oldest first. Target: 2 business hours. Time outside Business Hours does not count.</p>
+          <div class="split">
+            <div class="list">
+              <div class="filters"><span class="fchip on">All · 5</span><span class="fchip">Mine · 3</span><span class="fchip">Over target · 0</span><span class="fchip">Sent back before · 1</span><span class="fchip">Second review · 1</span></div>
+              <table class="q">
+                <caption class="sr" style="position:absolute;left:-9999px">Receipts waiting for review, oldest first</caption>
+                <thead><tr><th scope="col">Age</th><th scope="col">Business and order</th><th scope="col" class="num">Declared</th><th scope="col">Sender</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                  <tr class="sel" aria-current="true"><td class="age"><strong>1 h 26 min</strong></td><td>Adeyemi Integrated Systems<small class="mono">INT-0042</small></td><td class="num">₦731,729.94</td><td>Adeyemi Integrated Systems</td><td><span class="chip">New</span></td></tr>
+                  <tr><td class="age"><strong>1 h 12 min</strong></td><td>Okoro Homes Ltd<small class="mono">INT-0043</small></td><td class="num">₦518,000.00</td><td>C. Okoro</td><td><span class="chip">New</span></td></tr>
+                  <tr><td class="age"><strong>58 min</strong></td><td>Sade AV Systems<small class="mono">INT-0040</small></td><td class="num">₦92,450.00</td><td>S. Balogun</td><td><span class="chip warn">Sent back once before</span></td></tr>
+                  <tr><td class="age"><strong>41 min</strong></td><td>Bright Link Ltd<small class="mono">INT-0039</small></td><td class="num">₦386,900.00</td><td>Bright Link Ltd</td><td><span class="chip">New</span></td></tr>
+                  <tr><td class="age"><strong>12 min</strong></td><td>Ogunleye Networks &amp; Security<small class="mono">INT-0046</small></td><td class="num">₦204,300.00</td><td>Adaeze Okafor</td><td><span class="chip warn">Sender is different</span></td></tr>
+                </tbody>
+              </table>
+              <p class="kb">Keyboard: <kbd>J</kbd> next <kbd>K</kbd> previous <kbd>Enter</kbd> open the selected receipt <kbd>/</kbd> search. Money actions are never a single key.</p>
+            </div>
+            <aside class="panel" aria-label="Preview of the selected receipt">
+              <h3>INT-0042 · Adeyemi Integrated Systems</h3>
+              <p class="sub">Sent 11:24 am · 42 minutes after the order was made</p>
+              <div class="shot"><span><svg class="i" style="margin:0 auto 4px;width:26px;height:26px"><use href="#i-img"/></svg>Receipt photo<br>receipt-0742.jpg</span></div>
+              <dl class="cmp">
+                <div><dt>He says he sent</dt><dd>₦731,729.94</dd></div>
+                <div><dt>Amount due on the order</dt><dd>₦731,729.94</dd></div>
+                <div><dt>Statement, best match</dt><dd>₦731,729.94</dd></div>
+              </dl>
+              <p class="after" style="margin-top:12px">The amount, sender and reference all match. Open it to confirm.</p>
+              <div class="actions"><span class="b big">Review and confirm</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Reviewing one receipt<span>Three columns, left to right in the order she reads: what he sent, what the order needs, and what the bank shows. Every check is written in words, not only coloured. Confirm is the only primary action, and it tells her what happens next.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Receipt INT-0042 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 12:50 pm · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a on">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">2</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Receipts</span><span>›</span><b>INT-0042</b><span>· 1 of 5</span><span class="b o">‹ Previous</span><span class="b o">Next ›</span></div>
+          <div class="trio">
+            <section aria-labelledby="c1">
+              <h2 id="c1">What he sent</h2>
+              <div class="shot" style="height:170px"><span><svg class="i" style="margin:0 auto 4px;width:26px;height:26px"><use href="#i-img"/></svg>Receipt photo<br>Zoom and rotate</span></div>
+              <p class="sub" style="margin:0 0 8px">receipt-0742.jpg · 1.4 MB · sent 7 Oct, 11:24 am</p>
+              <dl class="cmp">
+                <div><dt>Amount he declared</dt><dd>₦731,729.94</dd></div>
+                <div><dt>Sender name</dt><dd>Adeyemi Integrated Systems</dd></div>
+                <div><dt>Sender bank</dt><dd>Example Bank</dd></div>
+                <div><dt>Transfer time</dt><dd>7 Oct, 11:20 am</dd></div>
+                <div><dt>Bank reference</dt><dd style="font-family:var(--mono);font-size:13px">NIP/260110/0007712</dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="c2">
+              <h2 id="c2">The order</h2>
+              <p style="font:700 15px/1.3 var(--sans)">INT-0042 · Adeyemi Integrated Systems</p>
+              <p class="sub" style="margin:2px 0 8px">Owner Tunde A. · approved business · made 7 Oct, 10:42 am</p>
+              <dl class="cmp">
+                <div><dt>Amount due</dt><dd>₦731,729.94</dd></div>
+                <div><dt>Confirmed so far</dt><dd>₦0.00</dd></div>
+                <div><dt>Credit note applied</dt><dd>₦0.00</dd></div>
+                <div><dt>Still to pay</dt><dd>₦731,729.94</dd></div>
+              </dl>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Timing</h3>
+              <dl class="cmp">
+                <div><dt>Price held until</dt><dd>8 Oct, 10:42 am</dd></div>
+                <div><dt>Receipt sent</dt><dd>42 min after the order</dd></div>
+                <div><dt>For the price hold</dt><dd><span class="chip good">In time</span></dd></div>
+              </dl>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">History</h3>
+              <p style="font-size:13px">Sent back so far: <b>0 of 3</b>. No other receipts on this order.</p>
+            </section>
+            <section aria-labelledby="c3">
+              <h2 id="c3">The bank statement</h2>
+              <p class="sub" style="margin:0 0 8px">Imported 7 Oct, 12:41 pm · covers up to 12:30 pm</p>
+              <div class="cand"><b>₦731,729.94 · 7 Oct, 11:20 am</b><small>ADEYEMI INTEGRATED SYSTEMS · NIP/260110/0007712</small><div class="chips" style="margin-top:6px"><span class="chip good">Best match</span></div></div>
+              <ul class="checks">
+                <li><svg class="i"><use href="#i-check"/></svg><span>Amount<small>₦731,729.94 on both</small></span><b>Matches</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Sender<small>Same as the business name</small></span><b>Matches</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Bank reference<small>Not used on any other payment</small></span><b>Unused</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Time<small>The money arrived 4 min before the receipt was sent</small></span><b>Earlier</b></li>
+                <li><svg class="i"><use href="#i-check"/></svg><span>Your own accounts<small>You did not create, approve or vouch for this business</small></span><b>Clear</b></li>
+              </ul>
+              <div class="amountbox"><label for="amt">Amount to confirm</label><div class="in" id="amt">₦731,729.94</div><small>Taken from the bank credit. You can change it, and the reason is recorded.</small></div>
+              <div class="actions"><span class="b big">Confirm payment</span><span class="b o">Payment unconfirmed…</span><span class="b o">Send to a second reviewer…</span></div>
+              <p class="after">On confirming: INT-0042 becomes <b>Paid</b> and goes to Operations to approve, target 4 business hours. He is told on WhatsApp and email. A ledger line is written.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. Unmatched bank credits<span>Money in the account that no receipt explains, listed every day. The system suggests the likely order. Resolving one with a credit note needs a second approver above ₦100,000.00.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Unmatched bank credits · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 12:50 pm · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">2</span></span>
+          <span class="a on">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Unmatched bank credits</h1>
+          <p class="sub">Bank credits with no payment, and receipts for orders that expired, were cancelled or are already paid.</p>
+          <table class="q">
+            <thead><tr><th scope="col">Arrived</th><th scope="col" class="num">Amount</th><th scope="col">Sender on the statement</th><th scope="col">Bank reference</th><th scope="col">Why it is here</th><th scope="col">Likely answer</th><th scope="col">What you can do</th></tr></thead>
+            <tbody>
+              <tr><td class="nw">Wed 7 Oct, 9:02 am</td><td class="num">₦45,000.00</td><td>T. ADEYEMI</td><td class="mono">FT50177310</td><td>No receipt yet</td><td>Order INT-0050 is waiting for ₦48,600.00. Same sender, ₦3,600.00 short.</td><td class="nw"><span class="b o" style="min-height:34px">Open INT-0050</span></td></tr>
+              <tr><td class="nw">Tue 6 Oct, 4:40 pm</td><td class="num">₦310,500.00</td><td>BRIGHT LINK LTD</td><td class="mono">FT77009412</td><td>Order INT-0034 expired on 6 Oct</td><td>Turn it into a credit note for Bright Link Ltd. Needs a second approver.</td><td class="nw"><span class="b o" style="min-height:34px">Create credit note…</span></td></tr>
+              <tr><td class="nw">Mon 5 Oct, 2:15 pm</td><td class="num">₦12,000.00</td><td>UNKNOWN SENDER</td><td class="mono">FT30018855</td><td>No receipt, no matching order</td><td>No suggestion.</td><td class="nw"><span class="b o" style="min-height:34px">Hold and ask the bank…</span></td></tr>
+            </tbody>
+          </table>
+          <p class="after" style="margin-top:14px;max-width:760px">Nothing here is applied automatically. A payment that arrives for an expired order is never applied by itself. Each resolution writes a ledger line, and a correction is a new line, never an edit.</p>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. Importing the bank statement<span>Matching depends on it, so it is a first-class screen: pick the file, check what it will do, import, and see what is left unmatched. It remembers the column layout for the bank.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Bank statements · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Wed 7 Oct · 12:50 pm · open until 6:00 pm</span><span class="me"><span class="role">Finance</span>Ngozi A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Receipts<span class="n">5</span></span>
+          <span class="a">Credit note requests<span class="n">2</span></span>
+          <span class="a">Unmatched credits<span class="n hot">3</span></span>
+          <h2>Money</h2>
+          <span class="a">Orders and payments</span>
+          <span class="a">Credit notes and refunds</span>
+          <span class="a">Platform Rate</span>
+          <span class="a on">Bank statements</span>
+          <span class="a">Reports and exports</span>
+        </nav>
+        <div class="main">
+          <h1>Import a bank statement</h1>
+          <p class="sub">Last imported today at 12:41 pm. It covers up to 12:30 pm.</p>
+          <ol class="steps"><li class="done">1 Choose the file</li><li class="on">2 Check it</li><li>3 Import</li></ol>
+          <div class="dropzone">statement-2026-10-07.csv · 41 rows · Example Bank</div>
+          <dl class="cmp" style="max-width:640px">
+            <div><dt>Rows read</dt><dd>41</dd></div>
+            <div><dt>New credits</dt><dd>38</dd></div>
+            <div><dt>Already imported, skipped</dt><dd>3</dd></div>
+            <div><dt>Columns recognised</dt><dd>Date, value time, amount, narration, reference, sender</dd></div>
+            <div><dt>Covers</dt><dd>Wed 7 Oct, up to 12:48 pm</dd></div>
+          </dl>
+          <div class="actions" style="grid-template-columns:auto auto;justify-content:start"><span class="b big">Import 38 credits</span><span class="b o">Choose another file</span></div>
+          <p class="after" style="max-width:640px">After importing: 2 of the 5 waiting receipts have a matching credit, and 1 new credit has no payment. Each imported credit can be used once. Importing the same file again changes nothing.</p>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">The shell and the day</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Staff sign-in</p><h4>Email, a code or passkey, then a second check</h4><p>Staff must use two-step sign-in, and a session lasts 12 hours. The rail and the tools shown depend on the role. Finance never sees Operations' catalogue tools, and nobody sees a link they cannot use.</p></div>
+      <div class="sc need"><p class="lab">Statement is old</p><h4>Anything paid after 12:41 pm cannot be matched yet</h4><p>Shown on Today and above the Receipts queue. The "Import the latest" button sits inside it.</p></div>
+      <div class="sc err"><p class="lab">Rate is nearly stale</p><h4>The Platform Rate is 46 hours old</h4><p>At 48 hours, new orders stop until it is reconfirmed. Today shows this from 36 hours, in brass, and from 44 hours in red.</p></div>
+      <div class="sc"><p class="lab">Out of office</p><h4>Your queues move to Tolu K.</h4><p>Within a minute. Everything she does is marked "acting for Ngozi" in the record. Today shows a banner while it is on, so it is not forgotten.</p></div>
+      <div class="sc need"><p class="lab">Over 75% of target</p><h4>Escalated to Admin</h4><p>When an item passes 75% of its target, Admin sees it in the queue's card. Finance sees "Escalated" on the row.</p></div>
+    </div>
+
+    <h3 class="grp">The Receipts queue</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Over target</p><h4>Target exceeded</h4><p>The row is tinted with a red bar at the left and the age says "Target exceeded". The count in the rail turns brass.</p></div>
+      <div class="sc"><p class="lab">Outside Business Hours</p><h4>Uploaded Tue 5:40 pm, counted from Wed 8:00 am</h4><p>A receipt sent after hours does not count against the two-hour target until the next opening. The row says so.</p></div>
+      <div class="sc need"><p class="lab">Sent back before</p><h4>Sent back once before</h4><p>A re-upload keeps its first upload time if the full amount matches. After 3 sent back on one order, a staff review is required and the row says "Needs review".</p></div>
+      <div class="sc"><p class="lab">Someone else has it open</p><h4>Being reviewed by Tolu K. since 12:44 pm</h4><p>A soft lock so two people do not do the same receipt. It can be taken over with a reason.</p></div>
+    </div>
+
+    <h3 class="grp">Reviewing a receipt</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">No matching credit</p><h4>The statement has no credit for this</h4><p>Confirm is switched off. "Payment unconfirmed…" is offered, with the exact message he will read: "Payment unconfirmed: please upload your receipt again or pay the full amount."</p></div>
+      <div class="sc need"><p class="lab">Amount differs</p><h4>The credit is ₦480,000.00, he said ₦731,729.94</h4><p>She confirms what the bank shows. The order stays Awaiting Payment, and he is told the balance.</p></div>
+      <div class="sc need"><p class="lab">Paid too much</p><h4>The credit is ₦800,000.00</h4><p>The order becomes Paid. A draft credit note for ₦68,270.06 is created for her to issue. Above ₦100,000.00 a second person approves.</p></div>
+      <div class="sc err"><p class="lab">Reference already used</p><h4>This reference was used on payment P-0412</h4><p>Confirm is switched off. It links to the earlier payment. A bank reference works once.</p></div>
+      <div class="sc need"><p class="lab">Sender is different</p><h4>The sender is not the business</h4><p>Confirm is replaced by "Send to a second reviewer…". The second reviewer cannot be the first. Both names are recorded.</p></div>
+      <div class="sc err"><p class="lab">Not your call</p><h4>You created, approved or vouched for this business</h4><p>Confirm is switched off. Another person must confirm. The reason is written in the check list, never hidden.</p></div>
+      <div class="sc need"><p class="lab">Order already expired, cancelled or paid</p><h4>This order expired on 6 Oct</h4><p>The receipt and any matching credit go to Unmatched bank credits, to be resolved with a credit note. Nothing is applied automatically.</p></div>
+      <div class="sc need"><p class="lab">Receipt was late for the price hold</p><h4>Sent 26 h after the order was made</h4><p>Confirming still works. The order is repriced once, when every in-time receipt has a decision, and the preview shows the new amount due at the new rate.</p></div>
+      <div class="sc"><p class="lab">Reverse a payment</p><h4>Reverse with a reason and a second approver</h4><p>The order goes back to Awaiting Payment, and approval and shipping stop until it is reviewed. The ledger gets a new line. Nothing is edited.</p></div>
+      <div class="sc"><p class="lab">After confirming</p><h4>"INT-0042 is Paid. It is now in Operations' queue."</h4><p>A short message with the ledger line number, and the next receipt opens. A setting turns "open the next one" off.</p></div>
+    </div>
+
+    <h3 class="grp">Keyboard and reading</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Keyboard</p><h4>Move with keys, decide with a button</h4><p>J and K move down and up the list, Enter opens, / searches. Confirm, unconfirmed and reverse are never a single key. They need the button, or Enter on the focused button, and a summary line.</p></div>
+      <div class="sc"><p class="lab">Dense, but readable</p><h4>13 px tables, 44 px targets for buttons</h4><p>Table text is smaller than the app's. Buttons and chips stay large enough to hit. Colour is never the only signal: every check says Matches, Clear, or Earlier in words.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the console shell and Today, the queue, the review page, and unmatched credits with the statement import.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 12, reporting a problem and returning a device (proposal)</title>
+<style>
+/*
+  STEP 12 WIREFRAMES: UJ-7. Chidi, a Technician on Tunde's team, finds a faulty camera, reports it, raises a Return
+  Request with Support's issue code, Funmi (Tunde's Manager) approves it, the device goes back, and the outcome arrives.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-58 to FR-64, FR-66 to FR-68, FR-79, addendum rows 60, 68, 70, 72. A Technician sees no amounts.
+  Sample: order INT-0038, delivered Mon 5 Oct, dispatched Sat 3 Oct, 24-month warranty from dispatch.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:840px;margin:0 0 26px}
+.flow{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:96px}
+.screen.notab{padding-bottom:28px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px 0 18px;background:var(--green);color:#fff}
+.appbar.back{padding:0 6px}
+.brand{font:italic 700 19px/1 var(--serif)}
+.title{font:700 17px/1.2 var(--serif)}
+.iconbtn{position:relative;display:grid;place-items:center;min-width:48px;min-height:48px;background:none;border:0;color:#fff}
+.count{position:absolute;top:5px;right:3px;min-width:18px;padding:1px 5px;border-radius:2px;background:#fff;color:var(--green);font:700 11.5px/1.3 var(--sans);text-align:center}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 4px}
+.head h2{font:700 21px/1.2 var(--serif)}
+.head p{margin-top:5px;font-size:14px;color:var(--ink2)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.field{margin:14px 16px 0}
+.field label{display:block;margin-bottom:5px;font:600 14px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:50px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px}
+.in.ta{align-items:flex-start;min-height:84px;padding:10px 12px;font-size:15px}
+.in.sel{min-height:56px}
+.in small{display:block;font-size:12.5px;color:var(--ink2)}
+.in.ok{background:var(--sheet);border-color:var(--ok)}
+.help{margin:6px 16px 0;font-size:13px;color:var(--ink2)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:14px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.btn.half{width:auto;margin:0}
+.btn[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.link{display:block;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--sheet);border-top:2px solid var(--ink)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:68px;padding-top:3px;border-top:4px solid transparent;margin-top:-2px;font:600 11.5px/1.1 var(--sans);color:var(--ink2)}
+.tab.on{border-top-color:var(--green);color:var(--green)}
+.opt{display:flex;gap:12px;align-items:flex-start;margin:10px 16px 0;padding:12px;background:var(--sheet);border:1px solid var(--control)}
+.opt.on{padding:11px;border:2px solid var(--green)}
+.opt .rad{display:grid;place-items:center;flex:none;width:24px;height:24px;margin-top:1px;border:2px solid var(--control);border-radius:50%}
+.opt.on .rad{border-color:var(--green)}
+.opt.on .rad::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--green)}
+.opt b{display:block;font:700 15px/1.3 var(--sans)}
+.opt small{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.photos{display:flex;gap:8px;margin:8px 16px 0}
+.thumb{display:grid;place-items:center;width:72px;height:72px;background:var(--aged);border:1px solid var(--control);color:var(--ink2)}
+.thumb.add{background:var(--sheet);border-style:dashed;color:var(--green);font:600 12px var(--sans);text-align:center}
+.care{margin:14px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.care b{display:block;font-size:14px}
+.tl{margin:14px 16px 0}
+.tl li{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:0 0 14px;position:relative}
+.tl li::before{content:"";position:absolute;left:14px;top:30px;bottom:0;width:2px;background:var(--rule)}
+.tl li:last-child::before{display:none}
+.tl .n{display:grid;place-items:center;width:30px;height:30px;border:2px solid var(--control);background:var(--sheet);font:700 14px var(--sans)}
+.tl .done .n{background:var(--green);border-color:var(--green);color:#fff}
+.tl .now .n{border-color:var(--green);color:var(--green)}
+.tl b{display:block;font:600 15px/1.3 var(--sans)}
+.tl small{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.codecard{margin:14px 16px 0;padding:12px;background:var(--sheet);border-top:3px double var(--ink);border-bottom:3px double var(--ink);text-align:center}
+.codecard .lab{font:700 11.5px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.codecard .code{margin:6px 0;font:700 27px/1.1 var(--mono);letter-spacing:.05em}
+.codecard small{display:block;font-size:13px;color:var(--ink2)}
+.clock{margin:12px 16px 0;padding:10px 12px;background:var(--warn-tint);border-left:4px solid var(--brass)}
+.clock b{display:block;font:700 22px/1.2 var(--sans)}
+.clock span{display:block;margin-top:2px;font-size:13px}
+.card{margin:10px 16px 0;padding:11px 12px;background:var(--sheet);border:1px solid var(--control)}
+.card b{display:block;font:700 15px/1.3 var(--sans)}
+.card p{margin-top:4px;font-size:13.5px}
+.card dl{margin-top:6px;font-size:13.5px}
+.card dl div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px solid var(--rule)}
+.card dt{color:var(--ink2)}
+.card dd{font-weight:600;text-align:right}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:46px;background:var(--sheet);color:var(--green);font:600 13.5px var(--sans);text-align:center}
+.seg .on{background:var(--green);color:#fff}
+.olist{margin:6px 16px 0}
+.olist li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.olist li.need{margin:0 -16px;padding:12px 16px;background:var(--warn-tint);border-left:4px solid var(--brass)}
+.pname{font:700 15.5px/1.25 var(--serif)}
+.pmeta{margin-top:2px;font-size:13px;color:var(--ink2)}
+.states{margin-top:38px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub{max-width:840px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.rt{width:100%;max-width:1200px;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.rt th,.rt td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.rt thead th{border-bottom:2px solid var(--ink);background:var(--aged);font:700 13px var(--sans)}
+.rt tbody th{font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .code{font:700 20px var(--mono);letter-spacing:.06em}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 0 0;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.notes{max-width:840px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="ic-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="ic-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12"/><circle cx="12" cy="13" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 12 of the walk-through</p>
+  <h1>Returns: report a problem, send a device back, and the outcome</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. This is UJ-7: Chidi finds a faulty camera, Support gives him an issue code, he raises a return request, Funmi (Tunde's Manager) approves it, the device goes back, and the outcome arrives. Seven phone screens, two reference tables, then a sheet of states. Support comes first by phone or WhatsApp, as the PRD says, so the app's job is to record, guide and show status, and never to decide. A Technician sees no amounts anywhere on a return. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="flow">
+    <figure class="unit">
+      <figcaption>1. Report a problem<span>Opened from a delivery on the order. It opens a Case, which starts his reporting clock. He sees how long he has, in dates for this delivery.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Report a problem</span><span class="spacer"></span></div>
+        <div class="head"><h2>What went wrong?</h2></div>
+        <div class="opt on"><span class="rad"></span><span><b>Something is faulty or damaged</b><small>It does not work, or it arrived broken.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>It is the wrong item</b><small>We sent something you did not order.</small></span></div>
+        <h3 class="sec">Which item?</h3>
+        <div class="field" style="margin-top:8px"><div class="in sel"><span>4MP PoE dome camera<small>Serial NG4P-77124 · delivery 1 · warranty until 3 Oct 2028</small></span><svg class="i"><use href="#ic-chev"/></svg></div></div>
+        <div class="field"><label>What happened? <small>optional</small></label><div class="in ta">The camera powers on but the picture stays black.</div></div>
+        <div class="photos"><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb add">Add photo</span></div>
+        <div class="field"><label>We will call you on</label><div class="in ok"><span>0806 555 0164</span><span class="chip good">Verified</span></div></div>
+        <p class="care"><b>How long you have</b>Delivered Mon 5 Oct. Damage or a wrong item: report by Sat 10 Oct. A device that does not work: report by Wed 4 Nov. Reporting today protects your right to a fix, even if the fix comes later.</p>
+        <button class="btn" type="button">Send to Support</button>
+        <span class="link">Rather talk? Call or WhatsApp us</span>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. The Case, with the issue code<span>He can follow what Support has done. When remote help fails, the issue code appears here and fills the return form, so he need not type it.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Case C-0231</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Case C-0231</p><h2>Support has an issue code for you</h2><p>4MP PoE dome camera · serial NG4P-77124 · opened Wed 7 Oct, 10:42 am</p></div>
+        <ol class="tl">
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>We have your report</b><small>Your reporting clock started here.</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Support checked it is you</b><small>A call back to your verified phone, 10:48 am.</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Support tried to fix it by phone</b><small>It could not be fixed that way.</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Support made an issue code</b><small>10:55 am.</small></span></li>
+        </ol>
+        <div class="codecard"><p class="lab">Issue code</p><p class="code">IC-4829-QK7M</p><small>For serial NG4P-77124 · works once<br>Valid for 48 hours, until Fri 9 Oct, 10:55 am</small></div>
+        <button class="btn" type="button">Raise the return request</button>
+        <p class="help">If the code runs out before the device reaches us, Support gives you a new one. Your reporting clock does not restart.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Raise the return request<span>The code is filled in. Reason, photos and a few words about the fault. As a Technician, Chidi sends it to a Manager or the Owner first.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Case</button><span class="title">Return request</span><span class="spacer"></span></div>
+        <div class="field" style="margin-top:12px"><label>Issue code</label><div class="in ok"><span style="font:700 16px var(--mono)">IC-4829-QK7M</span><span class="chip good">Valid · 47 h left</span></div></div>
+        <p class="help">For the 4MP PoE dome camera, serial NG4P-77124.</p>
+        <h3 class="sec">What is wrong?</h3>
+        <div class="opt"><span class="rad"></span><span><b>Damaged on the way</b></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Wrong item</b></span></div>
+        <div class="opt on"><span class="rad"></span><span><b>Does not work out of the box</b></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Stopped working under warranty</b></span></div>
+        <div class="opt"><span class="rad"></span><span><b>I think it is fake</b></span></div>
+        <div class="field"><label>Photos <small>the device, its label and the box</small></label></div>
+        <div class="photos" style="margin-top:0"><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb add">Add photo</span></div>
+        <div class="field"><label>The fault</label><div class="in ta">Powers on, status light is green, no picture on the NVR.</div></div>
+        <p class="care"><b>A Manager or the Owner checks this first</b>Your 48 hours for bringing the device back are paused until they decide, for up to 7 days.</p>
+        <button class="btn" type="button">Send for approval</button>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. The Manager approves<span>Funmi sees it under Needs your attention. We match the order line from the serial number, she confirms or corrects it. No amounts needed to decide.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Home</button><span class="title">Return request</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Waiting for you</p><h2>Chidi sent a return request</h2></div>
+        <div class="card"><b>4MP PoE dome camera</b><dl><div><dt>Serial</dt><dd>NG4P-77124</dd></div><div><dt>Reason</dt><dd>Does not work out of the box</dd></div><div><dt>Sent</dt><dd>Wed 7 Oct, 11:30 am</dd></div></dl><p>"Powers on, status light is green, no picture on the NVR."</p>
+          <div class="photos" style="margin:8px 0 0"><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span><span class="thumb"><svg class="i"><use href="#ic-cam"/></svg></span></div></div>
+        <h3 class="sec">Which order line is this?</h3>
+        <div class="opt on"><span class="rad"></span><span><b>Order INT-0038 · delivery 1</b><small>4MP PoE dome camera, serial NG4P-77124. We matched this from the serial number.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Choose a different line</b><small>Only delivered lines that include this device.</small></span></div>
+        <button class="btn" type="button">Approve and send to Support</button>
+        <button class="btn danger" type="button">Decline, and tell Chidi why</button>
+        <p class="help">Once you approve, our Support team sees it and Chidi can bring the device back.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Bring the device back<span>A clock, where to take it, or the courier details. The 48 hours resume once approved, and the deadline here already counts the time spent waiting.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Return RR-0087</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Approved</p><h2>Bring the device back</h2></div>
+        <div class="clock" role="timer"><b>47 h left</b><span>Until Fri 9 Oct, 11:35 am. This already counts the time spent waiting for approval.</span></div>
+        <h3 class="sec">How will you bring it?</h3>
+        <div class="opt on"><span class="rad"></span><span><b>Take it to our store</b><small>Main Store · Apapa, Lagos · open 8 am to 6 pm, Monday to Saturday. Bring the box and everything that came with it.</small></span></div>
+        <div class="opt"><span class="rad"></span><span><b>Send it by courier</b><small>You will add the courier's name and tracking number. Keep the courier's receipt.</small></span></div>
+        <p class="care"><b>Who pays for sending it</b>If the fault is ours, we pay back what you spent on the courier, up to our delivery rate for the same route, as a credit note. If not, you pay.</p>
+        <h3 class="sec">Where it is now</h3>
+        <ol class="tl">
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Sent for approval, then approved</b><small>Wed 7 Oct, 12:10 pm</small></span></li>
+          <li class="now"><span class="n">3</span><span><b>Waiting for the device</b><small>Then we check it, decide, and tell you.</small></span></li>
+        </ol>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. The outcome<span>Every step with its date, the decision in plain words, and what happens next. A Technician sees no amounts, so money is described, not shown.</span></figcaption>
+      <div class="phone"><div class="screen notab">
+        <div class="appbar back"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Order</button><span class="title">Return RR-0087</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Resolved</p><h2>We are sending a replacement</h2><div class="chips"><span class="chip">Resolved</span></div></div>
+        <div class="card"><b>Decision, Mon 12 Oct</b><p>We tested it and confirmed it did not work out of the box. A replacement from stock is on its way as delivery 3 of order INT-0038. We will record its serial number when it is dispatched.</p></div>
+        <div class="card"><b>What else</b><p>Your courier cost is paid back as a credit note.</p><p>The replacement keeps the warranty of the original, until 3 Oct 2028.</p></div>
+        <h3 class="sec">What happened</h3>
+        <ol class="tl">
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Sent, approved</b><small>Wed 7 Oct</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>We received the device</b><small>Fri 9 Oct, 10:20 am</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>We checked it</b><small>Mon 12 Oct</small></span></li>
+          <li class="done"><span class="n"><svg class="i" style="width:16px;height:16px"><use href="#ic-check"/></svg></span><span><b>Decision made, replacement sent</b><small>Mon 12 Oct</small></span></li>
+        </ol>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>7. Where problems are listed<span>A third segment on the Orders list. What needs him comes first. The same item also sits on its order and, if it needs him, on Home.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="brand">integrator</span><button class="iconbtn" type="button" aria-label="Cart, 2 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">2</span></button></div>
+        <div class="head"><h2>Orders</h2></div>
+        <div class="seg"><span>Open · 3</span><span>Done · 12</span><span class="on">Problems · 2</span></div>
+        <ul class="olist">
+          <li class="need"><div class="pname">Return RR-0087 · 4MP PoE dome camera</div><div class="pmeta">Order INT-0038 · raised by Chidi, 7 Oct</div><div class="chips"><span class="chip warn">Needs you: approve or decline</span></div></li>
+          <li><div class="pname">Return RR-0079 · 8-port PoE switch</div><div class="pmeta">Order INT-0031 · wrong item</div><div class="chips"><span class="chip">Decision made</span><span class="chip">Waiting for our finance team</span></div></li>
+        </ul>
+        <h3 class="sec">Earlier</h3>
+        <ul class="olist">
+          <li><div class="pname">Case C-0229 · Late delivery question</div><div class="pmeta">Order INT-0031 · closed by Support, 5 Oct</div><div class="chips"><span class="chip">Closed</span></div></li>
+        </ul>
+        <nav class="tabbar" aria-label="Main"><span class="tab"><svg class="i"><use href="#ic-home"/></svg>Home</span><span class="tab"><svg class="i"><use href="#ic-grid"/></svg>Catalogue</span><span class="tab"><svg class="i"><use href="#ic-folder"/></svg>Projects</span><span class="tab on"><svg class="i"><use href="#ic-box"/></svg>Orders</span><span class="tab"><svg class="i"><use href="#ic-user"/></svg>Account</span></nav>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="t1">
+    <h2 id="t1">Status words</h2>
+    <p class="sub">What he reads, against the PRD's names for a return request. Rejected and Lapsed end the request. Held is in the addendum, for a device that arrives after a lapse.</p>
+    <table class="rt">
+      <thead><tr><th scope="col">What he reads</th><th scope="col">PRD status</th><th scope="col">Who needs to act</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Waiting for approval</th><td>Raised (by a Technician)</td><td>A Manager or the Owner</td></tr>
+        <tr><th scope="row">Approved: bring the device back</th><td>Approved by the Integrator</td><td>The person who has the device</td></tr>
+        <tr><th scope="row">We have your device</th><td>Item Received</td><td>Us</td></tr>
+        <tr><th scope="row">We are checking it</th><td>Under Investigation</td><td>Us</td></tr>
+        <tr><th scope="row">Decision made</th><td>Decided</td><td>Us</td></tr>
+        <tr><th scope="row">Waiting for our finance team</th><td>Awaiting Finance</td><td>Us</td></tr>
+        <tr><th scope="row">Waiting for the maker</th><td>Awaiting RMA</td><td>The maker, through us</td></tr>
+        <tr><th scope="row">Resolved</th><td>Resolved</td><td>No one</td></tr>
+        <tr><th scope="row">Rejected, with the reason</th><td>Rejected</td><td>He may call us</td></tr>
+        <tr><th scope="row">Time ran out</th><td>Lapsed</td><td>He asks Support for a new issue code</td></tr>
+        <tr><th scope="row">On hold, we will contact you</th><td>Held</td><td>Us</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="states" aria-labelledby="t2">
+    <h2 id="t2">How long he has, and what can happen</h2>
+    <p class="sub">The windows run from the courier-confirmed delivery date, or the collection date, and are met by the time of the first Case. The remedies are the PRD's. Admin can change the windows, and a change never affects a Case already open.</p>
+    <table class="rt">
+      <thead><tr><th scope="col">What he reports</th><th scope="col">How long he has</th><th scope="col">What can happen</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Damaged on the way, or the wrong item</th><td>5 days</td><td>A replacement from stock, otherwise a credit note.</td></tr>
+        <tr><th scope="row">Does not work out of the box</th><td>30 days, or the maker's window if shorter</td><td>A replacement, then a repair by the maker, then a credit note.</td></tr>
+        <tr><th scope="row">Stopped working under warranty</th><td>The warranty period, counted from dispatch</td><td>The maker's repair or replacement process only. Never a cash refund. The maker's reason is shown if it declines.</td></tr>
+        <tr><th scope="row">I think it is fake</th><td>The warranty period plus 90 days</td><td>Once confirmed, a refund by bank transfer. If cleared, the device goes back to him.</td></tr>
+        <tr><th scope="row">I changed my mind</th><td>7 days</td><td>A credit note less a 15% restocking fee, for sealed, stocked items only.</td></tr>
+        <tr><th scope="row">It did not arrive</th><td>When a delivery is lost or overdue</td><td>A new dispatch, or a refund.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 id="ss">States</h2>
+    <p class="sub">Brass cards need something from someone. Red cards mean it did not work. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Reporting</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Past the usual window</p><h4>This is past the usual time for damage</h4><p>Send the report anyway. Every report is recorded, and Support will tell you what can be done.</p></div>
+      <div class="sc"><p class="lab">Help: give Support a code</p><h4>Read this to Support</h4><p class="code">4 8 2 9 1 7</p><p>Support asks for it before they talk about an order or a serial number. It works for 5 minutes. A third button on the Help sheet.</p></div>
+      <div class="sc"><p class="lab">Closed by Support</p><h4>Fixed by phone, or not taken further</h4><p>"Closed". If it was not taken further, the reason is shown. A Case always exists, even when nothing was returned.</p></div>
+      <div class="sc"><p class="lab">Only some roles</p><h4>"It did not arrive" and "I changed my mind"</h4><p>Shown to Owners and Managers only. A Technician sees "faulty or damaged" and "wrong item".</p></div>
+    </div>
+
+    <h3 class="grp">The issue code and raising a request</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Code not valid</p><h4>This code has expired, was used, or is for another device</h4><p>Ask Support for a new one. A code works once, for the serial it was made for.</p></div>
+      <div class="sc err"><p class="lab">Already raised</p><h4>There is already a return for this serial</h4><p>Shown with a link to RR-0087. A serial that was already resolved cannot be raised again.</p></div>
+      <div class="sc err"><p class="lab">Offline</p><h4>Raising a return needs a signal</h4><p>We check the issue code with our system. What you typed is kept on this phone.</p></div>
+      <div class="sc need"><p class="lab">Waiting for approval, a Technician's view</p><h4>Waiting for a Manager or the Owner</h4><p>Your 48 hours are paused. If nobody decides within 7 days, it expires, and you and the approver are both told.</p></div>
+      <div class="sc err"><p class="lab">Declined</p><h4>Funmi declined this request</h4><p>Reason from Funmi, shown to Chidi. He can call Support to talk it through.</p></div>
+      <div class="sc err"><p class="lab">Wrong order line (approver)</p><h4>That line does not include this device</h4><p>A corrected line must include the device, belong to this business, and be delivered.</p></div>
+    </div>
+
+    <h3 class="grp">Bringing it back</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Time ran out</p><h4>The device did not reach us in 48 hours</h4><p>Ask Support for a new issue code. Your reporting window does not change. You can have up to 3 codes for one order line.</p></div>
+      <div class="sc"><p class="lab">Arrived after it ran out</p><h4>On hold, we will contact you</h4><p>We have your device. Support will call you about what happens next.</p></div>
+      <div class="sc err"><p class="lab">Serial does not match</p><h4>We cannot accept this return</h4><p>The serial number on the device is not the one on your issue code. Call or WhatsApp us.</p></div>
+      <div class="sc"><p class="lab">Tested fine</p><h4>We tested it and found no fault</h4><p>We are sending it back to you. The courier cost is added to your next amount due, or taken from an open credit note, and shown here. A Technician sees "the cost is added to your business's next bill".</p></div>
+    </div>
+
+    <h3 class="grp">Outcomes</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Credit note (Owner or Manager)</p><h4>A credit note instead</h4><p>"CN-0014 · ₦4,500.00: your courier cost. Open credit notes." The amounts show to Owners and Managers only. A Technician sees "a credit note was issued".</p></div>
+      <div class="sc"><p class="lab">Waiting for the maker</p><h4>The maker is repairing it</h4><p>We cannot say when. We tell you when it is back. If the maker declines a warranty claim, the maker's reason is shown. There is no cash refund for a warranty claim.</p></div>
+      <div class="sc err"><p class="lab">Rejected</p><h4>We could not accept this return</h4><p>The reason is shown in plain words, for example "opened or installed goods cannot be returned for a change of mind". Call or WhatsApp us to talk it through.</p></div>
+      <div class="sc need"><p class="lab">Suspected counterfeit</p><h4>Do not install or sell this device</h4><p>Once confirmed, we refund by bank transfer. If cleared, we send it back. A recall notice reaches everyone affected and stays on Home until someone taps "I have seen this".</p></div>
+    </div>
+
+    <h3 class="grp">Other kinds of claim</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">I changed my mind (Owner or Manager)</p><h4>Support gives you a return authorisation</h4><p>The screen lists the rules: within 7 days, sealed stocked items, 15% restocking fee. An excluded item is refused with the reason shown, for example "back-order items cannot be returned for a change of mind".</p></div>
+      <div class="sc"><p class="lab">It did not arrive (Owner or Manager)</p><h4>Opened when a delivery is lost or overdue</h4><p>No issue code. The answer is a new dispatch or a refund. A lost delivery opens it for you, with a message.</p></div>
+      <div class="sc"><p class="lab">Amendments to earlier steps</p><h4>Four small additions</h4><p>The Orders list gets the third segment "Problems". Each delivered line on an order shows "Warranty until …". An order shows its problems. The Help sheet gets "Give Support a code".</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: reporting and the Case, raising and approving a return, bringing the device back, and the outcome and where problems are listed.</p>
+</main>
+</body>
+</html>

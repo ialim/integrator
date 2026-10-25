@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 16, the staff console, Admin: rules, staff, audit and dashboard (proposal)</title>
+<style>
+/*
+  STEP 16 WIREFRAMES: the staff console, Admin: the two-person rule, pricing and rules, staff, the audit trail, the founder's
+  weekly review, and the dashboard.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-13 to FR-15, FR-20, FR-40, FR-52, FR-53, FR-66, FR-67, FR-69, FR-72, FR-76, FR-80, section 7 (SM-1 to SM-9, SM-C1 to SM-C5).
+  Frames are 1240 px wide, for a desktop browser. Now is Mon 12 Oct 2026, 11:40 am, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{position:relative;width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:660px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:38px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.okmark{display:inline-flex;align-items:center;gap:5px;font:700 12.5px var(--sans);color:var(--ok)}
+.okmark.no{color:var(--bad)}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.md{display:grid;grid-template-columns:300px minmax(0,1fr);gap:0}
+.md .ql{padding-right:18px;min-width:0}
+.md .detail{padding-left:20px;border-left:1px solid var(--ink);min-width:0}
+.ql li{padding:10px 10px;border-bottom:1px solid var(--rule)}
+.ql li.sel{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.ql .t{display:flex;justify-content:space-between;gap:8px;font:700 14px/1.3 var(--sans)}
+.ql .t span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;color:var(--ink2)}
+.ql small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.ql .chips{margin-top:5px}
+.detail h2.dh{font:700 20px/1.2 var(--serif)}
+.detail .meta{margin:3px 0 12px;font-size:13px;color:var(--ink2)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl .nw{white-space:nowrap}
+.tbl .mono{font:12px/1.3 var(--mono)}
+.tbl small{display:block;font-size:12px;color:var(--ink2)}
+.tbl tr.sel td{box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.tbl tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.tbl tr.edit td{background:var(--warn-tint)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.after.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.field{margin-top:10px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field .in{display:flex;align-items:center;min-height:42px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.ta{align-items:flex-start;min-height:64px;padding:9px 12px}
+.field .in.num{font:700 16px var(--sans);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.two > section{padding:0 20px;min-width:0}
+.two > section:first-child{padding-left:0}
+.two > section:last-child{padding-right:0}
+.two > section + section{border-left:1px solid var(--rule)}
+.two h2,.sect h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.sg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0}
+.sg nav{padding-right:16px}
+.sg nav li{padding:9px 12px;border:1px solid var(--control);border-bottom:0;background:var(--sheet);font:600 13.5px var(--sans);color:var(--ink2)}
+.sg nav li:last-child{border-bottom:1px solid var(--control)}
+.sg nav li.on{background:var(--green);border-color:var(--green);color:#fff}
+.sg .body{padding-left:20px;border-left:1px solid var(--ink);min-width:0}
+.tile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tile{padding:11px 13px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.tile h3{font:700 13.5px/1.25 var(--sans)}
+.tile .v{margin-top:4px;font:700 22px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.tile .v small{font:600 12.5px var(--sans);color:var(--ink2)}
+.tile p{margin-top:3px;font-size:12.5px;color:var(--ink2)}
+.tile .chips{margin-top:6px}
+.tile details{margin-top:6px;font-size:12px;color:var(--ink2)}
+.tile summary{font-weight:700;color:var(--green);text-decoration:underline;text-underline-offset:3px;cursor:default}
+.tg{margin:16px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.review li{display:grid;grid-template-columns:24px 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.review .box{display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--control);background:var(--sheet);margin-top:1px}
+.review .box.on{background:var(--green);border-color:var(--green);color:#fff}
+.review b{font:700 13.5px/1.3 var(--sans)}
+.review small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.hash{font:11.5px/1.4 var(--mono);color:var(--ink2);word-break:break-all}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 16 of the walk-through</p>
+  <h1 class="top">The staff console, Admin: the two-person rule, rules, staff, the audit trail, and the dashboard</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell as before. This step holds the controls that protect the platform's money and its rules: changes that need a second person, the rules Admin can change, the staff and their deputies, the record that cannot be edited, the founder's weekly review, and the dashboard of success measures. Six desktop frames, then a sheet of states. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Waiting for a second person<span>Every change the PRD says needs two people lands here, whoever asked for it. Each item says what it will do, why it needs two, and who already agreed. You cannot approve your own request, and the screen says so.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Approvals · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a on">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a">Dashboard</span>
+        </nav>
+        <div class="main">
+          <h1>Approvals</h1>
+          <p class="sub">Changes that need a second person. Oldest first.</p>
+          <div class="md">
+            <ul class="ql" aria-label="Waiting for approval">
+              <li class="sel" aria-current="true"><div class="t"><span>Platform Rate +3.4%</span><span>24 min</span></div><small>Asked by Ngozi A., Finance</small><div class="chips"><span class="chip warn">Above 3% needs two</span></div></li>
+              <li><div class="t"><span>Serial exception NG4P-80412</span><span>2 h 00 min</span></div><small>Opened by Amaka K. · Bola A. agreed for Operations, 9:40 am</small><div class="chips"><span class="chip warn">Needs Admin too</span></div></li>
+              <li><div class="t"><span>Mark a batch as Suspected</span><span>3 h 10 min</span></div><small>Northgate DM4P, batch B-0925 · asked by Bola A.</small><div class="chips"><span class="chip warn">Whole-product hold</span></div></li>
+            </ul>
+            <section class="detail" aria-labelledby="ad">
+              <h2 class="dh" id="ad">Platform Rate: ₦1,368.00 to ₦1,414.50</h2>
+              <p class="meta">Asked by Ngozi A. at 11:16 am · reference: our bank's dollar rate at 10:45 am · spread ₦6.00 · up 3.4%</p>
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">What a business would pay, before and after</caption>
+                <thead><tr><th scope="col">Price preview, Base tier, VAT included</th><th scope="col" class="num">Now</th><th scope="col" class="num">After</th></tr></thead>
+                <tbody>
+                  <tr><td>4MP PoE dome camera</td><td class="num">₦68,400.00</td><td class="num">₦70,725.00</td></tr>
+                  <tr><td>8-channel PoE NVR with 2 TB drive</td><td class="num">₦142,500.00</td><td class="num">₦147,343.75</td></tr>
+                  <tr><td>Cat6 cable, 305 m box</td><td class="num">₦96,000.00</td><td class="num">₦99,263.16</td></tr>
+                </tbody>
+              </table>
+              <div class="two" style="margin-top:14px">
+                <section aria-labelledby="ad1">
+                  <h2 id="ad1">What it touches</h2>
+                  <dl class="cmp">
+                    <div><dt>Open carts</dt><dd>7</dd></div>
+                    <div><dt>Projects with items</dt><dd>23</dd></div>
+                    <div><dt>Orders past their price hold</dt><dd>3</dd></div>
+                    <div><dt>Orders still inside their hold</dt><dd>Not changed</dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="ad2">
+                  <h2 id="ad2">Checks</h2>
+                  <ul style="font-size:13.5px">
+                    <li style="padding:5px 0"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Under 10%: not a probable typing error</span></li>
+                    <li style="padding:5px 0"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>You did not ask for this change</span></li>
+                    <li style="padding:5px 0"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Rate was last confirmed today, 8:55 am</span></li>
+                  </ul>
+                </section>
+              </div>
+              <div class="field"><label>Your note <small style="font-weight:400;color:var(--ink2)">kept on record, and the asker sees it if you decline</small></label><div class="in ta">Matches the bank's quote at 11:20 am.</div></div>
+              <div class="actions"><span class="b big">Approve the change</span><span class="b danger">Decline…</span></div>
+              <p class="after">On approving: new naira prices show at once for everyone. Open proposals are not changed, and an order made from one is repriced if the rate has moved more than ₦5 since. Both names are written to the record.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Pricing and rules<span>The rules only Admin can change, grouped. Changing a markup shows what it does before it is saved: how many prices move, whether any product would fall below the floor, and that existing orders do not change.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Pricing and rules · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a on">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a">Dashboard</span>
+        </nav>
+        <div class="main">
+          <h1>Pricing and rules</h1>
+          <p class="sub">Every change asks for a reason, is audited, and shows what it affects first.</p>
+          <div class="sg">
+            <nav aria-label="Groups of rules"><ul>
+              <li class="on">Markups and the floor</li>
+              <li>VAT</li>
+              <li>Return windows</li>
+              <li>Tolerances</li>
+              <li>Approval amounts</li>
+              <li>Vouching</li>
+              <li>Order timing</li>
+              <li>Rate warnings</li>
+            </ul></nav>
+            <div class="body">
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Platform Markup by Product Range</caption>
+                <thead><tr><th scope="col">Product Range</th><th scope="col" class="num">Markup</th><th scope="col" class="num">Products</th><th scope="col" class="num">Own markup</th><th scope="col">Against the 8% floor</th></tr></thead>
+                <tbody>
+                  <tr class="edit"><td><b>IP cameras</b><small>Editing</small></td><td class="num"><b>25% → 24%</b></td><td class="num">38</td><td class="num">2</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None below</span></td></tr>
+                  <tr><td>Recorders</td><td class="num">25%</td><td class="num">14</td><td class="num">0</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None below</span></td></tr>
+                  <tr><td>Network switches</td><td class="num">25%</td><td class="num">21</td><td class="num">1</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None below</span></td></tr>
+                  <tr><td>Cabling and connectors</td><td class="num">25%</td><td class="num">46</td><td class="num">3</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None below</span></td></tr>
+                  <tr><td>Access control</td><td class="num">25%</td><td class="num">29</td><td class="num">0</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>None below</span></td></tr>
+                </tbody>
+              </table>
+              <div class="two" style="margin-top:14px">
+                <section aria-labelledby="p1">
+                  <h2 id="p1">What this change does</h2>
+                  <dl class="cmp">
+                    <div><dt>Prices that move now</dt><dd>36 of 38 products</dd></div>
+                    <div><dt>Not moved: they have their own markup</dt><dd>2</dd></div>
+                    <div><dt>4MP PoE dome camera, Base tier</dt><dd>₦68,400.00 → ₦67,852.80</dd></div>
+                    <div><dt>Orders already made</dt><dd>Not changed</dd></div>
+                    <div><dt>Products below the floor after this</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>0</span></dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="p2">
+                  <h2 id="p2">Save it</h2>
+                  <div class="field" style="margin-top:0"><label>New markup for IP cameras</label><div class="in num">24%</div></div>
+                  <div class="field"><label>Reason <small style="font-weight:400;color:var(--ink2)">required</small></label><div class="in ta">Matching a competitor's camera range. Review again at month end.</div></div>
+                  <div class="actions"><span class="b big">Save and apply now</span><span class="b o big">Cancel</span></div>
+                </section>
+              </div>
+              <p class="after need" style="margin-top:14px">A save that would take any product below the floor is refused, and names the product. Last three changes to this range: 1 Sep, 25% from 22%, "launch review", Kunle O. · 14 Aug, 22% from 20%, Kunle O. · set at launch, 20%.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Staff, deputies, and Business Hours<span>Everyone who can sign in to the console, with a role, a named deputy, and an out-of-office switch. Support duties are a switch on an Operations account, so they can be split out later. The last active Admin cannot be switched off.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Staff · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a on">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a">Dashboard</span>
+        </nav>
+        <div class="main">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px"><div><h1>Staff</h1><p class="sub">7 people · 3 roles. Two-step sign-in is on for everyone, and sessions last 12 hours.</p></div><span class="b">Create a staff account…</span></div>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 300px">
+            <div style="padding-right:20px;min-width:0">
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Staff accounts</caption>
+                <thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Duties</th><th scope="col">Deputy</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Ngozi A.</td><td>Finance</td><td>Money</td><td>Tolu K.</td><td><span class="chip">Active</span></td></tr>
+                  <tr><td>Tolu K.</td><td>Finance</td><td>Money</td><td>Ngozi A.</td><td><span class="chip">Active</span></td></tr>
+                  <tr><td>Bola A.</td><td>Operations</td><td>Goods</td><td>Kayode M.</td><td><span class="chip">Active</span></td></tr>
+                  <tr class="sel" aria-current="true"><td>Amaka K.</td><td>Operations</td><td>Goods and Support</td><td>Kayode M.</td><td><span class="chip">Active</span></td></tr>
+                  <tr><td>Kayode M.</td><td>Operations</td><td>Goods</td><td>Bola A.</td><td><span class="chip warn">Out of office until Wed</span></td></tr>
+                  <tr><td>Kunle O.</td><td>Admin</td><td>Everything</td><td>The founder</td><td><span class="chip">Active</span></td></tr>
+                  <tr><td>The founder</td><td>Admin</td><td>Everything, and the weekly review</td><td>Kunle O.</td><td><span class="chip">Active</span></td></tr>
+                </tbody>
+              </table>
+              <h3 class="tg">Business Hours</h3>
+              <p style="font-size:13px;color:var(--ink2)">8:00 am to 6:00 pm, Monday to Saturday, West Africa Time. Days we are closed, which pause every target clock:</p>
+              <dl class="cmp" style="margin-top:8px;max-width:560px">
+                <div><dt>Fri 25 Dec</dt><dd>Christmas Day</dd></div>
+                <div><dt>Sat 26 Dec</dt><dd>Boxing Day</dd></div>
+                <div><dt>Fri 1 Jan</dt><dd>New Year's Day</dd></div>
+              </dl>
+              <div class="actions"><span class="b o sm">Add a closed day</span></div>
+            </div>
+            <aside class="detail" aria-labelledby="sd">
+              <h2 class="dh" id="sd" style="font-size:18px">Amaka K.</h2>
+              <p class="meta">Operations · signed in 8:02 am</p>
+              <dl class="cmp">
+                <div><dt>Role</dt><dd>Operations</dd></div>
+                <div><dt>Support duties</dt><dd><span class="chip good">On</span></dd></div>
+                <div><dt>Deputy</dt><dd>Kayode M.</dd></div>
+                <div><dt>Out of office</dt><dd><span class="chip">Off</span></dd></div>
+                <div><dt>Two-step sign-in</dt><dd><span class="chip good">On</span></dd></div>
+              </dl>
+              <div class="actions" style="flex-direction:column;align-items:stretch"><span class="b o">Change role or duties…</span><span class="b o">Change deputy…</span><span class="b danger">Deactivate…</span></div>
+              <p class="after need">Deactivating signs her out at once and moves her queue items to her deputy. Every action is written to the record.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. The audit trail<span>A record nobody can edit or delete. It stores identifiers and what changed, never a name or a NIN, so personal data can be erased elsewhere. A line for every NIN shown, with the reason. The chain check says whether anything was tampered with.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Audit trail · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a on">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a">Dashboard</span>
+        </nav>
+        <div class="main">
+          <h1>Audit trail</h1>
+          <p class="sub">Chain checked today at 11:00 am: <span class="okmark"><svg class="i"><use href="#i-check"/></svg>intact</span>. Nobody can edit or delete an entry. Money records are kept at least 6 years, to be confirmed with the accountant.</p>
+          <div class="filters"><span class="fchip on">All</span><span class="fchip">Money</span><span class="fchip">Stock</span><span class="fchip">Access and identity</span><span class="fchip">Pricing and rules</span><span class="fchip">Cases and returns</span><span class="fchip">Overrides</span><span class="fchip">Search by order, business, serial or person…</span></div>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 300px">
+            <div style="padding-right:20px;min-width:0">
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Recent audit entries, newest first</caption>
+                <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">What</th><th scope="col">About</th></tr></thead>
+                <tbody>
+                  <tr><td class="nw">11:21 am</td><td>Ngozi A.<small>Finance</small></td><td>Platform Rate change asked<small>1,368.00 → 1,414.50</small></td><td class="mono">Rate</td></tr>
+                  <tr><td class="nw">11:12 am</td><td>Kunle O.<small>Admin</small></td><td>Level 3 check ticked: phone call</td><td class="mono">BA-0243</td></tr>
+                  <tr class="sel" aria-current="true"><td class="nw">11:05 am</td><td>Kunle O.<small>Admin</small></td><td>NIN shown<small>reason: checking by hand</small></td><td class="mono">P-1187</td></tr>
+                  <tr><td class="nw">10:55 am</td><td>Amaka K.<small>Operations</small></td><td>Return findings recorded</td><td class="mono">RR-0087</td></tr>
+                  <tr><td class="nw">10:40 am</td><td>Tolu K.<small>Finance, acting for Ngozi A.</small></td><td>Payment confirmed<small>₦518,000.00</small></td><td class="mono">INT-0043</td></tr>
+                  <tr><td class="nw">9:40 am</td><td>Bola A.<small>Operations</small></td><td>Serial exception agreed<small>opened by Amaka K.</small></td><td class="mono">NG4P-80412</td></tr>
+                  <tr><td class="nw">9:12 am</td><td>Bola A.<small>Operations</small></td><td>Stock adjusted<small>−1, damaged in the store</small></td><td class="mono">CAM-0412</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <aside class="detail" aria-labelledby="ed">
+              <h2 class="dh" id="ed" style="font-size:18px">Entry L-20644</h2>
+              <p class="meta">Mon 12 Oct, 11:05 am</p>
+              <dl class="cmp">
+                <div><dt>Who</dt><dd>Kunle O., Admin</dd></div>
+                <div><dt>What</dt><dd>NIN shown</dd></div>
+                <div><dt>About</dt><dd style="font-family:var(--mono)">Profile P-1187</dd></div>
+                <div><dt>Reason code</dt><dd>Checking by hand</dd></div>
+                <div><dt>Changed fields</dt><dd>None, a read</dd></div>
+              </dl>
+              <p class="after" style="margin-top:10px">This entry holds no name and no NIN. "Look up P-1187" shows who it is, for people allowed to see that.</p>
+              <h3 class="tg" style="margin-top:12px;font-size:13.5px">Chain</h3>
+              <p class="hash">Before: 7e2a…9f10<br>This entry: c4b8…31d7</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. The founder's weekly review<span>Every Admin and Finance override, every use of "acting as", and any unusual pattern, for the week. Each is marked reviewed with a note. The week is signed off when the list is clear.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Weekly review · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin · Founder</span>The founder</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a on">Weekly review</span>
+          <span class="a">Dashboard</span>
+        </nav>
+        <div class="main">
+          <h1>Weekly review</h1>
+          <p class="sub">Week of Mon 5 Oct to Sun 11 Oct · 5 overrides · 2 uses of "acting as" · 0 alerts for unusual patterns</p>
+          <div class="two">
+            <section aria-labelledby="w1">
+              <h2 id="w1">Overrides and acting as · 7</h2>
+              <ul class="review">
+                <li><span class="box on"><svg class="i" style="width:13px;height:13px"><use href="#i-check"/></svg></span><span><b>Payment confirmed while acting as Finance</b><small>Kunle O. · Wed 7 Oct · INT-0036 · "Ngozi A. and Tolu K. both out for two hours"</small></span><span class="chip">Reviewed</span></li>
+                <li><span class="box on"><svg class="i" style="width:13px;height:13px"><use href="#i-check"/></svg></span><span><b>Credit note ₦310,500.00, second approval</b><small>Ngozi A. asked, Tolu K. approved · Tue 6 Oct · INT-0034</small></span><span class="chip">Reviewed</span></li>
+                <li><span class="box"></span><span><b>Late counterfeit report accepted</b><small>Kunle O. · Fri 9 Oct · RR-0081 · past the warranty plus 90 days · "Maker confirmed the serial is not theirs"</small></span><span class="b o sm">Mark reviewed</span></li>
+                <li><span class="box"></span><span><b>Stock adjustment above the set size, signed off</b><small>Kunle O. for Bola A. · Thu 8 Oct · CAM-0412 · −12 units</small></span><span class="b o sm">Mark reviewed</span></li>
+                <li><span class="box"></span><span><b>Payment reversed</b><small>Ngozi A. with Kunle O. · Thu 8 Oct · INT-0039 · "Bank credit was a returned transfer"</small></span><span class="b o sm">Mark reviewed</span></li>
+                <li><span class="box"></span><span><b>Hold ratified</b><small>Kunle O. · Sat 10 Oct · a hold started by Finance for payment fraud</small></span><span class="b o sm">Mark reviewed</span></li>
+                <li><span class="box"></span><span><b>Serial correction with a second person</b><small>Bola A. and Amaka K. · Fri 9 Oct · NG4P-77129</small></span><span class="b o sm">Mark reviewed</span></li>
+              </ul>
+            </section>
+            <section aria-labelledby="w2">
+              <h2 id="w2">Unusual patterns</h2>
+              <dl class="cmp">
+                <div><dt>NIN shown, most by one person</dt><dd>Kunle O., 4 (usual 3)</dd></div>
+                <div><dt>Credit notes, most by one person</dt><dd>Ngozi A., 6 (usual 5)</dd></div>
+                <div><dt>Refunds above the second-approver amount</dt><dd>0</dd></div>
+                <div><dt>Sign-ins outside Business Hours</dt><dd>2</dd></div>
+              </dl>
+              <p class="after">Alerts fire during the week on things like many NIN reads or many credit notes by one person. Nothing fired this week.</p>
+              <div class="field"><label>A note for the week</label><div class="in ta">Rate override on Friday was a one-off. Watch the stock adjustment on CAM-0412.</div></div>
+              <div class="actions"><span class="b big" aria-disabled="true">Sign off the week</span></div>
+              <p class="after need">Off until all 7 are reviewed. 2 of 7 are done. Signing off records your name and the time.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>6. The dashboard<span>The success measures from the PRD, one tile each, with the definition and the data source one tap away. Counts sit beside every percentage, because with so few businesses one account moves a rate by many points.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Dashboard · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin · Founder</span>The founder</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Watch</h2>
+          <span class="a">Audit trail</span>
+          <span class="a">Weekly review</span>
+          <span class="a on">Dashboard</span>
+        </nav>
+        <div class="main">
+          <h1>Dashboard</h1>
+          <p class="sub">Month 3 of the plan · 10 businesses in the launch cohort. Early days: read the counts, not only the percentages.</p>
+          <h3 class="tg" style="margin-top:0">What we are aiming for</h3>
+          <div class="tile-grid">
+            <article class="tile"><h3>SM-1 Repeat-purchase rate</h3><p class="v">2 of 5 <small>· 40%</small></p><p>Target 60% or more by month 12</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>The share of approved businesses that place a second completed order within 90 days of their first. Source: orders, completed date.</details></article>
+            <article class="tile"><h3>SM-6 Contribution per order</h3><p class="v">USD 74 <small>· about 80 needed</small></p><p>First positive month expected near month 11</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>Net contribution per order after discounts, exchange movement and handling. Source: order lines, pricing record.</details></article>
+            <article class="tile"><h3>SM-4 Project-led orders</h3><p class="v">46% <small>by value · 11 of 24 orders</small></p><p>Target 40% or more by value</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>The share of orders, by count and by value, made from a project rather than a cart. Source: orders, origin.</details></article>
+          </div>
+          <h3 class="tg">How it is going</h3>
+          <div class="tile-grid">
+            <article class="tile"><h3>SM-2 Active buying businesses</h3><p class="v">6 of 10</p><p>Target 12 of 16 at month 12</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>Approved businesses with a completed order in the last 90 days. Source: orders.</details></article>
+            <article class="tile"><h3>SM-3 Orders completed this month</h3><p class="v">14</p><p>Target 24 at month 12</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>Orders that reached Completed in the month. Source: orders.</details></article>
+            <article class="tile"><h3>SM-5 Catalogue breadth</h3><p class="v">512 <small>products · 7 suppliers</small></p><p>Target 800 products at month 12</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>Active products and active suppliers. Source: catalogue.</details></article>
+            <article class="tile"><h3>SM-7 Documentation coverage</h3><p class="v">64% <small>· 82 of 128</small></p><p>Target 80% by month 6</p><div class="chips"><span class="chip warn">Behind</span></div><details><summary>Definition and source</summary>The share of products ordered in the last 90 days that have documentation. Source: orders, documentation.</details></article>
+            <article class="tile"><h3>SM-8 Time to first proposal</h3><p class="v">48 min <small>· median</small></p><p>Target under 60 minutes</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>The median time from creating a project to its first proposal. Source: projects, proposals.</details></article>
+            <article class="tile"><h3>SM-9 Proposal to order</h3><p class="v">29% <small>· 9 of 31</small></p><p>Starting guess 30%, reset after month 6</p><div class="chips"><span class="chip">Early days</span></div><details><summary>Definition and source</summary>The share of proposals followed by an order from the same project within 30 days. Source: proposals, orders.</details></article>
+          </div>
+          <h3 class="tg">What we must not trade away</h3>
+          <div class="tile-grid">
+            <article class="tile"><h3>SM-C1 Markup we really earn</h3><p class="v">22.6%</p><p>Target 22% or more, against 25% nominal</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>The blended markup on completed orders after discounts and exchange moves. Source: order lines.</details></article>
+            <article class="tile"><h3>SM-C2 Stock-out credits</h3><p class="v">1.4% <small>· 3 of 214 lines</small></p><p>Target under 2% of order lines</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>Credit notes for items out of stock after payment, as a share of order lines. Source: credit notes, order lines.</details></article>
+            <article class="tile"><h3>SM-C3 Back-orders on time</h3><p class="v">88% <small>· 7 of 8</small></p><p>Target 90% or more, within 7 days of the promise</p><div class="chips"><span class="chip warn">Below target</span></div><details><summary>Definition and source</summary>Back-order items delivered by the promised ship-by date plus 7 days, counted from payment. Source: order lines, shipments.</details></article>
+            <article class="tile"><h3>SM-C4 Payments confirmed on time</h3><p class="v">96% <small>· 47 of 49</small></p><p>Target 95% or more within 2 business hours</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>Payments confirmed within two business hours, not counting those waiting for bank evidence. Source: receipts, payments.</details></article>
+            <article class="tile"><h3>SM-C5 Returns and refund cost</h3><p class="v">1.1% <small>of revenue</small></p><p>Target 2% or less</p><div class="chips"><span class="chip good">On track</span></div><details><summary>Definition and source</summary>Credit notes and refunds for returns and claims, as a share of revenue. Source: credit notes, orders.</details></article>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">The two-person rule</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Your own request</p><h4>You asked for this, so someone else must approve it</h4><p>The Approve button is off and says why. The same rule holds whatever the role: no one approves their own change.</p></div>
+      <div class="sc err"><p class="lab">Rate change above 10%</p><h4>Refused as a probable typing error</h4><p>Only Admin can override, with a reason. The override is marked for the weekly review.</p></div>
+      <div class="sc"><p class="lab">Bank details change</p><h4>Admin edits, a person in Finance approves, and it starts after 24 hours</h4><p>Admin and Finance both get an email. Businesses see "Bank details changed on [date]" for 7 days. An order keeps the bank details it showed when it was made.</p></div>
+      <div class="sc"><p class="lab">Switching the Active Supplier</p><h4>Shows how many carts and projects it touches</h4><p>A second approver is needed. A switch to a supplier with no cost, or a cost of zero, is refused.</p></div>
+      <div class="sc need"><p class="lab">Bulk price file</p><h4>A cost change above 15%, or prices changed on more than 20 products</h4><p>Lands here as a pending change with a dry-run report. Approving applies it, and the previous state is kept for a one-click rollback.</p></div>
+      <div class="sc need"><p class="lab">Serial exception</p><h4>Operations and Admin both, and never the opener</h4><p>Shows the label and box photos and the order line. Both names are recorded.</p></div>
+      <div class="sc"><p class="lab">Declined</p><h4>The reason goes back to the person who asked</h4><p>They see it on their Today page. A declined item can be asked for again as a new request.</p></div>
+    </div>
+
+    <h3 class="grp">Rules and staff</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Floor</p><h4>This would take 3 products below the floor</h4><p>The save is refused and names the three products and how far each falls.</p></div>
+      <div class="sc"><p class="lab">Return windows</p><h4>A change applies only to cases opened afterwards</h4><p>Open cases keep the windows they started with. The screen says so before saving.</p></div>
+      <div class="sc need"><p class="lab">Tolerances and amounts</p><h4>The underpayment tolerance and the second-approver amount need two people</h4><p>Any write-off inside the tolerance is audited. The placeholders are ₦200.00 and ₦100,000.00 until the founder sets them. The size of a stock adjustment that needs an Admin to sign it off is set in the same group, placeholder 10 units.</p></div>
+      <div class="sc"><p class="lab">Create a staff account</p><h4>Name, work email, role, duties, deputy</h4><p>They get an invitation. Two-step sign-in is set up at first sign-in, and nothing works until it is.</p></div>
+      <div class="sc err"><p class="lab">Last Admin</p><h4>The last active Admin cannot be switched off</h4><p>The button is off and says so. Changing a role away from Admin is refused for the same reason.</p></div>
+      <div class="sc need"><p class="lab">Out of office</p><h4>Your queue moves to your deputy within a minute</h4><p>Their actions are marked "acting for you". A banner on every screen reminds you it is on.</p></div>
+    </div>
+
+    <h3 class="grp">Terms, first businesses, and records</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">Publishing a new Terms version</p><h4>Version, start date, full text, and a plain what-changed list</h4><p>The list of 2 to 5 sentences is required, because the Owner reads it before accepting. A preview shows the Owner's screen. From the start date, orders need the Owner's acceptance. Older versions stay on file.</p></div>
+      <div class="sc"><p class="lab">Seeding the first businesses</p><h4>Make a business directly, and platform vouch codes</h4><p>Name, contact and owner, and Admin who made it is recorded. It stays Pending Activation until the owner verifies, passes the NIN check, gives a trade name and accepts the Terms.</p></div>
+      <div class="sc"><p class="lab">Reports and exports</p><h4>Finance exports, as CSV</h4><p>Orders, payments, credit notes with their ageing, the monthly VAT output that reconciles to the tax invoices, and the bank reconciliation. Finance and Admin can use it.</p></div>
+      <div class="sc"><p class="lab">Dashboard</p><h4>Each tile says where its number comes from</h4><p>A tile that cannot be worked out says "Not enough data yet", never a zero. Percentages always sit beside their counts.</p></div>
+      <div class="sc need"><p class="lab">Unusual pattern alert</p><h4>Many NIN reads, or many credit notes, by one person</h4><p>Appears on Today for Admin and in the weekly review, with the person and the count.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the two-person rule, the pricing and rules page, staff and deputies, the audit trail and weekly review, and the dashboard.</p>
+</main>
+</body>
+</html>

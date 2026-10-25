@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 3, Parts list and Proposal (proposal)</title>
+<style>
+/*
+  STEP 3 WIREFRAMES: Parts list, Proposal builder, Proposal ready, Proposal card states, and the client PDF.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control border #7A7258, hairline #D9CFB5, bezel #2B281F, scrim rgba(26,24,18,.62).
+  Money in the sample: cost ₦702,168.00; margin 20% = ₦140,433.60; extra line ₦150,000.00; client total ₦992,601.60.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,p,ul,dl,dd,figure{margin:0}
+ul{padding:0;list-style:none}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:800px;margin:0 0 26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit.wide{width:600px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:780px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:92px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px;background:var(--green);color:#fff}
+.title{font:700 17px/1.2 var(--serif)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 11.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:16px 16px 6px}
+.head h3{font:700 20px/1.2 var(--serif)}
+.meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.field{margin:12px 16px 0}
+.field label{display:block;margin-bottom:5px;font:600 14px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:15px;color:var(--ink)}
+.in.ph{color:var(--ink2)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px 0}
+.two .field{margin:0}
+.marg{display:flex;align-items:center;gap:10px}
+.step{display:flex;height:48px;border:1px solid var(--control);border-radius:2px;background:var(--sheet)}
+.step span{display:grid;place-items:center;width:46px}
+.step b{display:grid;place-items:center;width:78px;border-left:1px solid var(--rule);border-right:1px solid var(--rule);font:700 17px var(--sans)}
+.help{margin:6px 16px 0;font-size:13px;color:var(--ink2)}
+.panel{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass)}
+.panel h4{font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+.panel dl div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.panel dd{font-weight:600;font-variant-numeric:tabular-nums}
+.panel .tot{border-bottom:0;border-top:3px double var(--ink);margin-top:3px;padding-top:7px;font-weight:700}
+.panel .tot dd{font-size:17px}
+.xline{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 16px;min-height:56px;border-bottom:1px solid var(--rule)}
+.xline .t{font:600 14.5px/1.3 var(--sans)}
+.xline .s{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.xline .a{font:700 14.5px var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.act{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:0 16px;min-height:50px;padding:0 4px;background:none;border:0;border-bottom:1px solid var(--rule);color:var(--green);font:600 15px var(--sans);text-align:left}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 16px 0;min-height:56px}
+.toggle .t{font:600 14.5px/1.3 var(--sans)}
+.toggle .t small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.sw{flex:none;display:flex;align-items:center;width:54px;height:30px;padding:3px;border:2px solid var(--green);border-radius:2px;background:var(--green);justify-content:flex-end}
+.sw i{display:block;width:20px;height:20px;background:#fff}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:12px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:var(--sheet);border-top:2px solid var(--ink)}
+.bar .btn{width:100%;margin:0}
+.bar p{margin-top:6px;font-size:12.5px;color:var(--ink2);text-align:center}
+.pdfthumb{margin:16px 16px 0;padding:14px 14px 18px;background:var(--sheet);border:1px solid var(--control)}
+.pdfthumb .l{height:8px;margin-top:7px;background:var(--rule)}
+.pdfthumb .l.s{width:55%}
+.pdfthumb .l.g{height:10px;width:70%;background:var(--green)}
+.pdfthumb .big{margin-top:12px;font:700 15px var(--serif)}
+.okline{display:flex;gap:8px;align-items:center;margin:14px 16px 0;font:600 15px var(--sans);color:var(--ok)}
+.card{margin:14px 16px 0;padding:12px 12px 4px;background:var(--sheet);border:1px solid var(--control);border-top:4px solid var(--green)}
+.card.stale{border-top-color:var(--warn);background:var(--warn-tint)}
+.card.expired{border-top-color:var(--bad)}
+.card h4{font:700 16px/1.2 var(--serif)}
+.card p{margin-top:3px;font-size:13.5px;color:var(--ink2)}
+.card p.s{color:var(--ink)}
+.card .chip{display:inline-block;margin-top:6px;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans)}
+.card .chip.w{border-color:var(--warn);color:var(--warn)}
+.card .chip.b{border-color:var(--bad);color:var(--bad);background:var(--bad-tint)}
+.card .rowb{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 8px}
+.card .rowb .btn{width:auto;flex:1;min-width:96px;margin:0;min-height:46px;font-size:14px}
+.dlg{position:relative;margin:14px 16px 0;padding:14px 14px 12px;background:var(--paper);border:2px solid var(--ink)}
+.dlg h4{font:700 16px/1.2 var(--serif)}
+.dlg p{margin-top:5px;font-size:14px}
+.dlg .rowb{display:flex;gap:8px;margin-top:12px}
+.dlg .rowb .btn{width:auto;flex:1;margin:0;min-height:46px;font-size:14px}
+.plist li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;margin:0 16px;padding:11px 0;border-bottom:1px solid var(--rule)}
+.plist .n{font:600 14.5px/1.3 var(--sans)}
+.plist .q{font:700 17px var(--sans);font-variant-numeric:tabular-nums}
+.plist .r{grid-column:1/-1;font-size:13px;color:var(--ink2)}
+.tag{display:inline-block;padding:2px 7px;border:1px solid var(--brass);border-radius:2px;background:var(--warn-tint);color:var(--warn);font:600 12px/1.25 var(--sans)}
+.paper{padding:34px 36px 30px;background:#fff;border:1px solid var(--control);color:var(--ink);min-height:820px}
+.paper .lh{display:flex;justify-content:space-between;gap:16px;padding-bottom:12px;border-bottom:3px double var(--ink)}
+.paper .logo{display:grid;place-items:center;width:54px;height:54px;border:1px solid var(--control);font:700 18px var(--serif);color:var(--green)}
+.paper .co h2{font:700 21px/1.15 var(--serif);color:var(--green)}
+.paper .co p{margin-top:2px;font-size:12px;color:var(--ink2)}
+.paper .doc{text-align:right}
+.paper .doc h3{font:700 22px var(--serif)}
+.paper .doc p{font-size:12px;color:var(--ink2)}
+.paper .to{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.paper .to h5{margin:0 0 3px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+.paper .to p{font-size:13px}
+.paper table{width:100%;border-collapse:collapse;font-size:12.5px}
+.paper th{padding:5px 4px;border-bottom:2px solid var(--ink);text-align:left;font-weight:700}
+.paper td{padding:5px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.paper tr.room td{padding-top:11px;border-bottom:1px solid var(--ink);font:700 13px var(--serif)}
+.paper tr.sub td{font-weight:700;border-bottom:1px solid var(--ink)}
+.paper tr.grand td{padding-top:9px;border-top:3px double var(--ink);border-bottom:3px double var(--ink);font:700 14px var(--sans)}
+.paper .terms{margin-top:14px;font-size:12px;color:var(--ink2)}
+.inset{margin-top:16px;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:12.5px}
+.inset b{font-variant-numeric:tabular-nums}
+.notes{max-width:800px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="ic-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="ic-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 11l7.6-4M8.2 13l7.6 4"/></symbol>
+  <symbol id="ic-save" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-pencil" viewBox="0 0 24 24"><path d="M4 20l1-5L16 4l4 4L9 19zM14 6l4 4"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 3 of the Tunde walk-through</p>
+  <h1>The Parts list and the Proposal for the client</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Phone screens for an Owner or Manager: the Parts list, the Proposal builder, the finished Proposal, and how a Proposal shows on the Project. The last sheet is the PDF the client receives. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <div class="row">
+    <figure class="unit">
+      <figcaption>1. Parts list, what to buy and carry<span>Every product with its total quantity across rooms. No prices, so the same list can be shared with anyone.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Project</button><span class="title">Parts list</span><span class="spacer"></span></div>
+        <div class="head"><p class="eyebrow">Lekki Phase 1 duplex</p><h3>4 products · 9 items</h3><p class="meta">No prices on this list.</p></div>
+        <ul class="plist">
+          <li><span class="n">4MP PoE dome camera</span><span class="q">6</span><span class="r">Entrance and gate 4 · Living room 2</span></li>
+          <li><span class="n">8-channel PoE NVR with 2 TB drive</span><span class="q">1</span><span class="r">Entrance and gate 1</span></li>
+          <li><span class="n">8-port PoE switch</span><span class="q">1</span><span class="r">Entrance and gate 1 · <span class="tag">Back-order · about 3 weeks</span></span></li>
+          <li><span class="n">Cat6 cable, 305 m box</span><span class="q">1</span><span class="r">Entrance and gate 1</span></li>
+        </ul>
+        <div class="bar"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn outline" type="button" style="min-height:48px"><svg class="i"><use href="#ic-save"/></svg>Save PDF</button><button class="btn" type="button" style="min-height:48px"><svg class="i"><use href="#ic-share"/></svg>Share</button></div></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. Proposal builder, one screen<span>Client, margin, extra lines. Your own numbers are shown to you only and never reach the PDF.</span></figcaption>
+      <div class="phone"><div class="screen" style="padding-bottom:140px">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Project</button><span class="title">Proposal</span><span class="spacer"></span></div>
+        <h4 class="sec" style="margin-top:14px">Client</h4>
+        <div class="field"><label>Client name</label><div class="in">Mrs Okonkwo</div></div>
+        <div class="two"><div class="field"><label>Company <small>optional</small></label><div class="in ph">Add</div></div><div class="field"><label>Phone <small>optional</small></label><div class="in">0803 555 0142</div></div></div>
+        <div class="field"><label>Email <small>optional</small></label><div class="in ph">Add</div></div>
+        <div class="field"><label>Site address <small>optional</small></label><div class="in">12 Ocean Close, Lekki Phase 1</div></div>
+        <h4 class="sec">Your margin</h4>
+        <div class="field"><label>Margin on your cost</label><div class="marg"><div class="step"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>20 %</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><span class="meta" style="margin:0">Last used: 20 %</span></div></div>
+        <p class="help">Applies to the equipment. One margin for the whole Project.</p>
+        <div class="panel"><h4>Only you see this</h4><dl>
+          <div><dt>Your cost, equipment</dt><dd>₦702,168.00</dd></div>
+          <div><dt>Your margin, 20 %</dt><dd>₦140,433.60</dd></div>
+          <div><dt>Extra lines</dt><dd>₦150,000.00</dd></div>
+          <div class="tot"><dt>Client total</dt><dd>₦992,601.60</dd></div></dl></div>
+        <h4 class="sec">Extra lines <small style="font:400 12.5px var(--sans);color:var(--ink2)">on the Proposal only</small></h4>
+        <div class="xline"><span class="t">Installation and commissioning<span class="s">1 × ₦150,000.00, VAT included</span></span><span class="a">₦150,000.00</span></div>
+        <button class="act" type="button"><svg class="i"><use href="#ic-plus"/></svg>Add a line, such as labour or travel</button>
+        <div class="toggle"><span class="t">Show a VAT line on the PDF<small>Your business is VAT-registered. The total stays the same.</small></span><span class="sw" aria-label="On"><i></i></span></div>
+        <div class="bar"><button class="btn" type="button">Generate proposal PDF</button><p>Needs a connection so prices are current. Valid for one month.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. Proposal ready<span>Send it straight from the phone, or keep a copy. The Project now carries the Proposal.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Project</button><span class="title">Proposal</span><span class="spacer"></span></div>
+        <p class="okline"><svg class="i"><use href="#ic-check"/></svg>Proposal ready</p>
+        <div class="pdfthumb" aria-label="Proposal preview"><div class="l g"></div><div class="l s"></div><div class="big">₦992,601.60</div><div class="l"></div><div class="l"></div><div class="l"></div><div class="l s"></div></div>
+        <p class="help">For Mrs Okonkwo · Valid until 7 Nov 2026</p>
+        <button class="btn" type="button"><svg class="i"><use href="#ic-share"/></svg>Share the PDF</button>
+        <button class="btn outline" type="button"><svg class="i"><use href="#ic-save"/></svg>Save PDF to this phone</button>
+        <button class="btn outline" type="button">Back to project</button>
+        <p class="help" style="margin-top:12px">Sharing opens your phone's own options, such as WhatsApp or email. The PDF shows no cost, discount or margin.</p>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. The Proposal on the Project, three states, and replacing<span>One Proposal per Project. A new one replaces the old one.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Projects</button><span class="title">Project</span><span class="spacer"></span></div>
+        <section class="card"><h4>Proposal</h4><p class="s">₦992,601.60 for Mrs Okonkwo</p><span class="chip">Valid until 7 Nov 2026</span><div class="rowb"><button class="btn" type="button"><svg class="i"><use href="#ic-share"/></svg>Share</button><button class="btn outline" type="button">Save PDF</button><button class="btn outline" type="button">Replace</button></div></section>
+        <section class="card stale"><h4>Proposal</h4><p class="s">Project edited since this Proposal.</p><span class="chip w">Out of date</span><p>Replace it before you send it again.</p><div class="rowb"><button class="btn" type="button">Replace proposal</button></div></section>
+        <section class="card expired"><h4>Proposal</h4><p class="s">Expired on 7 Nov 2026.</p><span class="chip b">Expired</span><p>You can still download it. Ordering from this Project uses today's prices.</p><div class="rowb"><button class="btn outline" type="button">Save PDF</button><button class="btn" type="button">Replace proposal</button></div></section>
+        <div class="dlg" role="alertdialog" aria-label="Replace the current Proposal"><h4>Replace the current Proposal?</h4><p>The new PDF replaces the old one. The old PDF cannot be recovered.</p><div class="rowb"><button class="btn outline" type="button">Keep current</button><button class="btn" type="button">Replace</button></div></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit wide">
+      <figcaption>5. The PDF the client receives (A4)<span>Your letterhead only. Prices at client prices, VAT included. No cost, discount, margin or platform branding.</span></figcaption>
+      <div class="paper">
+        <div class="lh"><div style="display:flex;gap:12px"><div class="logo" aria-label="Logo">AIS</div><div class="co"><h2>Adeyemi Integrated Systems</h2><p>14 Admiralty Way, Lekki Phase 1, Lagos</p><p>0803 000 0000 · hello@adeyemi-systems.example</p></div></div><div class="doc"><h3>Proposal</h3><p>Prepared 7 Oct 2026</p><p>Valid until 7 Nov 2026</p></div></div>
+        <div class="to"><div><h5>Prepared for</h5><p>Mrs Okonkwo<br>12 Ocean Close, Lekki Phase 1</p></div><div><h5>Project</h5><p>CCTV and access control, Lekki Phase 1 duplex</p></div></div>
+        <table>
+          <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Unit price</th><th class="n">Amount</th></tr></thead>
+          <tbody>
+            <tr class="room"><td colspan="4">Entrance and gate</td></tr>
+            <tr><td>4MP PoE dome camera</td><td class="n">4</td><td class="n">₦82,080.00</td><td class="n">₦328,320.00</td></tr>
+            <tr><td>8-channel PoE NVR with 2 TB drive</td><td class="n">1</td><td class="n">₦171,000.00</td><td class="n">₦171,000.00</td></tr>
+            <tr><td>8-port PoE switch <em style="color:var(--warn)">(about 3 weeks)</em></td><td class="n">1</td><td class="n">₦63,921.60</td><td class="n">₦63,921.60</td></tr>
+            <tr><td>Cat6 cable, 305 m box</td><td class="n">1</td><td class="n">₦115,200.00</td><td class="n">₦115,200.00</td></tr>
+            <tr class="sub"><td colspan="3">Entrance and gate total</td><td class="n">₦678,441.60</td></tr>
+            <tr class="room"><td colspan="4">Living room</td></tr>
+            <tr><td>4MP PoE dome camera</td><td class="n">2</td><td class="n">₦82,080.00</td><td class="n">₦164,160.00</td></tr>
+            <tr class="sub"><td colspan="3">Living room total</td><td class="n">₦164,160.00</td></tr>
+            <tr class="room"><td colspan="4">Services</td></tr>
+            <tr><td>Installation and commissioning</td><td class="n">1</td><td class="n">₦150,000.00</td><td class="n">₦150,000.00</td></tr>
+            <tr class="grand"><td colspan="3">Total, VAT included</td><td class="n">₦992,601.60</td></tr>
+          </tbody>
+        </table>
+        <p class="terms">Valid until 7 November 2026. Equipment prices follow the naira exchange rate and may be adjusted if it moves by more than ₦5 against the dollar. Items marked with a delivery time are not in stock today.</p>
+        <p class="inset"><b>If "Show a VAT line" is on:</b> the amounts above appear before VAT, followed by <b>VAT (7.5%) ₦69,251.28</b> and <b>Total ₦992,601.60</b>. The total is the same either way.</p>
+      </div>
+    </figure>
+  </div>
+
+  <p class="notes">Questions for you are in the chat: the Parts list, the builder, the PDF wording, and the Proposal card.</p>
+</main>
+</body>
+</html>

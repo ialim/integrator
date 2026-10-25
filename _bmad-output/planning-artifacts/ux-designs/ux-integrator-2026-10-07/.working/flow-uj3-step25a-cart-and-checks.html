@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 25A, the Cart and the checks before an order (proposal)</title>
+<style>
+/*
+  STEP 25A WIREFRAMES: Funmi's direct buy (UJ-3, FR-33, FR-34) and the checks that stop an order being made
+  (FR-34, FR-37, FR-20, FR-72, FR-8). Six phone screens, then a sheet of the other reasons ordering is blocked.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; nothing is decided until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, caution #6E4400, caution tint #F6EACB, error #8A1C14, error tint #F6E4DE,
+  control #7A7258, hairline #D9CFB5, bezel #2B281F, scrim rgba(26,24,18,.62).
+  Sample data matches Steps 1 to 24: Funmi (Manager, Adeyemi Integrated Systems) buys cabling and connectors,
+  INT-0044, ₦48,600.00, pick-up at the Main Store. Tunde's Project is Lekki Phase 1 duplex (9 items).
+  Cart lines: 2 x 14,800.00 = 29,600.00; 1 x 9,500.00; 2 x 4,750.00 = 9,500.00. Total 48,600.00.
+  A day later: connectors on back-order at 8% off = 8,740.00, clips sold out, total without them 38,340.00.
+  Text is 12 px or larger everywhere (Step 21).
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+button,input{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:820px;margin:0 0 26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{width:380px}
+.unit figcaption{margin:0 0 10px;font:600 14px/1.3 var(--sans)}
+.unit figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.phone{width:380px;padding:10px;background:var(--bezel);border-radius:40px}
+.screen{position:relative;min-height:800px;background:var(--paper);border-radius:30px;overflow:hidden;padding-bottom:150px}
+.appbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 6px;background:var(--green);color:#fff}
+.title{font:700 17px/1.2 var(--serif)}
+.iconbtn{position:relative;display:grid;place-items:center;min-width:48px;min-height:48px;background:none;border:0;color:#fff}
+.count{position:absolute;top:5px;right:3px;min-width:18px;padding:1px 5px;border-radius:2px;background:#fff;color:var(--green);font:700 12px/1.3 var(--sans);text-align:center}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 8px 0 4px;background:none;border:0;color:#fff;font:600 14px var(--sans)}
+.spacer{min-width:48px}
+.eyebrow{margin:0 0 3px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.head{padding:14px 16px 4px}
+.head h3{font:700 19px/1.2 var(--serif)}
+.meta{margin-top:4px;font-size:13px;color:var(--ink2)}
+.chip{display:inline-block;margin-top:6px;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans)}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 16px 0}
+.steps.two{grid-template-columns:repeat(2,1fr)}
+.steps li{padding-top:5px;border-top:4px solid var(--rule);font:600 12.5px/1.2 var(--sans);color:var(--ink2)}
+.steps li.on{border-top-color:var(--green);color:var(--ink)}
+.sec{margin:16px 16px 0;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.panel{margin:12px 16px 0;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass)}
+.panel dl div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.panel dd{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.panel .tot{border-bottom:0;border-top:3px double var(--ink);margin-top:3px;padding-top:8px;font-weight:700}
+.panel .tot dd{font-size:17px}
+.sub{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.say{margin:10px 16px 0;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);min-height:52px;margin:12px 16px 0;padding:8px 12px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 15px/1.2 var(--sans);text-align:center}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.btn[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:var(--sheet);border-top:2px solid var(--ink)}
+.bar .btn{width:100%;margin:0}
+.bar p{margin-top:6px;font-size:13px;color:var(--ink2);text-align:center}
+.bar .tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font:700 13px var(--sans)}
+.bar .tot b{font:700 20px var(--sans);font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:1fr 1fr;margin:14px 16px 0;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:48px;background:var(--sheet);color:var(--green);font:600 15px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.field{margin:10px 16px 0}
+.field label{display:block;margin-bottom:4px;font:600 13.5px var(--sans)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0}
+.two .field{margin:0}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:12px;margin:10px 0 0;padding:12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.opt h5{font:700 14.5px/1.3 var(--sans)}
+.opt p{margin-top:3px;font-size:13px;color:var(--ink2)}
+.radio{width:24px;height:24px;border:2px solid var(--control);border-radius:50%;margin-top:1px}
+.hold{display:flex;gap:10px;align-items:flex-start;margin:12px 16px 0;padding:11px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.hold .i{width:20px;height:20px;margin-top:1px;color:var(--brass)}
+.hold b{display:block;font-size:14px}
+.fine{margin:10px 16px 0;font-size:13px;color:var(--ink2)}
+.fine u{color:var(--green);text-underline-offset:3px}
+.link{display:block;margin:6px 16px 0;min-height:46px;line-height:46px;text-align:center;color:var(--green);font:600 15px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.store{margin:12px 16px 0;padding:12px;background:var(--sheet);border:2px solid var(--green);font-size:14px}
+.img{display:grid;place-items:center;height:150px;background:var(--aged);border-bottom:1px solid var(--rule);color:var(--ink2);font-size:13px}
+.pp{padding:14px 16px 0}
+.pp h3{font:700 20px/1.2 var(--serif)}
+.pp .k{margin-top:4px;font-size:13px;color:var(--ink2)}
+.pp .pr{margin-top:8px;display:flex;align-items:baseline;gap:8px}
+.pp .pr b{font:700 24px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.pp .pr span{font-size:13px;color:var(--ink2)}
+.ok{color:var(--ok);font:600 14px/1.3 var(--sans);margin-top:6px}
+.qrow{display:flex;align-items:center;gap:12px;margin:12px 16px 0;font-size:14px}
+.qrow b{font-variant-numeric:tabular-nums}
+.step{display:flex;height:46px;border:1px solid var(--control);border-radius:2px;background:var(--sheet)}
+.step span{display:grid;place-items:center;width:44px}
+.step b{display:grid;place-items:center;width:44px;border-left:1px solid var(--rule);border-right:1px solid var(--rule);font:700 16px var(--sans)}
+.added{display:flex;gap:10px;align-items:flex-start;margin:12px 16px 0;padding:11px 12px;background:var(--sheet);border:2px solid var(--green);font-size:14px}
+.added .i{color:var(--ok);margin-top:1px}
+.added b{display:block;font-size:15px}
+.cl{margin:8px 16px 0}
+.cl li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-top:1px solid var(--rule)}
+.cl .n{font:600 15px/1.3 var(--sans)}
+.cl .l{font:700 15px/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.cl .m{grid-column:1/-1;font-size:13px;color:var(--ink2)}
+.cl .c{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.cl .why{grid-column:1/-1;margin-top:4px;font-size:13.5px}
+.cl li.chg,.cl li.gone{margin:0 -16px;padding:12px 16px;background:var(--warn-tint);border-left:4px solid var(--brass)}
+.cl .was{color:var(--ink2);text-decoration:line-through;font-weight:400}
+.tag{display:inline-block;margin-top:4px;padding:3px 8px;border:1px solid var(--brass);border-radius:2px;background:var(--warn-tint);color:var(--warn);font:600 12px/1.25 var(--sans)}
+.rm{min-height:44px;padding:0 8px;background:none;border:0;color:var(--green);font:600 14px var(--sans);text-decoration:underline;text-underline-offset:3px}
+.grand{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;margin:14px 16px 0;padding:11px 0;border-top:3px double var(--ink);border-bottom:3px double var(--ink)}
+.grand h4{font:700 16px/1.2 var(--serif)}
+.vat{margin-top:2px;font:700 12px/1.2 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+.amt{font:700 24px/1.1 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ban{margin:12px 16px 0;padding:11px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font-size:14px}
+.ban b{display:block;font-size:15px}
+.ban ul{margin-top:6px}
+.ban li{display:flex;gap:8px;padding:2px 0}
+.ban li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--warn)}
+.blk{margin:10px 16px 0;padding:11px 12px;background:var(--warn-tint);border:1px solid var(--brass)}
+.blk h5{font:700 15px/1.3 var(--sans)}
+.blk p{margin-top:4px;font-size:14px}
+.blk .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.mb{display:grid;place-items:center;min-height:46px;padding:0 8px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px/1.2 var(--sans);text-align:center}
+.mb.o{background:var(--sheet);color:var(--green)}
+.mb.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.states{margin-top:34px}
+.states h2{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .lead{max-width:820px;margin:0 0 16px;font-size:14px;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .b{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 0 0;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans)}
+.sc .b.o{background:var(--sheet);color:var(--green)}
+.sc .b.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.sc ul.zl{margin-top:8px;font-size:13.5px}
+.sc ul.zl li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--rule)}
+.notes{max-width:820px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="ic-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="ic-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12"/><circle cx="12" cy="13" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 25A of the walk-through</p>
+  <h1>Funmi’s direct buy, and the checks before any order</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. This closes the gap Step 24 found in UJ-3 and in Step 4. Funmi, a Manager, needs cabling and connectors for a small job and does not want a Proposal. Four screens take her from a product page to the Create order button. Then two screens show what stops an order, and a sheet lists every other reason ordering can be blocked, each saying what is wrong and what to do. The delivery and payment screens that come next are the ones you already confirmed in Steps 4 and 5. Nothing here is decided until you confirm it.</p>
+
+  <div class="row">
+    <figure class="unit">
+      <figcaption>1. Adding to the cart from a product page<span>From the Catalogue there is no room to add to, so the page offers the cart first and a project second. “Buy parts without a project” on Home opens the same Catalogue with the same buttons.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Catalogue</button><span class="title">Product</span><button class="iconbtn" type="button" aria-label="Cart, 3 items"><svg class="i"><use href="#ic-cart"/></svg><span class="count">3</span></button></div>
+        <div class="img"><span><svg class="i" style="width:34px;height:34px;margin:0 auto 6px"><use href="#ic-cam"/></svg>Product photo</span></div>
+        <div class="pp"><h3>Cat6 patch lead, 2 m, pack of 10</h3><p class="k">Kable Co · PL2-10 · CBL-0210</p>
+          <div class="pr"><b>₦14,800.00</b><span>each, VAT included</span></div><p class="ok">In stock</p></div>
+        <div class="qrow"><div class="step" role="group" aria-label="Quantity 2"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>2</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><span>2 × ₦14,800.00 = <b>₦29,600.00</b></span></div>
+        <div class="added" role="status"><svg class="i"><use href="#ic-check"/></svg><span><b>2 added to your cart</b>3 items in your cart · ₦48,600.00</span></div>
+        <button class="btn" type="button">View cart</button>
+        <button class="btn outline" type="button">Keep shopping</button>
+        <span class="link">Add to a project instead</span>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>2. The Cart<span>Her own list. Nobody else can see it, and it cannot be turned into a Project. Nothing is reserved yet, and the screen says so.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Back</button><span class="title">Your cart</span><span class="spacer"></span></div>
+        <div class="head"><h3>Your cart</h3><p class="meta">3 items · only you can see this cart</p></div>
+        <ul class="cl">
+          <li><span class="n">Cat6 patch lead, 2 m, pack of 10</span><span class="l">₦29,600.00</span><span class="m">Kable Co · CBL-0210 · ₦14,800.00 each</span><span class="c"><div class="step" role="group" aria-label="Quantity 2"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>2</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><button class="rm" type="button">Remove</button></span></li>
+          <li><span class="n">RJ45 connector, Cat6, pack of 100</span><span class="l">₦9,500.00</span><span class="m">Kable Co · CON-0100 · ₦9,500.00 each</span><span class="c"><div class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><button class="rm" type="button">Remove</button></span></li>
+          <li><span class="n">Cable clips, 7 mm, box of 100</span><span class="l">₦9,500.00</span><span class="m">Kable Co · CLP-0107 · ₦4,750.00 each</span><span class="c"><div class="step" role="group" aria-label="Quantity 2"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>2</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><button class="rm" type="button">Remove</button></span></li>
+        </ul>
+        <div class="grand"><div><h4>Total</h4><p class="vat">VAT included</p></div><span class="amt">₦48,600.00</span></div>
+        <p class="say">These are today’s prices. We fix the price when you create the order. Nothing is kept for you until we confirm your payment.</p>
+        <div class="bar"><button class="btn" type="button">Choose delivery or pick-up</button><p>Or keep shopping</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>3. The Cart a day later<span>One item sold out and one became a back-order item, which is UJ-3’s edge case. Nothing is dropped for her. She removes the sold-out item herself.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Back</button><span class="title">Your cart</span><span class="spacer"></span></div>
+        <div class="head"><h3>Your cart</h3><p class="meta">3 items · only you can see this cart</p></div>
+        <div class="ban" role="status"><b>2 things changed since you added them</b><ul><li>Cable clips are sold out.</li><li>RJ45 connectors are now on back-order.</li></ul></div>
+        <ul class="cl">
+          <li><span class="n">Cat6 patch lead, 2 m, pack of 10</span><span class="l">₦29,600.00</span><span class="m">Kable Co · CBL-0210 · ₦14,800.00 each</span><span class="c"><div class="step" role="group" aria-label="Quantity 2"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>2</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><button class="rm" type="button">Remove</button></span></li>
+          <li class="chg"><span class="n">RJ45 connector, Cat6, pack of 100</span><span class="l">₦8,740.00</span><span class="m"><span class="was">₦9,500.00</span> now ₦8,740.00 each, back-order discount</span><span class="m"><span class="tag">Back-order · about 2 weeks · 8% off</span></span><span class="c"><div class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#ic-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#ic-plus"/></svg></span></div><button class="rm" type="button">Remove</button></span></li>
+          <li class="gone"><span class="n">Cable clips, 7 mm, box of 100</span><span class="l"><span class="chip bad" style="margin:0">Sold out</span></span><span class="why">We cannot take an order for this item now.</span><span class="c" style="justify-content:flex-end"><button class="rm" type="button">Remove</button></span></li>
+        </ul>
+        <div class="grand"><div><h4>Total</h4><p class="vat">VAT included, without the sold-out item</p></div><span class="amt">₦38,340.00</span></div>
+        <div class="bar"><button class="btn" type="button" disabled>Choose delivery or pick-up</button><p>Remove the sold-out item first. You will be asked to agree to the back-order item on the next screen.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>4. Confirm, from a Cart, with pick-up<span>Funmi collects the goods, so there is no delivery charge. A Cart has no Proposal to compare with, so Review shows only when there is a back-order item to agree to. Delivery is the screen from Step 4.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Delivery</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps two"><li>1 Delivery or pick-up</li><li class="on">2 Confirm</li></ol>
+        <div class="head"><p class="eyebrow">Direct buy · from your cart</p><h3>Cabling and connectors</h3><p class="meta">3 items · pick-up at the Main Store · <u style="color:var(--green)">Change the name</u></p></div>
+        <div class="panel"><dl>
+          <div><dt>Equipment<span class="sub">VAT included</span></dt><dd>₦48,600.00</dd></div>
+          <div><dt>Pick-up, Main Store</dt><dd>No charge</dd></div>
+          <div class="tot"><dt>Amount due</dt><dd>₦48,600.00</dd></div></dl></div>
+        <div class="hold"><svg class="i"><use href="#ic-clock"/></svg><span><b>Keep this price by paying within 24 hours</b>Upload your payment receipt within 24 hours of creating the order and we hold this price. With no payment after 48 hours the order is cancelled.</span></div>
+        <p class="fine">By creating the order you accept the current <u>Terms</u>. The 3 items leave your cart.</p>
+        <div class="bar"><button class="btn" type="button">Create order</button><p>You pay by bank transfer on the next screen.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>5. Review, when something cannot be ordered<span>For a Project. The same block sits at the top of the Cart. Nothing is removed for him, and Continue stays off until he has dealt with both items.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Project</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li class="on">1 Review</li><li>2 Delivery</li><li>3 Confirm</li></ol>
+        <div class="head"><p class="eyebrow">The whole Project</p><h3>Lekki Phase 1 duplex: CCTV and access control</h3><p class="meta">2 rooms · 9 items</p></div>
+        <h4 class="sec">Before you can order · 2 items</h4>
+        <div class="blk"><h5>8-channel PoE NVR with 2 TB drive</h5><p class="meta">Entrance and gate · 1 item</p><p>Out of stock, and we cannot take a back-order for it.</p><div class="acts"><span class="mb">Remove from the Project</span><span class="mb o">Find another</span></div></div>
+        <div class="blk"><h5>Cat6 cable, 305 m box</h5><p class="meta">Entrance and gate · 1 item</p><p>We no longer sell this product.</p><div class="acts"><span class="mb">Remove from the Project</span><span class="mb o">Find another</span></div></div>
+        <p class="say">Nothing has been removed for you. The other 7 items are ready to order.</p>
+        <div class="bar"><button class="btn" type="button" disabled>Continue</button><p>Remove or replace the 2 items above to continue.</p></div>
+      </div></div>
+    </figure>
+
+    <figure class="unit">
+      <figcaption>6. Delivery, to an area we do not serve yet<span>Delivery there is “coming soon”, which is how the launch area is set. He is told at once and offered two ways on. The price comes from Operations, not from a guess.</span></figcaption>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><button class="backbtn" type="button"><svg class="i"><use href="#ic-left"/></svg>Review</button><span class="title">Create order</span><span class="spacer"></span></div>
+        <ol class="steps"><li>1 Review</li><li class="on">2 Delivery</li><li>3 Confirm</li></ol>
+        <div class="seg"><span class="on">Delivery</span><span>Pick-up</span></div>
+        <div class="two"><div class="field"><label>State</label><div class="in">Kano<svg class="i"><use href="#ic-chev"/></svg></div></div><div class="field"><label>Local government</label><div class="in">Nasarawa<svg class="i"><use href="#ic-chev"/></svg></div></div></div>
+        <div class="field"><label>Area</label><div class="in">Bompai Road</div></div>
+        <div class="two"><div class="field"><label>Receiver</label><div class="in">Mr Danjuma</div></div><div class="field"><label>Receiver phone</label><div class="in">0803 555 0177</div></div></div>
+        <div class="blk" style="margin-top:12px"><h5>We do not deliver to Kano yet</h5><p>Delivery there is coming soon. You can still order. Choose one:</p>
+          <div class="opt"><span class="radio"></span><div><h5>Collect from the Main Store</h5><p>No delivery charge. Open Monday to Saturday, 8 am to 6 pm.</p></div></div>
+          <div class="opt"><span class="radio"></span><div><h5>Ask us for a delivery price</h5><p>Our team works out a price for this address. We tell you on WhatsApp and by email, usually within 1 business day.</p></div></div></div>
+        <div class="bar"><button class="btn" type="button" disabled>Continue</button><p>Choose one of the two options above.</p></div>
+      </div></div>
+    </figure>
+  </div>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 id="ss">Reference sheet: every other reason an order cannot be made, and how each says so</h2>
+    <p class="lead">One rule for all of them, from Step 23: a button that cannot be pressed stays on the screen, dashed, with the reason beside it, and the screen says what to do or who can help. Brass cards need something from the person. Red cards mean something is wrong. Wording is a placeholder, and the hold wording is on the counsel register.</p>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Prices are being updated</p><h4>Prices are being updated. You cannot make an order for a short while.</h4><p>You can still look at your Projects and your cart and change them. Orders you have already made keep their price. We show it here when you can order again.</p><span class="b off">Create order</span><p style="font-size:13px">Ordering is paused for a short while.</p><p style="font-size:13px;margin-top:6px">The same message covers a freeze by our team and a rate that is waiting to be confirmed, because for the person the cause does not matter.</p></div>
+      <div class="sc need"><p class="lab">Two orders waiting on one Project</p><h4>Banana Island villa: networking already has 2 orders waiting for payment</h4><p>Pay or cancel one of them before you make another: INT-0037 and INT-0045.</p><span class="b o">Open INT-0037</span><span class="b o">Open INT-0045</span><span class="b off">Create order</span></div>
+      <div class="sc err"><p class="lab">Business on hold</p><h4>Your account is on hold</h4><p>You cannot make new orders while it lasts, and we cannot pay out a refund. Money you send us is still checked. Please call or WhatsApp us.</p><span class="b">Call or WhatsApp us</span></div>
+      <div class="sc need"><p class="lab">New Terms not accepted</p><h4>Accept the new Terms to make an order</h4><p>Only the Owner can accept them. Everything else in the app works as before. Drawn in Step 10, screen 4.</p></div>
+      <div class="sc need"><p class="lab">Business set up by us, not yet active</p><h4>Finish setting up your business to start ordering</h4><p>We created your account. Confirm your contact, confirm who you are, add your trade name and accept the Terms. Then prices, Projects and orders open. The same four steps as Get approved in Step 7.</p><span class="b">Continue setting up</span></div>
+      <div class="sc"><p class="lab">No signal</p><h4>Connect to make an order</h4><p>An order is made at today’s price. Your Project and cart are kept on this phone and wait for you.</p><span class="b off">Create order</span></div>
+      <div class="sc"><p class="lab">A Technician</p><h4>No order buttons, no cart</h4><p>A Technician sees no Create order, no cart icon and no amounts. Order links say “Ask Tunde”.</p></div>
+      <div class="sc need"><p class="lab">The price moves while he reviews</p><h4>The price changed</h4><p>The order is made at the price he confirmed. If that price is no longer right, he sees the new one first. Drawn in Step 4, screen 4.</p></div>
+      <div class="sc need"><p class="lab">Waiting for a delivery price</p><h4>We have your request</h4><p>Delivery to Nasarawa, Kano. We will tell you on WhatsApp and by email, usually within 1 business day. Your cart is kept. You can collect from the Main Store instead.</p><span class="b o">Collect from the Main Store instead</span></div>
+      <div class="sc need"><p class="lab">A delivery price has arrived</p><h4>Delivery to Nasarawa, Kano: ₦14,500.00</h4><p>This price is good until Fri 9 Oct, 6:00 pm. It is added to your amount due, VAT included, and the order is made at it.</p><span class="b">Use this price</span><span class="b o">Collect instead</span></div>
+      <div class="sc need"><p class="lab">We could not match the address</p><h4>Pick the nearest delivery area</h4><p>We could not match this address to one of our areas. Choose the closest one, or ask us for a price.</p><ul class="zl"><li><span>Lagos Mainland</span><span>₦6,500.00</span></li><li><span>Lagos Island and Lekki</span><span>₦9,500.00</span></li><li><span>Lagos outer areas</span><span>₦12,000.00</span></li></ul><span class="b o">Ask us for a delivery price</span></div>
+      <div class="sc err"><p class="lab">An expired order from a cart</p><h4>This order expired</h4><p>We did not receive a payment in time. Any money we received is kept for you as a credit note. There is no Project to order from again, so we offer the parts instead.</p><span class="b o">Put the 3 items back in my cart</span></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the Cart and how it behaves when stock changes, the checks that stop an order, the delivery and cancel-and-change screens in sheet B, and the placeholders that wait for you.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 26B, Admin and Operations: holds, Terms, first businesses, delivery prices (proposal)</title>
+<style>
+/*
+  STEP 26B WIREFRAMES: the staff console, Admin and Operations. Closes the remaining gaps from Step 24 and Step 25:
+  Holds and blocklist (FR-72), publishing a Terms version (FR-69), creating the first businesses and platform vouch
+  codes (FR-8, FR-5, FR-9), and delivery price requests from Operations (FR-37, added in Step 25).
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; nothing is decided until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+  Colour rule: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Admin frames: Mon 12 Oct (Step 15 and Step 16 are the same day) and Fri 9 Oct. Operations frame: Thu 8 Oct, the same
+  Kano address as Step 25A (good until Fri 9 Oct, 6:00 pm, the end of the next business day).
+  Frames are 1240 px wide, for a desktop browser. Text is 12 px or larger everywhere (Step 21).
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.sr{position:absolute;left:-9999px}
+.nw{white-space:nowrap}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:920px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 12px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:640px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.notice .b{margin-left:auto}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b.off{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0}
+.split .list{min-width:0;padding-right:20px}
+.q{width:100%;border-collapse:collapse;font-size:13px}
+.q th{padding:8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 12px/1.2 var(--sans);letter-spacing:.04em;color:var(--ink2);white-space:nowrap}
+.q td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.q .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.q .mono{font:12px/1.3 var(--mono);white-space:nowrap}
+.q .age strong{display:block;font-weight:700;white-space:nowrap}
+.q td small{display:block;margin-top:2px;font-size:12px;color:var(--ink2)}
+.q tr.sel td{background:var(--paper);box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.q tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.q tr.need td{background:var(--warn-tint)}
+.panel{padding:0 0 0 20px;border-left:1px solid var(--ink)}
+.panel h3{font:700 17px/1.2 var(--serif)}
+.panel .sub{margin:3px 0 12px}
+.panel h3 + .sub + .field{margin-top:0}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.cmp .tot dt{font-weight:700;color:var(--ink)}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;margin-bottom:6px}
+.duo > section{padding:0 22px;min-width:0}
+.duo > section:first-child{padding-left:0}
+.duo > section + section{border-left:1px solid var(--rule);padding-right:0}
+.duo h2,.sect h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.crumbs{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.checks li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.checks .i{margin-top:1px;color:var(--ok)}
+.checks .no .i{color:var(--bad)}
+.checks small{display:block;font-size:12.5px;color:var(--ink2)}
+.checks b{font:700 12.5px var(--sans);color:var(--ok)}
+.checks .no b{color:var(--bad)}
+.field{margin-top:12px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.field .in{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.ta{align-items:flex-start;min-height:70px;padding:9px 12px}
+.field .in.num{font:700 18px var(--sans);font-variant-numeric:tabular-nums}
+.field .hint{display:block;margin-top:4px;font-size:12.5px;color:var(--ink2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts{margin-top:6px}
+.opts li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:9px 10px;border:1px solid var(--control);border-bottom:0;background:var(--sheet);font-size:13.5px}
+.opts li:last-child{border-bottom:1px solid var(--control)}
+.opts li.on{box-shadow:inset 0 0 0 2px var(--green)}
+.opts small{display:block;font-size:12.5px;color:var(--ink2)}
+.rad{width:20px;height:20px;border:2px solid var(--control);border-radius:50%;margin-top:1px;background:var(--sheet)}
+.opts .on .rad{border-color:var(--green);box-shadow:inset 0 0 0 4px var(--sheet);background:var(--green)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.after.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tg{margin:18px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.meter{height:12px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.steps4{display:flex;gap:4px;align-items:center}
+.steps4 i{display:inline-block;width:20px;height:10px;border:1px solid var(--control);background:var(--sheet)}
+.steps4 i.on{background:var(--green);border-color:var(--green)}
+.codebox{margin-top:8px;padding:12px;background:var(--sheet);border:2px solid var(--green);font:700 22px/1.2 var(--mono);letter-spacing:.08em;text-align:center}
+.prev{margin-top:4px;border:1px solid var(--control);background:var(--paper);max-width:420px}
+.prev .bar{display:flex;justify-content:space-between;align-items:center;min-height:42px;padding:0 14px;background:var(--green);color:#fff;font:italic 700 17px var(--serif)}
+.prev .body{padding:14px}
+.prev h4{font:700 18px/1.2 var(--serif)}
+.prev p{margin-top:6px;font-size:13.5px}
+.prev ul{margin-top:8px;font-size:13.5px}
+.prev li{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--rule)}
+.prev li::before{content:"";flex:none;width:6px;height:6px;margin-top:7px;background:var(--ink)}
+.prev .tick{display:flex;gap:10px;align-items:center;margin-top:12px;font:600 13.5px var(--sans)}
+.prev .box{width:22px;height:22px;border:2px solid var(--control);background:var(--sheet)}
+.prev .pb{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:10px;border:1px solid var(--green);background:var(--green);color:#fff;font:600 14px var(--sans)}
+.prev .pb.o{background:var(--sheet);color:var(--green)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:920px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.sc .b{margin:8px 8px 0 0}
+.notes{max-width:920px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 26B of the walk-through</p>
+  <h1 class="top">Admin and Operations: holds, Terms, the first businesses, and delivery prices</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. These are the last four console screens the coverage check found missing. Holds and blocklist, the screen where Admin publishes a new version of the Terms, the screen where Admin creates the first businesses and makes platform vouch codes, and the small queue where Operations answers a business that asked for a delivery price to an area we do not serve yet. Same shell as Steps 13 to 16. Four desktop frames, then a sheet of states. Two rail items are new: Create a business under People for Admin, and Delivery price requests under Work for Operations. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Holds and blocklist<span>Two lists and two small tools. Accounts on hold, with who started each one and what the business was told. The blocklist, which stores a NIN only as a hash and never shows it again. A Finance hold waits here for Admin to ratify it within one business day. Every line is an audited record.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Holds and blocklist · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 11:40 am · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Create a business</span>
+          <span class="a on">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+        </nav>
+        <div class="main">
+          <h1>Holds and blocklist</h1>
+          <p class="sub">A hold stops new orders and refunds. Payments are still processed. A blocklist entry is checked at sign-up and when a payment is confirmed.</p>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>1 hold was started by Finance and needs you to ratify it by Tue 13 Oct, 11:05 am. That is 23 h 25 min from now.<span class="b">Open it</span></p>
+          <h2 class="tg" style="margin-top:0">Accounts on hold · 2</h2>
+          <table class="q">
+            <caption class="sr">Business accounts on hold</caption>
+            <thead><tr><th scope="col">Business</th><th scope="col">On hold since</th><th scope="col">Started by</th><th scope="col">Reason, staff only</th><th scope="col">The business was</th><th scope="col">What you can do</th></tr></thead>
+            <tbody>
+              <tr class="need"><td>Greenfield Security Ltd<small>2 open orders · no credit notes</small></td><td class="nw">Mon 12 Oct, 11:05 am</td><td>Ngozi A.<small>Finance, payment fraud</small></td><td>The receipt for INT-0047 matched a bank credit that was then returned.</td><td>Told<small>Banner and a message</small></td><td class="nw"><span class="b sm">Ratify</span> <span class="b sm o">Lift…</span><small style="margin-top:4px">Ratify by Tue 13 Oct, 11:05 am</small></td></tr>
+              <tr><td>Prime Wiring Co<small>No open orders</small></td><td class="nw">Thu 1 Oct, 9:40 am</td><td>Kunle O.<small>Admin</small></td><td>A vouch code was passed on to someone else. Fraud review under way.</td><td>Not told<small>Fraud review, flagged</small></td><td class="nw"><span class="b sm o">Lift…</span> <span class="b sm o">Add a note</span></td></tr>
+            </tbody>
+          </table>
+          <div class="split" style="margin-top:22px">
+            <div class="list">
+              <h2 class="tg" style="margin-top:0">Blocklist · 14 entries</h2>
+              <div class="filters"><span class="fchip on">All · 14</span><span class="fchip">NIN · 5</span><span class="fchip">Contact · 6</span><span class="fchip">Bank account · 3</span></div>
+              <table class="q">
+                <caption class="sr">Blocklist entries, newest first</caption>
+                <thead><tr><th scope="col">Added</th><th scope="col">Kind</th><th scope="col">Item</th><th scope="col">By</th><th scope="col">Reason, staff only</th><th scope="col" class="num">Refused so far</th></tr></thead>
+                <tbody>
+                  <tr><td class="nw">Mon 5 Oct</td><td>Contact</td><td class="mono">0802 555 0161</td><td class="nw">Kunle O.</td><td>Used to open two accounts under different NINs</td><td class="num">2 sign-ups</td></tr>
+                  <tr><td class="nw">Sat 3 Oct</td><td>Bank account</td><td class="mono">Access Bank ••••9034</td><td class="nw">Ngozi A.<small>Finance</small></td><td>Sent a payment that was returned</td><td class="num">1 payment</td></tr>
+                  <tr><td class="nw">Thu 1 Oct</td><td>NIN</td><td class="mono">••••3392<small>kept as a hash</small></td><td class="nw">Kunle O.</td><td>The same NIN under two names</td><td class="num">1 sign-up</td></tr>
+                  <tr><td class="nw">Tue 22 Sep</td><td>Contact</td><td class="mono">k.ade@example.com</td><td class="nw">Kunle O.</td><td>Reported by the person it belongs to</td><td class="num">0</td></tr>
+                </tbody>
+              </table>
+              <p class="after" style="max-width:720px">Someone who is refused sees a neutral message and never the reason. Showing the reason is a decision for Admin on the account page, not here. 10 older entries are below.</p>
+            </div>
+            <aside class="panel" aria-label="Check an item and add to the blocklist">
+              <h3>Check an item</h3>
+              <p class="sub">Is this phone, email, account or NIN on the list?</p>
+              <div class="field" style="margin-top:0"><div class="in" style="color:var(--ink2)"><span>Type or paste it</span><svg class="i"><use href="#i-search"/></svg></div></div>
+              <p class="after">A NIN is checked as a hash. It is never shown and never kept. The answer says only “On the blocklist since …” or “Not on the blocklist”.</p>
+              <h3 style="margin-top:20px">Add to the blocklist</h3>
+              <div class="field"><label>What kind</label><div class="in">A sending bank account<svg class="i"><use href="#i-check"/></svg></div></div>
+              <div class="field"><label>The item <small>typed once. A NIN is turned into a hash at once.</small></label><div class="in" style="color:var(--ink2)">Bank and account number</div></div>
+              <div class="field"><label>Reason <small>staff only, required, kept on record</small></label><div class="in ta" style="color:var(--ink2)">Say what happened.</div></div>
+              <div class="actions"><span class="b off">Add to the blocklist</span></div>
+              <p class="after need">Add stays off until the item and a reason are written. Admin, or Finance for payment fraud, can add. Each entry is a line in the audit trail.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. Publishing a new version of the Terms<span>Admin writes what changed in plain words, attaches the documents, records that counsel approved them, and sees exactly what every Owner will see. Publish stays off until each is done. After publishing, Owners who have not accepted can use everything except creating orders.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Terms and policies · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 2:10 pm · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Create a business</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a on">Terms and policies</span>
+          <span class="a">Business Hours</span>
+        </nav>
+        <div class="main">
+          <div class="crumbs"><span>Terms and policies</span><span>›</span><b>New version</b></div>
+          <h1>Publish Terms v4</h1>
+          <p class="sub">In force now: Terms v3 and Privacy Notice v2, since Wed 1 Jul 2026. Accepted by 10 of 10 Owners. A new version stops new orders until each Owner accepts it.</p>
+          <div class="duo">
+            <section aria-labelledby="t1">
+              <h2 id="t1">The new version</h2>
+              <div class="row2">
+                <div class="field" style="margin-top:0"><label>Terms</label><div class="in">Terms v4 · 4 pages<svg class="i"><use href="#i-check"/></svg></div></div>
+                <div class="field" style="margin-top:0"><label>Privacy Notice</label><div class="in">v2, no change<svg class="i"><use href="#i-check"/></svg></div></div>
+              </div>
+              <div class="field"><label>What changed, in plain words <small>required. One short line each. Owners read this before they accept.</small></label>
+                <div class="in ta" style="flex-direction:column;align-items:flex-start;gap:6px;min-height:118px">
+                  <span>1. A credit note lasts 12 months, and you can ask for it back as money when the reason allows.</span>
+                  <span>2. If you change your mind about a product, tell us within 7 days.</span>
+                  <span>3. We keep your financial records for 6 years, as the law requires.</span>
+                </div>
+                <span class="hint">3 lines, none longer than 25 words. The Owner sees this list, and the documents behind it.</span></div>
+              <div class="field"><label>Counsel’s approval <small>required before it can be published</small></label>
+                <div class="row2"><div class="in" style="color:var(--ink2)">Date approved</div><div class="in" style="color:var(--ink2)">Reference or note</div></div>
+                <span class="hint">Not entered yet. The date and the note go on the record with this version.</span></div>
+              <div class="field"><label>When it takes effect</label><div class="in">As soon as it is published<svg class="i"><use href="#i-check"/></svg></div></div>
+              <div class="actions"><span class="b off big">Publish Terms v4</span><span class="b o big">Save draft</span><span class="b danger">Discard…</span></div>
+              <p class="after need">Publish is off. Add the date counsel approved this version. Legal wording is approved by counsel before it reaches a business, as on the register of nine items.</p>
+            </section>
+            <section aria-labelledby="t2">
+              <h2 id="t2">What an Owner will see</h2>
+              <div class="prev" role="img" aria-label="Preview of the Owner screen, shown when the Owner next opens the app">
+                <div class="bar"><span>integrator</span></div>
+                <div class="body">
+                  <h4>We have updated our Terms</h4>
+                  <p>Please read what changed before you carry on.</p>
+                  <ul><li>A credit note lasts 12 months, and you can ask for it back as money when the reason allows.</li><li>If you change your mind about a product, tell us within 7 days.</li><li>We keep your financial records for 6 years, as the law requires.</li></ul>
+                  <p style="font-size:13px;color:var(--ink2)">Read the full Terms v4 · Read the Privacy Notice</p>
+                  <div class="tick"><span class="box"></span><span>I accept Terms v4 and the Privacy Notice</span></div>
+                  <div class="pb">Accept and carry on</div>
+                  <div class="pb o">Not now</div>
+                </div>
+              </div>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">Who sees it, and what it stops</h3>
+              <dl class="cmp">
+                <div><dt>Shown to</dt><dd>Each Owner, when they next open the app</dd></div>
+                <div><dt>Managers and Technicians</dt><dd>Do not see it</dd></div>
+                <div><dt>Until the Owner accepts</dt><dd>Creating an order is stopped. Nothing else.</dd></div>
+                <div><dt>Recorded for each acceptance</dt><dd>Version, time, person and IP</dd></div>
+              </dl>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">After you publish</h3>
+              <p style="font-size:13.5px">This panel shows who has accepted, and who has not, with a link to each business. You can remind them by message.</p>
+              <div class="meter" role="progressbar" aria-label="0 of 10 Owners have accepted" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><i style="width:0"></i></div>
+              <p class="sub" style="margin-top:4px">Not published yet. 0 of 10 Owners have accepted.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Creating the first businesses, and making platform vouch codes<span>Before any Established Integrator exists, the founder’s team makes the first businesses directly. Each stays Pending Activation until the Owner finishes four steps. Two tools on one screen: create a business, or make a vouch code for someone who will sign up on their own.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Create a business · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Fri 9 Oct · 3:05 pm · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a on">Create a business</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+        </nav>
+        <div class="main">
+          <h1>Create a business</h1>
+          <p class="sub">For the first businesses, from the founder’s network. No order is possible until the Owner finishes the four steps.</p>
+          <div class="duo">
+            <section aria-labelledby="n1">
+              <h2 id="n1">Create a business</h2>
+              <div class="field" style="margin-top:0"><label>Owner’s full name <small>as on their NIN</small></label><div class="in">Jide Ibeji</div></div>
+              <div class="field"><label>Owner’s phone or email <small>we send the first code here, and it is verified before anything else</small></label><div class="in">0803 555 0166</div></div>
+              <div class="field"><label>Business name <small>optional. The Owner confirms their trade name.</small></label><div class="in">Ibeji Smart Homes</div></div>
+              <div class="field"><label>Send the link by</label>
+                <ul class="opts"><li class="on"><span class="rad"></span><span><b>WhatsApp</b><small>Only if the Owner has agreed to WhatsApp for this number.</small></span></li><li><span class="rad"></span><span><b>SMS or email</b><small>The link works for 7 days and only for this contact.</small></span></li></ul></div>
+              <div class="field"><label>Your note <small>staff only, kept on record</small></label><div class="in ta">Met at the training seminar on 3 Oct. Installs CCTV in Lekki.</div></div>
+              <div class="actions"><span class="b big">Create business and send the link</span><span class="b o">Cancel</span></div>
+              <p class="after">You are recorded as the creator. For a business you create, you cannot confirm a payment, issue a credit note, approve it or vouch for it. Another person does that.</p>
+            </section>
+            <section aria-labelledby="n2">
+              <h2 id="n2">Pending activation · 4</h2>
+              <table class="q">
+                <caption class="sr">Businesses waiting to finish their four steps</caption>
+                <thead><tr><th scope="col">Business and Owner</th><th scope="col">Link sent</th><th scope="col">Steps done</th><th scope="col">Waiting on</th></tr></thead>
+                <tbody>
+                  <tr><td>Mainland CCTV Hub<small>Ada Eze</small></td><td class="nw">Mon 5 Oct</td><td><span class="steps4" aria-label="3 of 4 steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td><td>Accepting the Terms<small><span class="b sm o" style="margin-top:4px">Remind</span></small></td></tr>
+                  <tr><td>Delta Wiring Ltd<small>Emeka Obi</small></td><td class="nw">Tue 6 Oct</td><td><span class="steps4" aria-label="1 of 4 steps"><i class="on"></i><i></i><i></i><i></i></span></td><td><span class="chip warn">NIN review</span><small>Name did not match. Open NIN reviews.</small></td></tr>
+                  <tr><td>Ibeji Smart Homes<small>Jide Ibeji</small></td><td class="nw">Fri 9 Oct</td><td><span class="steps4" aria-label="2 of 4 steps"><i class="on"></i><i class="on"></i><i></i><i></i></span></td><td>Trade name and Terms</td></tr>
+                  <tr><td>Lekan Electric Works<small>Lekan Ojo</small></td><td class="nw">Fri 9 Oct</td><td><span class="steps4" aria-label="0 of 4 steps"><i></i><i></i><i></i><i></i></span></td><td>The first code<small><span class="b sm o" style="margin-top:4px">Send the link again</span></small></td></tr>
+                </tbody>
+              </table>
+              <p class="sub" style="margin-top:6px">The four steps: verify a contact, pass the NIN check, give the trade name, accept the Terms.</p>
+              <h2 style="margin-top:20px">Make a platform vouch code</h2>
+              <p class="sub">For someone who will sign up on their own. It is the same code a voucher makes, made for the platform.</p>
+              <div class="row2">
+                <div class="field" style="margin-top:0"><label>Their full name</label><div class="in">Hassan Bello</div></div>
+                <div class="field" style="margin-top:0"><label>Their phone or email</label><div class="in">0803 555 0128</div></div>
+              </div>
+              <div class="codebox" role="status">K7Q2 · 4M9X · TR3B</div>
+              <p class="after">Made for Hassan Bello, by the platform. It works once, for 48 hours, until Sun 11 Oct, 3:05 pm. Five wrong tries lock it. You can show it again until it is used.</p>
+              <p class="sub" style="margin-top:8px">2 platform codes waiting. Used and expired codes show only their last four characters.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. Delivery price requests, for Operations<span>A business asked for a delivery price to an address in an area we do not serve yet. Operations works one out with the courier and sends it back. The price is good until the end of the next business day, and once the business has paid it can never go up. Both times are placeholders.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Delivery price requests · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Thu 8 Oct · 10:20 am · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">3</span></span>
+          <span class="a">Returns<span class="n">1</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a on">Delivery price requests<span class="n">1</span></span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Documentation</span>
+        </nav>
+        <div class="main">
+          <h1>Delivery price requests</h1>
+          <p class="sub">A business asked for a price to an address we do not serve yet. Oldest first. Target: 1 business day, the same as a cancel request.</p>
+          <div class="split">
+            <div class="list">
+              <div class="filters"><span class="fchip on">Waiting · 1</span><span class="fchip">Answered · 6</span><span class="fchip">Cannot deliver · 2</span></div>
+              <table class="q">
+                <caption class="sr">Delivery price requests waiting, oldest first</caption>
+                <thead><tr><th scope="col">Age</th><th scope="col">Business</th><th scope="col">Where</th><th scope="col">What</th></tr></thead>
+                <tbody>
+                  <tr class="sel" aria-current="true"><td class="age"><strong>1 h 05 min</strong></td><td>Adeyemi Integrated Systems</td><td>Nasarawa, Kano</td><td>9 items · 3 boxes · 14.2 kg</td></tr>
+                </tbody>
+              </table>
+              <p class="after" style="max-width:640px">When the price is sent, the business is told on WhatsApp and by email. If it uses the price, the order is made at it, and the price is fixed for that order.</p>
+            </div>
+            <aside class="panel" aria-label="The selected request">
+              <h3>Kano, for Adeyemi</h3>
+              <p class="sub">Asked by Tunde (Owner) at 9:15 am</p>
+              <dl class="cmp">
+                <div><dt>Address</dt><dd>Bompai Road, Nasarawa, Kano</dd></div>
+                <div><dt>Receiver</dt><dd>Mr Danjuma · 0803 555 0177</dd></div>
+                <div><dt>Goods</dt><dd>9 items · 3 boxes · 14.2 kg</dd></div>
+                <div><dt>Nearest area we serve</dt><dd>Abuja · ₦18,000.00</dd></div>
+              </dl>
+              <div class="field"><label>Courier quote <small>what the courier will charge us, VAT included</small></label><div class="in num">₦12,600.00</div></div>
+              <div class="field"><label>Price to the business <small>VAT included. After payment it cannot go up.</small></label><div class="in num">₦14,500.00</div></div>
+              <div class="field"><label>Good until</label><div class="in">Fri 9 Oct, 6:00 pm<svg class="i"><use href="#i-check"/></svg></div><span class="hint">The end of the next business day. After that the business must ask again.</span></div>
+              <div class="actions"><span class="b big">Send the price</span><span class="b o">We cannot deliver there yet…</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is refused. Plain cards are information. Wording is a placeholder, and the hold, blocklist and Terms wording is on the counsel register.</p>
+
+    <h3 class="tg">Holds and blocklist</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">A Finance hold waiting for you</p><h4>Ratify it within 1 business day</h4><p>Finance can hold an account for payment fraud. It stays on hold. You ratify it, or lift it with a reason. If nobody acts in time it is escalated and shown on Today.</p><span class="b">Ratify</span><span class="b o">Lift…</span></div>
+      <div class="sc"><p class="lab">Lifting a hold</p><h4>Lift the hold on Greenfield Security Ltd?</h4><p>They can make new orders again, and refunds can be paid. A reason is required. They are told, unless the hold was a flagged fraud review, in which case you choose whether to tell them.</p><span class="b">Lift the hold</span><span class="b o">Cancel</span></div>
+      <div class="sc"><p class="lab">Someone on the blocklist signs up</p><h4>What they see</h4><p>“We could not create your account. Please call or WhatsApp us.” Never why. The refusal is counted on the entry, and Admin sees it in the audit trail.</p></div>
+      <div class="sc need"><p class="lab">A blocked account pays</p><h4>The payment is held for review</h4><p>A bank credit from a blocklisted account is not applied. It goes to Unmatched credits for Finance, marked blocked, and Admin is told.</p></div>
+      <div class="sc"><p class="lab">Adding a NIN</p><h4>Typed once, then only a hash</h4><p>The number is turned into a hash at once and cannot be shown again. The list shows the last four digits and the hash. Every NIN read or added is a line in the audit trail.</p></div>
+      <div class="sc err"><p class="lab">A hold on a business with open orders</p><h4>Payments are still processed</h4><p>Orders already made carry on to approval and delivery. They just cannot make new ones, and no refund is paid. The business sees a banner with a number to call.</p></div>
+    </div>
+
+    <h3 class="tg">Terms</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Counsel’s approval missing</p><h4>Publish stays off</h4><p>Add the date counsel approved the version, and a reference. It goes on the record with the version.</p></div>
+      <div class="sc"><p class="lab">Published</p><h4>Terms v4 is live</h4><p>0 of 10 Owners have accepted. Each Owner sees the screen when they next open the app. You can remind them, and see who has not accepted.</p><span class="b o">Remind the Owners</span></div>
+      <div class="sc"><p class="lab">An Owner has not accepted</p><h4>Only creating an order is stopped</h4><p>They see “Accept the new Terms to make an order”. Everything else works. Drawn in Step 10, screen 4.</p></div>
+      <div class="sc"><p class="lab">Withdrawing a version</p><h4>Only before anyone has accepted it</h4><p>After the first acceptance a version cannot be taken back. A mistake is fixed by publishing the next version. Every version stays on record with its acceptances.</p></div>
+    </div>
+
+    <h3 class="tg">Creating businesses</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Contact already registered</p><h4>This phone already belongs to a business</h4><p>It cannot be used for a second one. Open that business, or use a different contact.</p></div>
+      <div class="sc need"><p class="lab">NIN already used</p><h4>Sent to manual review as a duplicate</h4><p>The NIN belongs to another business. The new business waits in NIN reviews. Nothing is blocked, and nothing is shown to the Owner except “We are checking”.</p></div>
+      <div class="sc need"><p class="lab">Link not used</p><h4>The link ran out after 7 days</h4><p>Send the link again. The old one stops working. The business stays Pending Activation, and nothing about it changes.</p><span class="b o">Send the link again</span></div>
+      <div class="sc"><p class="lab">A platform vouch code</p><h4>Recorded as made by the platform</h4><p>The code names the prospect, works once, and expires after 48 hours. When it is used, Admin reviews the Level 3 request as for any other code, with the platform as the voucher.</p></div>
+    </div>
+
+    <h3 class="tg">Delivery price requests</h3>
+    <div class="grid">
+      <div class="sc need"><p class="lab">Not answered in time</p><h4>Over 75% of 1 business day</h4><p>It turns brass in the list and shows on Today. After 75% of the target it is escalated to Admin, as for every other queue.</p></div>
+      <div class="sc err"><p class="lab">We cannot deliver there yet</p><h4>The reason goes to the business</h4><p>A short reason the business will read, for example “We do not have a courier for Kano yet.” They are offered Collect from the Main Store.</p></div>
+      <div class="sc"><p class="lab">The price was used</p><h4>Fixed for that order</h4><p>The order is made at ₦14,500.00 for delivery. Once the business has paid it cannot go up. If the courier charges more, the extra is ours and is reported to Finance.</p></div>
+      <div class="sc err"><p class="lab">The price ran out</p><h4>Good until Fri 9 Oct, 6:00 pm</h4><p>After that the business is told it has expired and can ask again or collect instead. The request moves to Answered, marked expired.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: Holds and blocklist, publishing Terms, creating the first businesses, and delivery price requests.</p>
+</main>
+</body>
+</html>

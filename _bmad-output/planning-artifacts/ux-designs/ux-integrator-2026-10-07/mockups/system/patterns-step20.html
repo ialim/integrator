@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 20, patterns: components, states and interaction rules (proposal)</title>
+<style>
+/*
+  STEP 20 SHEET: the components used across the 19 confirmed steps, the states every screen needs, and the interaction rules.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction: it describes what the screens already do, so the
+  build and the two spines say it once. Nothing here is decided until you confirm it.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1240px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:880px;margin:0 0 28px}
+section{margin:0 0 40px}
+h2{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+.sub{max-width:880px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pc{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink);min-width:0}
+.pc h3{font:700 16px/1.3 var(--serif)}
+.demo{margin:10px 0;padding:14px;background:var(--sheet);border:1px solid var(--rule)}
+.beh{margin:0;padding:0;font-size:13.5px}
+.beh li{display:flex;gap:8px;padding:3px 0}
+.beh li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--green)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14.5px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.red{background:var(--bad);border-color:var(--bad)}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.bn{display:flex;gap:10px;align-items:flex-start;margin:0 0 8px;padding:10px 12px;background:var(--aged);border-left:4px solid var(--brass);font-size:13.5px}
+.bn:last-child{margin-bottom:0}
+.bn.need{background:var(--warn-tint)}
+.bn.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.bn.ok{border-left-color:var(--green)}
+.fld{margin:0 0 10px}
+.fld label{display:block;margin-bottom:4px;font:600 14px var(--sans)}
+.fld label small{font-weight:400;color:var(--ink2)}
+.in{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;background:var(--sheet);border:1px solid var(--control);border-radius:2px;font-size:16px}
+.in.err{border:2px solid var(--bad)}
+.help{margin-top:4px;font-size:13px;color:var(--ink2)}
+.help.err{color:var(--bad);font-weight:600}
+.codeboxes{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.codeboxes span{display:grid;place-items:center;height:48px;background:var(--sheet);border:1px solid var(--control);font:700 20px var(--mono)}
+.rc{display:flex;gap:10px;align-items:flex-start;margin:0 0 8px;padding:10px 12px;background:var(--sheet);border:1px solid var(--control)}
+.rc.on{padding:9px 11px;border:2px solid var(--green)}
+.rc .rad{display:grid;place-items:center;flex:none;width:22px;height:22px;margin-top:1px;border:2px solid var(--control);border-radius:50%}
+.rc.on .rad{border-color:var(--green)}
+.rc.on .rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--green)}
+.rc b{display:block;font:700 14px/1.3 var(--sans)}
+.rc small{display:block;font-size:12.5px;color:var(--ink2)}
+.cbrow{display:flex;gap:12px;align-items:center;min-height:48px;font-size:14.5px}
+.cbrow .box{display:grid;place-items:center;flex:none;width:26px;height:26px;border:2px solid var(--green);background:var(--green);color:#fff}
+.sw{display:inline-flex;align-items:center;gap:8px;font:700 13px var(--sans)}
+.sw .track{position:relative;width:52px;height:30px;border:2px solid var(--green);background:var(--green)}
+.sw .track::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;background:#fff}
+.sw.off .track{background:var(--sheet);border-color:var(--control)}
+.sw.off .track::after{left:3px;right:auto;background:var(--control)}
+.qty{display:inline-flex;height:46px;border:1px solid var(--control);background:var(--sheet)}
+.qty span{display:grid;place-items:center;width:46px}
+.qty b{display:grid;place-items:center;width:46px;border-left:1px solid var(--rule);border-right:1px solid var(--rule);font:700 16px var(--sans)}
+.lrow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:60px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.lrow b{display:block;font:600 15px/1.3 var(--sans);color:var(--green)}
+.lrow small{display:block;font-size:13px;color:var(--ink2)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--rule)}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr.late td{background:var(--bad-tint)}
+.tbl tr.late td:first-child{box-shadow:inset 4px 0 0 var(--bad)}
+.tbl tr.sel td{box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--ink)}
+.tabs span{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px;padding-top:4px;border-top:4px solid transparent;margin-top:-2px;font:600 11px/1.1 var(--sans);color:var(--ink2)}
+.tabs .on{border-top-color:var(--green);color:var(--green)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:44px;background:var(--sheet);color:var(--green);font:600 13px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.tl li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:0 0 10px;position:relative;font-size:13px}
+.tl li::before{content:"";position:absolute;left:11px;top:24px;bottom:0;width:2px;background:var(--rule)}
+.tl li:last-child::before{display:none}
+.tl .n{display:grid;place-items:center;width:24px;height:24px;border:2px solid var(--control);background:var(--sheet);font:700 12px var(--sans)}
+.tl .done .n{background:var(--green);border-color:var(--green);color:#fff}
+.tl .now .n{border-color:var(--green);color:var(--green)}
+.tl b{display:block;font:600 13.5px/1.3 var(--sans)}
+.tl small{display:block;font-size:12.5px;color:var(--ink2)}
+.pips{display:flex;gap:4px}
+.pips i{flex:1;height:8px;background:var(--aged);border:1px solid var(--control)}
+.pips i.on{background:var(--green);border-color:var(--green)}
+.clock{padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass)}
+.clock b{display:block;font:700 20px/1.2 var(--sans)}
+.clock span{font-size:12.5px}
+.meter{height:14px;margin-top:8px;background:var(--aged);border:1px solid var(--control)}
+.meter i{display:block;height:100%;background:var(--green)}
+.copyrow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;border-bottom:1px solid var(--rule)}
+.copyrow small{display:block;font-size:12.5px;color:var(--ink2)}
+.copyrow b{font:700 15px var(--mono)}
+.file{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--rule);background:var(--paper)}
+.file .th{display:grid;place-items:center;height:40px;background:var(--aged);border:1px solid var(--control);font-size:11px}
+.file b{display:block;font:600 13.5px var(--sans)}
+.file small{display:block;font-size:12px;color:var(--ink2)}
+.sheetdemo{position:relative;height:210px;background:var(--paper);border:1px solid var(--control);overflow:hidden}
+.sheetdemo .scrim{position:absolute;inset:0;background:rgba(26,24,18,.55)}
+.sheetdemo .sh{position:absolute;left:0;right:0;bottom:0;padding:12px 14px;background:var(--sheet);border-top:3px solid var(--ink)}
+.sheetdemo .sh h4{font:700 16px var(--serif)}
+.sheetdemo .sh p{margin-top:3px;font-size:12.5px;color:var(--ink2)}
+.dlg{padding:12px 14px;background:var(--sheet);border:2px solid var(--ink)}
+.dlg h4{font:700 16px var(--serif)}
+.dlg p{margin-top:3px;font-size:12.5px}
+.dlg ul{margin:6px 0;font-size:12.5px}
+.dlg li{padding:1px 0}
+.cmp div{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.cmp dt{color:var(--ink2)}
+.cmp dd{font-weight:700;font-variant-numeric:tabular-nums}
+.st{padding:12px 14px;background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);min-width:0}
+.st.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.st.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.st h3{font:700 15px/1.3 var(--sans)}
+.st .eg{margin:8px 0;padding:8px 10px;background:var(--sheet);border:1px solid var(--rule);font-size:13px}
+.st p{font-size:13px}
+table.rules{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+table.rules th,table.rules td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.rules thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+table.rules tbody th{width:200px;font-weight:600}
+.notes{max-width:880px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 20 of the walk-through</p>
+  <h1>Patterns: components, states and interaction rules</h1>
+  <p class="lede">Proposal for your reaction. Across the 19 steps you have confirmed, the same small set of parts keeps coming back. This sheet names them once, shows each as it has been drawn, and says how it behaves, so the build and the two spines describe them the same way. It then lists the states every screen must have, and the interaction rules for keyboard, touch, time and low bandwidth. Nothing here adds a new look. It describes what is already on the screens, with a few rules written down for the first time. Nothing is decided until you confirm it.</p>
+
+  <section aria-labelledby="a">
+    <h2 id="a">A. Components</h2>
+    <p class="sub">Sixteen parts. Looks are in the design system (DESIGN.md). This is how each one behaves.</p>
+    <div class="grid2">
+      <div class="pc"><h3>1. Buttons</h3>
+        <div class="demo"><div class="row"><span class="b">Send receipt</span><span class="b o">Save draft</span><span class="b danger">Decline…</span><span class="b" style="background:var(--aged);border:1px dashed var(--control);color:var(--ink2)">Approve</span></div></div>
+        <ul class="beh"><li>One filled button per screen. It is the main thing to do.</li><li>At least 44 px high, 52 px in a phone form. Icon-only buttons are only the cart and Back, and they have a name.</li><li>A button that cannot be pressed stays visible and dashed, and the reason is written beside it.</li><li>While it works, it says "Sending…" and cannot be pressed twice.</li></ul></div>
+
+      <div class="pc"><h3>2. Status labels</h3>
+        <div class="demo"><div class="row"><span class="chip">Approved</span><span class="chip">Processing</span><span class="chip warn">Price held for 3 h 12 min</span><span class="chip bad">Payment unconfirmed</span><span class="chip good">Matches</span></div></div>
+        <ul class="beh"><li>In progress is a plain outlined label. Colour is kept for what needs a person (brass) or has failed (red), as you decided in Step 1.</li><li>The words always carry the meaning. Colour only reinforces it.</li><li>One label, one meaning, the same word on every screen.</li></ul></div>
+
+      <div class="pc"><h3>3. Banners</h3>
+        <div class="demo"><p class="bn ok"><svg class="i"><use href="#i-info"/></svg><span>Prices are shown once your business is approved.</span></p><p class="bn need"><svg class="i"><use href="#i-alert"/></svg><span>Check in by Wed 21 Oct. Saved projects lock after 14 days.</span></p><p class="bn err"><svg class="i"><use href="#i-alert"/></svg><span><b>Connection lost.</b> Your receipt is saved on this phone.</span></p></div>
+        <ul class="beh"><li>Information is announced politely, a failure is announced at once.</li><li>One banner at a time per screen, except account-wide ones (a hold, a stale rate, "prices are being updated"), which stack at the very top.</li><li>A banner that can be fixed has its action inside it. It never covers the thing it talks about.</li></ul></div>
+
+      <div class="pc"><h3>4. Form fields</h3>
+        <div class="demo"><div class="fld"><label>Amount you transferred</label><div class="in err">₦73,172.94</div><p class="help err">That is ₦658,557.00 less than the amount due. Check the amount on your receipt.</p></div><div class="fld" style="margin:0"><label>Business address <small>optional</small></label><div class="in">Add</div></div></div>
+        <ul class="beh"><li>The label sits above the field and is always visible. A placeholder is only an example, never the label.</li><li>"Optional" and "needed" are written in words. The error sits under the field, with words and an outline, never colour alone.</li><li>The right keyboard for the field. Paste and autofill always work. What was typed is kept after any failure.</li><li>A NIN is masked after it is typed, with a Show control.</li></ul></div>
+
+      <div class="pc"><h3>5. Code entry</h3>
+        <div class="demo"><div class="codeboxes" role="group" aria-label="6-digit code"><span>4</span><span>7</span><span>1</span><span>9</span><span></span><span></span></div><p class="help">We sent a 6-digit code to 0803 ••• 0142. It works for 10 minutes. Resend the code in 0:42</p></div>
+        <ul class="beh"><li>Six boxes to look at, one real input underneath, so paste and auto-fill fill all six.</li><li>The resend countdown is words. When it ends, the link becomes a button.</li><li>Used for sign-in, the fresh code before sensitive changes, and the WhatsApp number check. Always the same screen.</li></ul></div>
+
+      <div class="pc"><h3>6. Choices</h3>
+        <div class="demo"><div class="rc on"><span class="rad"></span><span><b>Take it to our store</b><small>Main Store · open 8 am to 6 pm</small></span></div><div class="rc"><span class="rad"></span><span><b>Send it by courier</b><small>Keep the courier's receipt.</small></span></div><div class="cbrow"><span class="box" style="background:var(--sheet);border-color:var(--control)"></span>I accept the Terms. <small style="color:var(--ink2)">Starts unticked.</small></div><span class="sw"><span class="track"></span>On</span></div>
+        <ul class="beh"><li>The whole card or row is the target. Radio cards for a choice with explanation, a checkbox for a statement the person agrees to, a switch for something that is on or off.</li><li>A switch says "On" or "Off" in words beside it.</li><li>A choice is never preselected when the answer is a legal or money commitment.</li></ul></div>
+
+      <div class="pc"><h3>7. Quantity</h3>
+        <div class="demo"><span class="qty" role="group" aria-label="Quantity 4"><span><svg class="i"><use href="#i-minus"/></svg></span><b>4</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></div>
+        <ul class="beh"><li>Minus and plus are 46 px. Tapping the number lets the person type.</li><li>Whole numbers of at least 1, or fractions where the unit allows. Zero or below is refused with a sentence.</li><li>Works offline.</li></ul></div>
+
+      <div class="pc"><h3>8. Rows and tables</h3>
+        <div class="demo"><div class="lrow"><span><b>Business profile</b><small>Trade name, logo, address, VAT</small></span><svg class="i"><use href="#i-chev"/></svg></div>
+          <table class="tbl" style="margin-top:10px"><thead><tr><th>Age</th><th>Business</th><th class="num">Declared</th></tr></thead><tbody><tr class="late"><td>2 h 10 min<br><b style="font-size:11px;color:var(--bad)">Target exceeded</b></td><td>Bright Link</td><td class="num">₦386,900.00</td></tr><tr class="sel"><td>1 h 26 min</td><td>Adeyemi</td><td class="num">₦731,729.94</td></tr></tbody></table></div>
+        <ul class="beh"><li>On a phone, a list row is at least 56 px, the whole row is the target, and amounts line up on the right.</li><li>In the console, tables have a fixed header, 13 px text, sortable columns that say so, and the selected row outlined. J, K and Enter move and open.</li><li>A late row is tinted and says why in words.</li></ul></div>
+
+      <div class="pc"><h3>9. Sheets and dialogs</h3>
+        <div class="demo"><div class="sheetdemo"><div class="scrim"></div><div class="sh"><h4>Check it is you</h4><p>We sent a 6-digit code to 0802 ••• 0188.</p><div class="row" style="margin-top:8px"><span class="b" style="min-height:40px">Make the vouch code</span></div></div></div></div>
+        <ul class="beh"><li>A phone uses a bottom sheet, the console a centred dialog. Both dim the page, take the focus, close with Esc or Cancel, and give the focus back.</li><li>The title is a question or the name of the task. The body lists what will happen. Red is only for what cannot be undone.</li><li>A sheet never holds a long form. That is a full screen.</li></ul></div>
+
+      <div class="pc"><h3>10. Tabs and navigation</h3>
+        <div class="demo"><div class="seg" style="margin-bottom:10px"><span>Open · 3</span><span>Done · 12</span><span class="on">Problems · 2</span></div><div class="tabs"><span><svg class="i"><use href="#i-home"/></svg>Home</span><span><svg class="i"><use href="#i-grid"/></svg>Catalogue</span><span><svg class="i"><use href="#i-folder"/></svg>Projects</span><span><svg class="i"><use href="#i-box"/></svg>Orders</span><span class="on"><svg class="i"><use href="#i-user"/></svg>Account</span></div></div>
+        <ul class="beh"><li>Five tabs on a phone, always with words. Before approval there are two. A role sees only the tabs it can use.</li><li>The current place has a bar and is marked for screen readers. The console rail is grouped, with counts that turn brass when something is late.</li><li>Back always goes back one screen and keeps what was typed.</li></ul></div>
+
+      <div class="pc"><h3>11. Timelines and steps</h3>
+        <div class="demo"><ol class="tl"><li class="done"><span class="n"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b>Sent for approval, then approved</b><small>Wed 7 Oct, 12:10 pm</small></span></li><li class="now"><span class="n">3</span><span><b>Waiting for the device</b><small>Then we check it, decide, and tell you.</small></span></li></ol><div class="pips" style="margin-top:6px" aria-label="Step 3 of 6"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></div>
+        <ul class="beh"><li>A vertical timeline for anything with stages, done and now clearly marked, with the date of each.</li><li>A strip of pips for "Step 3 of 6", with the words beside it.</li><li>A checklist says "Clear" or "Needs action" in words.</li></ul></div>
+
+      <div class="pc"><h3>12. Clocks</h3>
+        <div class="demo"><div class="clock" role="timer"><b>47 h left</b><span>Until Fri 9 Oct, 11:35 am. Already counts the time spent waiting for approval.</span></div><div class="meter" role="progressbar" aria-label="72 percent of the target used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><i style="width:72%"></i></div></div>
+        <ul class="beh"><li>Every countdown shows the exact end time beside the time left.</li><li>It updates each minute, not each second. A screen reader hears it only at the start and when 1 hour, 15 minutes and the end are reached.</li><li>A bar always has the figure in words next to it.</li></ul></div>
+
+      <div class="pc"><h3>13. Copy and share</h3>
+        <div class="demo"><div class="copyrow"><span><small>Account number</small><b>1234567890</b></span><span class="b o" style="min-height:44px">Copy</span></div><div class="row" style="margin-top:10px"><span class="b">Share on WhatsApp</span><span class="b o">Copy the code</span></div></div>
+        <ul class="beh"><li>Anything a person must type elsewhere has a Copy button beside it. It says "Copied" for two seconds.</li><li>Codes and references use the monospace face so they can be read aloud.</li></ul></div>
+
+      <div class="pc"><h3>14. Upload</h3>
+        <div class="demo"><div class="file"><span class="th">Photo</span><span><b>receipt-0742.jpg</b><small>1.4 MB · sending, 62%</small></span><span class="b o" style="min-height:40px">Remove</span></div><div class="meter" aria-hidden="true"><i style="width:62%"></i></div></div>
+        <ul class="beh"><li>"Take a photo" and "Choose a file" are both offered. A permission is asked for only when the person presses the first.</li><li>Photos are resized on the phone. An upload that loses signal resumes by itself and says so.</li><li>A bad file is refused in a sentence before it is sent.</li></ul></div>
+
+      <div class="pc"><h3>15. Preview panel</h3>
+        <div class="demo"><dl class="cmp"><div><dt>Prices that move now</dt><dd>36 of 38 products</dd></div><div><dt>Orders already made</dt><dd>Not changed</dd></div><div><dt>Products below the 8% floor</dt><dd>0</dd></div></dl></div>
+        <ul class="beh"><li>Before any change that touches many things, the screen says what it will do. A rate, a markup, a hold, a switch of supplier.</li><li>It sits next to the Save button and is never hidden behind a link.</li></ul></div>
+
+      <div class="pc"><h3>16. Two-person approval</h3>
+        <div class="demo"><p class="bn need" style="margin:0"><svg class="i"><use href="#i-alert"/></svg><span>Asked by Ngozi A. Above 3% needs two people. <b>You did not ask for this change.</b></span></p></div>
+        <ul class="beh"><li>Any change that needs a second person goes to Approvals and says who asked, who already agreed, and why two.</li><li>The Approve button is off for the person who asked, and says why.</li><li>A decline needs a reason, and goes back to the person who asked.</li></ul></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="b">
+    <h2 id="b">B. States every screen needs</h2>
+    <p class="sub">Each screen is checked against this list. A state that does not apply is skipped on purpose, not forgotten.</p>
+    <div class="grid3">
+      <div class="st"><h3>Loading</h3><div class="eg">Loading your projects… <div class="meter" style="height:8px;margin-top:6px"><i style="width:40%"></i></div></div><p>Nothing for the first second. Then words. A bar with a figure for anything long.</p></div>
+      <div class="st"><h3>Empty</h3><div class="eg">No projects yet. Make your first one: a name is all we ask.</div><p>Says why, and offers one next step.</p></div>
+      <div class="st err"><h3>Error you can fix</h3><div class="eg">We could not confirm your payment. Check the amount and the reference on your receipt.</div><p>Inline, beside the thing to fix. Nothing typed is lost.</p></div>
+      <div class="st err"><h3>Error that needs us</h3><div class="eg">We cannot take more tries here. Call or WhatsApp us and we will help you.</div><p>Never a dead end: always a way on.</p></div>
+      <div class="st need"><h3>No signal</h3><div class="eg">No signal. You are working from what is saved on this phone, checked today 7:10 am.</div><p>Says what still works, how fresh it is, and that changes will send later.</p></div>
+      <div class="st"><h3>Stale, with an as-of time</h3><div class="eg">Prices as of Tue 6 Oct, 8:40 pm. Never used to make a proposal or an order.</div><p>Offline prices carry the time they were saved. A Technician sees no prices, so nothing to date.</p></div>
+      <div class="st"><h3>Waiting on us</h3><div class="eg">Receipt under review. We usually take up to 2 business hours. We work 8 am to 6 pm, Monday to Saturday.</div><p>Honest about working hours. The price hold keeps counting.</p></div>
+      <div class="st need"><h3>Needs you</h3><div class="eg">Pay for order INT-0044. Price held for 3 h 12 min.</div><p>Tinted, listed first, with the one button that does it. Also on Home.</p></div>
+      <div class="st"><h3>Blocked by a rule</h3><div class="eg"><span class="b" style="background:var(--aged);border:1px dashed var(--control);color:var(--ink2);min-height:38px">Approve</span> You asked for this change, so someone else must approve it.</div><p>Visible, dashed, with the reason written beside it.</p></div>
+      <div class="st"><h3>Not for your role</h3><div class="eg">This is for the Owner and Managers. Ask Tunde.</div><p>A row or button a role can never use is not shown. If a link leads there, this is the message.</p></div>
+      <div class="st err"><h3>Time ran out</h3><div class="eg">The device did not reach us in 48 hours. Ask Support for a new issue code.</div><p>Says what lapsed, what is unchanged, and what to do.</p></div>
+      <div class="st need"><h3>On hold, or prices being updated</h3><div class="eg">We have paused new orders and refunds. You can still pay for orders you have made.</div><p>An account-wide banner at the very top of every screen until it is lifted.</p></div>
+      <div class="st"><h3>Under review</h3><div class="eg">Our team will check this. We will tell you within 1 business day.</div><p>Neutral. Says when the answer comes and that the person need do nothing.</p></div>
+      <div class="st"><h3>Done</h3><div class="eg">Vouch code made for Hammed Bello. It works once, until Fri 9 Oct, 4:10 pm.</div><p>The result, then what happens next. No celebration.</p></div>
+      <div class="st"><h3>Locked by someone else</h3><div class="eg">Being reviewed by Tolu K. since 12:44 pm.</div><p>A soft lock in the console. It can be taken over with a reason.</p></div>
+      <div class="st err"><h3>The service is down</h3><div class="eg">We are making a change and are back by 6:00 pm. Your saved projects still work.</div><p>Proposed. The PRD has no maintenance state, but a platform that is used on weak data needs one.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="c">
+    <h2 id="c">C. Interaction rules</h2>
+    <p class="sub">The rules for how people operate the product, across a phone, a keyboard and a poor connection.</p>
+    <table class="rules">
+      <thead><tr><th scope="col">Rule</th><th scope="col">What it says</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Targets</th><td>At least 44 px for anything pressed on a phone, with space between. 24 px is the WCAG 2.2 minimum and is never the goal. Rows with a checkbox are 48 px.</td></tr>
+        <tr><th scope="row">Focus</th><td>A 3 px green ring with a 2 px gap on everything that can be reached, never removed. The order follows the reading order. A skip link jumps past the menu. Sheets and dialogs hold the focus, and give it back.</td></tr>
+        <tr><th scope="row">Keyboard</th><td>Everything works without a mouse. Esc closes a sheet or dialog. Enter acts on the focused main button. In the console, J, K, Enter and / move around lists. Money actions are never a single key.</td></tr>
+        <tr><th scope="row">Gestures</th><td>Nothing needs a swipe, a long press, a pinch or a drag. Reordering uses arrows. Pull to refresh also has a Refresh button.</td></tr>
+        <tr><th scope="row">When to ask "Are you sure?"</th><td>Before something that cannot be undone (closing an account, a hold, revoking approval), before money moves (confirm payment, a refund, a reversal), and before something is sent to someone else (an invitation, a shared code). Not for edits that can be undone.</td></tr>
+        <tr><th scope="row">Undo</th><td>A deleted room can be brought back for 30 days (Step 2). A saved change can be restored from an earlier version for 30 days. A confirmation is not a substitute for undo where undo is possible.</td></tr>
+        <tr><th scope="row">Keeping what was typed</th><td>After any failure, the form keeps its values. A project saves itself, and works offline. A receipt upload resumes. A long console form saves a draft.</td></tr>
+        <tr><th scope="row">Timeouts</th><td>Nothing times out without saying so. A business is signed out after 30 idle days. The console warns 5 minutes before its 12 hours end, with a Stay signed in button. A code shows the time it has left.</td></tr>
+        <tr><th scope="row">Proving it is you</th><td>No puzzle that tests memory or reading. Codes can be pasted. Passkeys are offered. Bot checks are invisible.</td></tr>
+        <tr><th scope="row">Motion</th><td>Nothing moves unless it helps. No autoplay. Changes are at most 150 ms. A bar does not animate. The system's reduce-motion setting is always obeyed.</td></tr>
+        <tr><th scope="row">Feedback</th><td>A pressed button changes at once. The result is said within one second, or a bar shows progress. Success and failure are always in words.</td></tr>
+        <tr><th scope="row">Installing</th><td>The app is offered for the home screen after the second visit, or right after the first "Save for offline". It is always in Account. On an iPhone the steps are written out in words.</td></tr>
+        <tr><th scope="row">Weak data</th><td>Text first, pictures on request, small thumbnails, no autoplay video, lists in pages of 20, receipts resized on the phone to about 2 MB. A Refresh button never needs a gesture.</td></tr>
+        <tr><th scope="row">Camera and files</th><td>Permission is asked for only when the person presses "Take a photo". If it is refused, "Choose a file" is offered and the screen says so.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the components, the states, the interaction rules, and installing and weak data.</p>
+</main>
+</body>
+</html>

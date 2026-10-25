@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 22, responsive and platform: the app on a desktop browser (proposal)</title>
+<style>
+/*
+  STEP 22 WIREFRAMES: responsive and platform. The three sizes, the app drawn at desktop width (Home, adding a product,
+  a Project, Orders), and the platform, install and weak-data rules.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction. Same data as Steps 1 to 6, same words.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+  Frames are 1200 px wide, a laptop browser. Now is Wed 7 Oct 2026, 11:50 am. Nothing here is decided until you confirm it.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1.top{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 28px}
+section.blk{margin:0 0 40px}
+h2.sec{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+.sub{max-width:900px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+table.rules{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+table.rules th,table.rules td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.rules thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+table.rules tbody th{width:190px;font-weight:600}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{width:1200px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:54px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 22px/1 var(--serif)}
+.topbar .sp{margin-left:auto}
+.topbar .acct{font:600 13px var(--sans);color:#E6F0E9}
+.cartbtn{position:relative;display:grid;place-items:center;width:46px;height:46px;color:#fff}
+.cartbtn .count{position:absolute;top:4px;right:2px;min-width:18px;padding:1px 5px;background:#fff;color:var(--green);font:700 11.5px/1.3 var(--sans);text-align:center}
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:640px}
+.rail{padding:12px 0;background:var(--aged);border-right:1px solid var(--ink)}
+.rail .a{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 20px;color:var(--ink);font:600 15px var(--sans)}
+.rail .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.main{padding:22px 26px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub2{margin:4px 0 16px;font-size:13px;color:var(--ink2)}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14.5px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.sm{min-height:38px;padding:0 12px;font-size:13.5px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sech{margin:0 0 6px;padding-bottom:6px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px}
+.att li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
+.att .t{font:600 15px/1.3 var(--sans)}
+.att .m{grid-column:1;font-size:13px;color:var(--ink2)}
+.att .m b{color:var(--warn)}
+.att .go{grid-column:2;grid-row:1/3}
+.plist li{padding:12px 0;border-bottom:1px solid var(--rule)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pname{font:700 15.5px/1.25 var(--serif)}
+.pamt{font:700 15px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pmeta{margin-top:2px;font-size:13px;color:var(--ink2)}
+.btnrow{display:grid;gap:8px;margin-top:14px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{padding:8px 10px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11.5px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.tbl td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl small{display:block;font-size:12.5px;color:var(--ink2)}
+.tbl .nm{font:600 14.5px/1.3 var(--sans)}
+.tbl tr.off td{background:var(--aged);color:var(--ink2)}
+.ok{color:var(--ok);font-weight:600}
+.tag{display:inline-block;padding:3px 8px;border:1px solid var(--brass);background:var(--warn-tint);color:var(--warn);font:600 12px/1.25 var(--sans)}
+.step{display:inline-flex;height:44px;border:1px solid var(--control);background:var(--sheet)}
+.step span{display:grid;place-items:center;width:42px}
+.step b{display:grid;place-items:center;width:42px;border-left:1px solid var(--rule);border-right:1px solid var(--rule);font:700 15px var(--sans)}
+.picker{display:grid;grid-template-columns:230px minmax(0,1fr);gap:0}
+.filters{padding-right:20px}
+.filters h3{margin:14px 0 6px;font:700 13px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.filters h3:first-child{margin-top:0}
+.fopt{display:flex;gap:10px;align-items:center;min-height:36px;font-size:14px}
+.fopt .box{display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--control);background:var(--sheet)}
+.fopt .box.on{background:var(--green);border-color:var(--green);color:#fff}
+.results{padding-left:22px;border-left:1px solid var(--ink);min-width:0}
+.search{display:flex;align-items:center;gap:8px;min-height:46px;margin-bottom:10px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:15px;color:var(--ink2)}
+.donebar{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:12px 16px;background:var(--sheet);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.room{margin:0 0 16px}
+.room h3{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-top:2px solid var(--ink);font:700 18px/1.2 var(--serif)}
+.room h3 span{font:700 16px var(--sans);font-variant-numeric:tabular-nums}
+.proj{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px}
+.summary{align-self:start;padding:16px 18px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.summary h3{font:700 16px var(--serif)}
+.summary .big{margin:8px 0 2px;font:700 28px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.summary .vat{font:700 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+.summary dl{margin-top:10px;font-size:13.5px}
+.summary dl div{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--rule)}
+.summary dd{font-weight:600;font-variant-numeric:tabular-nums}
+.summary .b{width:100%;margin-top:8px}
+.md{display:grid;grid-template-columns:340px minmax(0,1fr);gap:0}
+.md .list{padding-right:20px}
+.md .detail{padding-left:24px;border-left:1px solid var(--ink);min-width:0}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:8px;border:1px solid var(--control)}
+.seg span{display:grid;place-items:center;min-height:44px;background:var(--sheet);color:var(--green);font:600 14px var(--sans)}
+.seg .on{background:var(--green);color:#fff}
+.olist li{padding:12px 10px;border-bottom:1px solid var(--rule)}
+.olist li.need{background:var(--bad-tint);box-shadow:inset 4px 0 0 var(--bad)}
+.olist li.sel{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green);background:var(--paper)}
+.dcard{margin:0 0 10px;padding:12px 14px;background:var(--sheet);border:1px solid var(--control)}
+.dcard h4{display:flex;justify-content:space-between;align-items:center;font:700 15px var(--sans)}
+.dcard ul{margin-top:6px;font-size:14px;color:var(--ink2)}
+.dcard .trk{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule);font-size:13.5px}
+.cmp{margin-top:6px;border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.cmp dd{font-weight:700;font-variant-numeric:tabular-nums}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.card h3{font:700 16px/1.3 var(--serif)}
+.card p{margin-top:6px;font-size:14px}
+.card.need{background:var(--warn-tint);border-top-color:var(--brass)}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:860px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h3l2 11h10l2-8H7"/><circle cx="10" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20l1-5L16 4l4 4L9 19zM14 6l4 4"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 22 of the walk-through</p>
+  <h1 class="top">Responsive and platform: the app on a laptop, and the rules around it</h1>
+  <p class="lede">Proposal for your reaction. You said the integrator app is for phones and for desktop browsers, and the staff console is desktop only. Everything so far has been drawn on a phone, so this step does two things: it draws the app at laptop width, for the four screens that change most, and it sets down the platform rules, covering install, browsers, weak data and speed. Same data and same words as Steps 1 to 6. Nothing here is decided until you confirm it.</p>
+
+  <section class="blk" aria-labelledby="z">
+    <h2 class="sec" id="z">1. Three sizes</h2>
+    <p class="sub">One product, one set of screens, and the layout adapts. The screen names, words and order of things never change with size.</p>
+    <table class="rules">
+      <thead><tr><th scope="col">Size</th><th scope="col">What changes</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Phone<br><span style="font-weight:400;color:var(--ink2)">up to 599 px wide</span></th><td>The screens you have confirmed. One column, the tab bar along the bottom, sheets that rise from the bottom, a 16 px margin. Works down to 320 px wide.</td></tr>
+        <tr><th scope="row">Tablet<br><span style="font-weight:400;color:var(--ink2)">600 to 1023 px</span></th><td>The phone layout, centred, in a column up to 720 px wide. The tab bar stays. Nothing is stretched. On a tablet held wide, lists and a chosen item can sit side by side from 900 px.</td></tr>
+        <tr><th scope="row">Laptop and desktop<br><span style="font-weight:400;color:var(--ink2)">1024 px and up</span></th><td>A left rail replaces the tab bar. The cart sits at the top right. Content stops at 1100 px, centred. Lists with an item behind them become a list and a detail side by side (Orders, Projects, Credit notes). The Project page gets a summary panel that stays in view. Sheets become centred dialogs. A card list with more than four facts a row becomes a table.</td></tr>
+        <tr><th scope="row">Every size</th><td>Touch, mouse and keyboard all work. Nothing needs a hover. Portrait and landscape both work, and neither is locked. The reading order never changes with the layout.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <figure class="fig">
+    <figcaption>2. Home, at laptop width<span>The same content as the phone's Home. What needs him sits on the left, where he looks first. The projects, and the two ways to start work, sit on the right. The rail replaces the tab bar.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Home · integrator</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="sp"></span><span class="acct">Adeyemi Integrated Systems · Tunde</span><span class="cartbtn" aria-label="Cart, 2 items"><svg class="i"><use href="#i-cart"/></svg><span class="count">2</span></span></header>
+      <div class="shell">
+        <nav class="rail" aria-label="Main"><span class="a on"><svg class="i"><use href="#i-home"/></svg>Home</span><span class="a"><svg class="i"><use href="#i-grid"/></svg>Catalogue</span><span class="a"><svg class="i"><use href="#i-folder"/></svg>Projects</span><span class="a"><svg class="i"><use href="#i-box"/></svg>Orders</span><span class="a"><svg class="i"><use href="#i-user"/></svg>Account</span></nav>
+        <div class="main">
+          <h1>Home</h1>
+          <p class="sub2">Owner · Adeyemi Integrated Systems · signed in as Tunde</p>
+          <div class="cols">
+            <section aria-labelledby="h1a">
+              <h2 class="sech" id="h1a">Needs your attention</h2>
+              <ul class="att">
+                <li><span class="t">Pay for order INT-0044</span><span class="m"><b>Price held for 3 h 12 min</b> · ₦48,600.00 due</span><span class="b go">Pay now</span></li>
+                <li><span class="t">Return request waiting for you</span><span class="m">Raised by Chidi · 4MP PoE dome camera</span><span class="b o go">Review</span></li>
+                <li><span class="t">Credit note expires in 14 days</span><span class="m">₦38,250.00 available</span><span class="b o go">View</span></li>
+              </ul>
+            </section>
+            <section aria-labelledby="h1b">
+              <h2 class="sech" id="h1b">Recent projects</h2>
+              <ul class="plist">
+                <li><div class="prow"><span class="pname">Banana Island villa: networking</span><span class="pamt">₦1,284,300.00</span></div><div class="chips"><span class="chip">Proposal valid until 21 Oct</span></div></li>
+                <li><div class="prow"><span class="pname">Surulere shop: alarm and CCTV</span><span class="pamt">₦96,450.00</span></div><div class="chips"><span class="chip">Draft</span></div></li>
+              </ul>
+              <div class="btnrow"><span class="b"><svg class="i"><use href="#i-plus"/></svg>New project</span><span class="b o">Buy parts without a project</span></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Adding products to a room, at laptop width<span>Filters sit beside the results instead of behind a button, and each result is a table row with its price and a quantity. The "Done" bar keeps the count, as on the phone.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Add to Entrance and gate · integrator</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="sp"></span><span class="acct">Adeyemi Integrated Systems · Tunde</span><span class="cartbtn" aria-label="Cart, 2 items"><svg class="i"><use href="#i-cart"/></svg><span class="count">2</span></span></header>
+      <div class="shell">
+        <nav class="rail" aria-label="Main"><span class="a"><svg class="i"><use href="#i-home"/></svg>Home</span><span class="a"><svg class="i"><use href="#i-grid"/></svg>Catalogue</span><span class="a on"><svg class="i"><use href="#i-folder"/></svg>Projects</span><span class="a"><svg class="i"><use href="#i-box"/></svg>Orders</span><span class="a"><svg class="i"><use href="#i-user"/></svg>Account</span></nav>
+        <div class="main">
+          <h1>Add to Entrance and gate</h1>
+          <p class="sub2">Lekki Phase 1 duplex: CCTV and access control · prices include VAT</p>
+          <div class="picker">
+            <aside class="filters" aria-label="Filters">
+              <h3>Brand</h3><div class="fopt"><span class="box"></span>Northgate</div><div class="fopt"><span class="box"></span>Meridian</div><div class="fopt"><span class="box"></span>Kable Co</div>
+              <h3>Product range</h3><div class="fopt"><span class="box on"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span>IP cameras</div><div class="fopt"><span class="box"></span>Recorders</div><div class="fopt"><span class="box"></span>Switches</div><div class="fopt"><span class="box"></span>Cabling</div>
+              <h3>Stock</h3><div class="fopt"><span class="box on"><svg class="i" style="width:14px;height:14px"><use href="#i-check"/></svg></span>In stock or back-order</div>
+            </aside>
+            <section class="results" aria-label="Results">
+              <div class="search"><svg class="i"><use href="#i-search"/></svg>Search name, brand, model or SKU</div>
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Products you can add</caption>
+                <thead><tr><th scope="col">Product</th><th scope="col">Stock</th><th scope="col" class="num">Price</th><th scope="col">Quantity</th><th scope="col"><span style="position:absolute;left:-9999px">Add</span></th></tr></thead>
+                <tbody>
+                  <tr><td><span class="nm">4MP PoE dome camera</span><small>Northgate · DM4P · CAM-0412</small></td><td class="ok">In stock</td><td class="num">₦68,400.00</td><td><span class="step" role="group" aria-label="Quantity 4"><span><svg class="i"><use href="#i-minus"/></svg></span><b>4</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td><span class="b o sm">Add</span></td></tr>
+                  <tr><td><span class="nm">8-channel PoE NVR, 2 TB drive</span><small>Northgate · NV8P2 · NVR-0208</small></td><td class="ok">In stock</td><td class="num">₦142,500.00</td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td><span class="b o sm">Add</span></td></tr>
+                  <tr><td><span class="nm">8-port PoE switch</span><small>Meridian · SW8P · SWT-0108</small></td><td><span class="tag">Back-order · about 3 weeks · 8% off</span></td><td class="num">₦53,268.00</td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td><span class="b o sm">Add</span></td></tr>
+                  <tr class="off"><td><span class="nm">16-port PoE switch</span><small>Meridian · SW16P · SWT-0116 · Not available to order right now.</small></td><td>Out of stock</td><td class="num">₦104,300.00</td><td></td><td><span class="b sm" style="background:var(--aged);border:1px dashed var(--control);color:var(--ink2)">Add</span></td></tr>
+                  <tr><td><span class="nm">Cat6 cable, 305 m box</span><small>Kable Co · C6-305 · CBL-0305</small></td><td class="ok">In stock</td><td class="num">₦96,000.00</td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td><span class="b o sm">Add</span></td></tr>
+                </tbody>
+              </table>
+              <div class="donebar"><span><b>7 items</b> in Entrance and gate</span><span class="b">Done</span></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. A Project, at laptop width<span>Rooms and items take the width. The total, and the four things you do with a Project, stay in view on the right while he scrolls, instead of sitting at the bottom of a long page.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Project · integrator</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="sp"></span><span class="acct">Adeyemi Integrated Systems · Tunde</span><span class="cartbtn" aria-label="Cart, 2 items"><svg class="i"><use href="#i-cart"/></svg><span class="count">2</span></span></header>
+      <div class="shell">
+        <nav class="rail" aria-label="Main"><span class="a"><svg class="i"><use href="#i-home"/></svg>Home</span><span class="a"><svg class="i"><use href="#i-grid"/></svg>Catalogue</span><span class="a on"><svg class="i"><use href="#i-folder"/></svg>Projects</span><span class="a"><svg class="i"><use href="#i-box"/></svg>Orders</span><span class="a"><svg class="i"><use href="#i-user"/></svg>Account</span></nav>
+        <div class="main">
+          <p class="sub2" style="margin:0 0 4px">Projects ›</p>
+          <h1>Lekki Phase 1 duplex: CCTV and access control</h1>
+          <p class="sub2">2 rooms · 9 items · edited just now · prices as of today, 11:50 am</p>
+          <div class="proj">
+            <div>
+              <section class="room" aria-labelledby="r1"><h3 id="r1"><span style="font:700 18px var(--serif)">Entrance and gate <span style="display:inline-grid;place-items:center;width:34px;height:34px;vertical-align:middle;color:var(--ink)"><svg class="i"><use href="#i-pencil"/></svg></span></span><span>₦565,368.00</span></h3>
+                <table class="tbl">
+                  <caption style="position:absolute;left:-9999px">Items in Entrance and gate</caption>
+                  <thead><tr><th scope="col">Item</th><th scope="col">Quantity</th><th scope="col" class="num">Unit price</th><th scope="col" class="num">Line</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="nm">4MP PoE dome camera</span></td><td><span class="step" role="group" aria-label="Quantity 4"><span><svg class="i"><use href="#i-minus"/></svg></span><b>4</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td class="num">₦68,400.00</td><td class="num"><b>₦273,600.00</b></td></tr>
+                    <tr><td><span class="nm">8-channel PoE NVR, 2 TB drive</span></td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td class="num">₦142,500.00</td><td class="num"><b>₦142,500.00</b></td></tr>
+                    <tr><td><span class="nm">8-port PoE switch</span><small><span class="tag">Back-order · ships in about 3 weeks · 8% off</span></small></td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td class="num">₦53,268.00</td><td class="num"><b>₦53,268.00</b></td></tr>
+                    <tr><td><span class="nm">Cat6 cable, 305 m box</span></td><td><span class="step" role="group" aria-label="Quantity 1"><span><svg class="i"><use href="#i-minus"/></svg></span><b>1</b><span><svg class="i"><use href="#i-plus"/></svg></span></span></td><td class="num">₦96,000.00</td><td class="num"><b>₦96,000.00</b></td></tr>
+                  </tbody>
+                </table>
+                <p style="margin-top:8px"><span class="b o sm"><svg class="i"><use href="#i-plus"/></svg>Add product to this room</span></p>
+              </section>
+              <section class="room" aria-labelledby="r2"><h3 id="r2"><span style="font:700 18px var(--serif)">Living room</span><span>₦136,800.00</span></h3></section>
+              <p><span class="b o sm"><svg class="i"><use href="#i-plus"/></svg>Add room</span></p>
+            </div>
+            <aside class="summary" aria-labelledby="sm">
+              <h3 id="sm">Project total</h3>
+              <p class="big">₦702,168.00</p><p class="vat">VAT included</p>
+              <dl><div><dt>Entrance and gate</dt><dd>₦565,368.00</dd></div><div><dt>Living room</dt><dd>₦136,800.00</dd></div><div><dt>Saved on this phone</dt><dd>Not yet</dd></div></dl>
+              <span class="b">Generate proposal</span>
+              <span class="b">Create order</span>
+              <span class="b o"><svg class="i"><use href="#i-list"/></svg>Parts list</span>
+              <span class="b o"><svg class="i"><use href="#i-save"/></svg>Save for offline</span>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>5. Orders, at laptop width<span>The list on the left, the chosen order on the right. He no longer taps in and out to compare two orders. An order that needs action is tinted and first, as on the phone.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Orders · integrator</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="sp"></span><span class="acct">Adeyemi Integrated Systems · Tunde</span><span class="cartbtn" aria-label="Cart, 2 items"><svg class="i"><use href="#i-cart"/></svg><span class="count">2</span></span></header>
+      <div class="shell">
+        <nav class="rail" aria-label="Main"><span class="a"><svg class="i"><use href="#i-home"/></svg>Home</span><span class="a"><svg class="i"><use href="#i-grid"/></svg>Catalogue</span><span class="a"><svg class="i"><use href="#i-folder"/></svg>Projects</span><span class="a on"><svg class="i"><use href="#i-box"/></svg>Orders</span><span class="a"><svg class="i"><use href="#i-user"/></svg>Account</span></nav>
+        <div class="main">
+          <h1>Orders</h1>
+          <div class="md" style="margin-top:12px">
+            <div class="list">
+              <div class="seg"><span class="on">Open · 3</span><span>Done · 12</span><span>Problems · 2</span></div>
+              <ul class="olist" aria-label="Open orders">
+                <li class="need"><div class="prow"><span class="pname">INT-0045 · Banana Island villa</span><span class="pamt">₦1,284,300.00</span></div><div class="chips"><span class="chip bad">Payment unconfirmed</span><span class="chip">Action needed</span></div></li>
+                <li><div class="prow"><span class="pname">INT-0044 · Cabling and connectors</span><span class="pamt">₦48,600.00</span></div><div class="chips"><span class="chip">Awaiting payment</span><span class="chip warn">Price held for 3 h 12 min</span></div></li>
+                <li class="sel" aria-current="true"><div class="prow"><span class="pname">INT-0042 · Lekki Phase 1 duplex</span><span class="pamt">₦731,729.94</span></div><div class="chips"><span class="chip">Approved</span><span class="chip">2 deliveries · 1 in transit</span></div></li>
+              </ul>
+            </div>
+            <section class="detail" aria-labelledby="od">
+              <p class="sub2" style="margin:0">Lekki Phase 1 duplex</p>
+              <h2 id="od" style="font:700 26px var(--sans);font-variant-numeric:tabular-nums">₦731,729.94</h2>
+              <div class="chips" style="margin-bottom:12px"><span class="chip">Approved</span><span class="chip">Paid in full</span></div>
+              <h3 class="sech" style="margin-top:6px">Deliveries · 2</h3>
+              <div class="dcard"><h4>Delivery 1 <span class="chip">In transit</span></h4><ul><li>4MP PoE dome camera × 6</li><li>8-channel PoE NVR × 1</li><li>Cat6 cable, 305 m box × 1</li></ul><div class="trk"><span>Courier partner · tracking <b style="font-family:var(--mono)">CP-88213</b></span><span class="b o sm">Copy</span></div></div>
+              <div class="dcard"><h4>Delivery 2 <span class="chip">Processing</span></h4><ul><li>8-port PoE switch × 1</li></ul><p style="margin-top:6px;font-size:13px;color:var(--ink2)">Back-order · expected in about 3 weeks, around 28 Oct.</p></div>
+              <h3 class="sech" style="margin-top:14px">Payments</h3>
+              <dl class="cmp"><div><dt>7 Oct · transfer</dt><dd>₦731,729.94 <span class="chip" style="margin-left:6px">Confirmed</span></dd></div></dl>
+              <div class="btnrow" style="grid-template-columns:repeat(3,auto);justify-content:start"><span class="b o">Tax invoice (PDF)</span><span class="b o">Report a problem</span><span class="b o">Ask to cancel</span></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="blk" aria-labelledby="p">
+    <h2 class="sec" id="p">6. Platform, install and weak data</h2>
+    <table class="rules">
+      <thead><tr><th scope="col">Topic</th><th scope="col">What we propose</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Browsers and phones</th><td>The last two versions of Chrome, Edge, Firefox and Safari, and Samsung Internet. Android 9 or newer with Chrome. iPhone and iPad on iOS 16.4 or newer for the installed app. The test phone is the PRD's: a low-end Android with 2 GB of memory on a slow 3G link (400 kbps, 400 ms).</td></tr>
+        <tr><th scope="row">Installing</th><td>The app installs from the browser and opens full screen, with its own icon and the green top bar. It is offered after the second visit, or right after the first "Save for offline", and always under Account. On an iPhone the steps are written in words: Share, then Add to Home Screen.</td></tr>
+        <tr><th scope="row">A new version</th><td>A new version is fetched quietly. It never reloads the page under someone's hands. A banner says "A new version is ready. Update when you finish what you are doing", and updating keeps what was typed.</td></tr>
+        <tr><th scope="row">iPhone and saved files</th><td>An iPhone may clear what a website has saved if it is not opened for about a week. An installed app is not cleared that way. So on an iPhone, "Save for offline" asks the person to install first, and says why in one line. The app also asks the phone to keep its storage.</td></tr>
+        <tr><th scope="row">Notifications</th><td>None from the browser in version 1. Messages go by WhatsApp and email, as decided in Step 10.</td></tr>
+        <tr><th scope="row">Speed and size</th><td>The Catalogue list shows within about 5 seconds on the test phone, as the PRD asks. Only system fonts, so no font is downloaded. Pictures load when they are near the screen, as small versions first. Lists load 20 at a time.</td></tr>
+        <tr><th scope="row">Data Saver</th><td>When the phone's Data Saver is on, pictures wait until they are tapped, and videos never load by themselves.</td></tr>
+        <tr><th scope="row">The clock</th><td>Every countdown uses our clock, not the phone's, so a wrong phone clock cannot extend a price hold. Times are shown in West Africa Time.</td></tr>
+        <tr><th scope="row">Sharing and copying</th><td>Sharing a code or a PDF uses the phone's own share sheet, with a Copy button as the fallback. Copy buttons work without special permission.</td></tr>
+        <tr><th scope="row">Printing</th><td>The Parts list, the proposal, and every document are PDFs that print cleanly. Parts lists carry no prices.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="blk" aria-labelledby="q">
+    <h2 class="sec" id="q">7. One thing the PRD does not decide</h2>
+    <div class="cards">
+      <div class="card need"><h3>What do we measure about use?</h3><p>The success measures come from orders and projects, not from watching screens. Whether to count taps and page views as well, and what the Privacy Notice must then say, is not in the PRD. Proposed: nothing that follows a person, no advertising or tracking cookies, and only what the Privacy Notice lists, written with counsel. This is for you to decide before launch.</p></div>
+      <div class="card"><h3>The console below 1024 px</h3><p>As decided in Step 21, the console reflows when it is zoomed or the window is narrow. It is still not a phone product, and a phone showing it gets a notice that the console is for a desktop.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the three sizes, the four laptop screens, install and updates, and speed and weak data.</p>
+</main>
+</body>
+</html>

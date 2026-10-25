@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 23, the rules only this product has (proposal)</title>
+<style>
+/*
+  STEP 23 SHEET: the rules only this product has. Money and numbers, time and clocks, who sees what, trust and
+  verification, offline and weak signal. Each rule names the PRD requirement it protects. A rule tagged "Added here"
+  goes beyond the PRD and is the owner's to accept or change.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction. Nothing here is decided until you confirm it.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+  Sample data is the same as Steps 1 to 22: Tunde (Owner), Chidi (Technician), Segun and Ifeoma (another business),
+  INT-0042 at ₦731,729.94, the Entrance and gate room at ₦565,368.00, rate ₦1,368 then ₦1,375.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.page{max-width:1160px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 14px}
+.legend{max-width:900px;margin:0 0 12px;font-size:14px;color:var(--ink2)}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 30px;font-size:14px}
+.toc a{color:var(--green);font-weight:600}
+section{margin:0 0 44px}
+h2{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+h3.grp{margin:22px 0 8px;font:700 17px/1.3 var(--serif);color:var(--green)}
+.sub{max-width:900px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+tbody th{width:230px;font-weight:600}
+td.fr{width:150px;font:12.5px/1.5 var(--mono);color:var(--ink2)}
+td.no,.no{color:var(--ink2)}
+.tag{display:inline-block;margin-top:4px;padding:1px 7px;border:1px solid var(--control);font:700 12px/1.5 var(--sans);color:var(--ink2);white-space:nowrap}
+.tag.add{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.stack{display:grid;gap:16px;align-content:start}
+.scroll{overflow-x:auto}
+.card{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.card h3{font:700 16px/1.3 var(--serif)}
+.card p{margin-top:6px;font-size:14px}
+.card.need{background:var(--warn-tint);border-top-color:var(--brass)}
+.cap{margin-top:8px;font-size:13.5px;color:var(--ink2)}
+.led{margin-top:8px;border:0;background:transparent}
+.led th,.led td{padding:6px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.led th{width:auto;font-weight:400}
+.led td{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.led .q{display:block;color:var(--ink2);font-size:13px}
+.led tr.sum th,.led tr.sum td{border-top:2px solid var(--ink);font-weight:700}
+.flab{margin:8px 0 4px;font-weight:600;font-size:14px}
+.inp{padding:10px 12px;border:1px solid var(--control);background:var(--sheet);font:16px var(--sans);font-variant-numeric:tabular-nums}
+.read{margin-top:6px;font-size:14px;color:var(--ink2)}
+.kv{margin:8px 0 0}
+.kv div{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.kv dt{font-weight:600}
+.kv dd{margin:0;text-align:right;color:var(--ink2)}
+.clock{padding:12px 14px;background:var(--sheet);border:1px solid var(--control)}
+.clock .lab{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.clock .big{margin:0;font:700 17px/1.3 var(--serif);color:var(--green)}
+.clock p{margin-top:4px;font-size:14px}
+.clock.need{background:var(--warn-tint);border-color:var(--brass)}
+.spec{margin-top:10px;padding:10px 12px;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+.spec .s-lab{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.spec li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--rule)}
+.spec p{margin-top:6px}
+.btn{display:inline-block;margin-top:8px;padding:9px 16px;border:1px solid var(--green);background:var(--green);color:#fff;font:700 14px var(--sans)}
+.btn.off{background:transparent;color:var(--ink2);border:1px dashed var(--control)}
+.btn.outline{background:var(--sheet);color:var(--green)}
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 16px;border:1px solid var(--control);background:var(--sheet)}
+.strip li{padding:10px 12px;border-right:1px solid var(--rule);font-size:14px}
+.strip li:last-child{border-right:0}
+.strip b{display:block;margin-bottom:4px;font:700 13px var(--sans)}
+.strip li.need{background:var(--warn-tint)}
+.strip li.bad{background:var(--bad-tint)}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:860px){.cols,.three{grid-template-columns:1fr}.strip{grid-template-columns:1fr}.strip li{border-right:0;border-bottom:1px solid var(--rule)}
+  tbody th{width:auto}td.fr{width:auto}}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="kicker">Step 23 of the walk-through</p>
+  <h1>The rules only this product has</h1>
+  <p class="lede">Proposal for your reaction. Steps 1 to 22 drew the screens and the general patterns. This sheet writes down five rules that cut across all of them and that no general design guide would give us: how money is shown, how time is counted, who sees what, how we prove it is you, and what still works with no signal. Each row says which PRD requirement it protects, so nothing here changes the product. It only says how the screens behave. Nothing is decided until you confirm it.</p>
+  <p class="legend"><span class="tag">FR-19</span> the PRD requirement a rule protects. &nbsp; <span class="tag add">Added here</span> a rule this sheet adds beyond the PRD, so it is yours to accept or change.</p>
+  <nav class="toc" aria-label="Sections on this sheet"><a href="#s1">1 Money and numbers</a><a href="#s2">2 Time and clocks</a><a href="#s3">3 Who sees what</a><a href="#s4">4 Trust and verification</a><a href="#s5">5 Offline and weak signal</a></nav>
+
+  <!-- 1 MONEY -->
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. Money and numbers</h2>
+    <p class="sub">Every price on this platform is a promise in naira. These rules keep the number on the screen the same as the number we store and the number on the document.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Everything adds up</h3>
+        <table class="led">
+          <caption class="sr">Entrance and gate lines, then the project total</caption>
+          <tbody>
+            <tr><th scope="row">4MP PoE dome camera<span class="q">4 × ₦68,400.00</span></th><td>₦273,600.00</td></tr>
+            <tr><th scope="row">8-channel PoE NVR with 2 TB drive<span class="q">1 × ₦142,500.00</span></th><td>₦142,500.00</td></tr>
+            <tr><th scope="row">8-port PoE switch<span class="q">1 × ₦53,268.00</span></th><td>₦53,268.00</td></tr>
+            <tr><th scope="row">Cat6 cable, 305 m box<span class="q">1 × ₦96,000.00</span></th><td>₦96,000.00</td></tr>
+            <tr class="sum"><th scope="row">Entrance and gate</th><td>₦565,368.00</td></tr>
+            <tr><th scope="row">Living room</th><td>₦136,800.00</td></tr>
+            <tr class="sum"><th scope="row">Project total<span class="q">VAT included</span></th><td>₦702,168.00</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">Unit price × quantity is the line. Lines make the room. Rooms make the total. To the kobo, on every screen, document and message.</p>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>Three numbers where money is owed</h3>
+          <table class="led">
+            <caption class="sr">Order INT-0042, part paid</caption>
+            <tbody>
+              <tr><th scope="row">Amount due<span class="q">VAT included</span></th><td>₦731,729.94</td></tr>
+              <tr><th scope="row">Confirmed so far</th><td>₦500,000.00</td></tr>
+              <tr class="sum"><th scope="row">Still to pay</th><td>₦231,729.94</td></tr>
+              <tr><th scope="row">Receipt sent<span class="q">Waiting for the check. It does not change the line above.</span></th><td>₦231,729.94</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Typing an amount</h3>
+          <p class="flab">Amount on your receipt</p>
+          <div class="inp">731,729.94</div>
+          <p class="read">Read back: <b>₦731,729.94</b></p>
+          <p class="cap">You paste “₦ 731,729.94 NGN”, with a space and letters. The field keeps 731,729.94 and reads it back.</p>
+        </div>
+      </div>
+    </div>
+    <table>
+      <caption class="sr">Rules for money and numbers</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">What the screen does</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">One look for every amount</th><td>The naira sign, commas and always two decimals: ₦68,400.00. Figures line up in a column. Nothing is shortened (never “₦1.2m”) or rounded for the screen. A reduction has a true minus sign: −₦9,500.00.</td><td class="fr">FR-19<br>NFR-4</td></tr>
+        <tr><th scope="row">The phone adds, we price</th><td>The phone may multiply a stored unit price by a quantity and add up lines, counting in whole kobo and never in floating point. It never works out a rate, tier, discount, markup or VAT. Those always come from us, with the time they were worked out.</td><td class="fr">FR-19<br>FR-28<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">Everything adds up</th><td>Lines make the room, rooms make the total, to the kobo, on the screen, in the PDF and in the message. On a Proposal with a VAT line, any kobo of difference falls on the VAT line.</td><td class="fr">FR-19<br>FR-30</td></tr>
+        <tr><th scope="row">VAT said every time</th><td>“VAT included” sits beside the first price on a screen and under every total. The rate is read from settings and never typed into a screen. A VAT-registered business can choose a VAT line on a Proposal. Our own prices always include VAT.</td><td class="fr">FR-19<br>FR-30<br>FR-70</td></tr>
+        <tr><th scope="row">Naira only</th><td>No dollar appears in anything a business can see: screens, messages, files, links or error text. The one place a rate appears is where a price change is being explained: “₦1,330 then, ₦1,368 now”. The console shows dollars only for supplier costs, the rate and the dashboard, always labelled USD.</td><td class="fr">FR-19<br>FR-35</td></tr>
+        <tr><th scope="row">Three numbers where money is owed</th><td>Amount due, Confirmed so far, Still to pay, in that order. What the person typed is “Receipt sent” and does not reduce Still to pay until Finance confirms it. The word “paid” is only for a confirmed figure. This changes one label in Step 5 (“Paid so far” becomes “Confirmed so far”).</td><td class="fr">FR-41<br>FR-42<br><span class="tag add">Amends Step 5</span></td></tr>
+        <tr><th scope="row">Credit is not cash</th><td>A credit note shows its amount, balance, reason and last day. It is never called a wallet or a balance. Using one is a request, and it counts as paid from the moment it is made. A refund goes only to an account that already paid us, picked from a list and never typed, and only an Owner can ask.</td><td class="fr">FR-43</td></tr>
+        <tr><th scope="row">Typing an amount</th><td>A money field takes digits, commas and one decimal point. A pasted ₦, “NGN” or space is dropped, only two decimals are kept, and a minus is refused. The number pad with a decimal point opens on a phone. The cleaned amount is read back under the field before the person can send.</td><td class="fr">FR-40<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">Typing a quantity or a margin</th><td>A quantity is a whole number of at least 1, or a fraction only where the unit allows it, with the unit after it (120 m). A margin takes up to two decimals, refuses anything below zero, and asks “Is that right?” above 100%.</td><td class="fr">FR-26<br>FR-29</td></tr>
+        <tr><th scope="row">A number nobody may see leaves no hole</th><td>For a role that may not see money, the screen is drawn without the money area: no dash, no blank, no padlock. Sorting and filtering by price do not exist for that role either.</td><td class="fr">FR-11<br>FR-73</td></tr>
+        <tr><th scope="row">Old prices say they are old</th><td>A price kept on the phone says “as of” and the time. After a day the line turns brass: “Prices may have changed”. Old prices are never used to make a Proposal or an Order. After a sync, a Project whose total moved says so once: “Prices were updated. The total went from ₦702,168.00 to ₦706,512.00.”</td><td class="fr">FR-28<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">A money action names its amounts</th><td>Before the last button of an action that moves money (create an order, use a credit note, ask for a refund), every amount is written out in full. Pressing twice does what pressing once does.</td><td class="fr">FR-34<br>NFR-10</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 2 TIME -->
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. Time and clocks</h2>
+    <p class="sub">There are two kinds of clock and they behave differently. A clock that protects your money runs through the night and on Sunday. A promise we make to you pauses when we are closed. Business Hours are Monday to Saturday, 8 am to 6 pm, minus the closed days on Admin’s calendar.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Calendar clocks: they never pause</h3>
+        <dl class="kv">
+          <div><dt>Price hold</dt><dd>24 hours; an unpaid order ends at 48 hours</dd></div>
+          <div><dt>Proposal</dt><dd>to the end of the day, one month on</dd></div>
+          <div><dt>One-time code</dt><dd>10 minutes</dd></div>
+          <div><dt>Vouch code, issue code</dt><dd>48 hours</dd></div>
+          <div><dt>Invitation</dt><dd>7 days</dd></div>
+          <div><dt>Owner recovery</dt><dd>a 72-hour wait</dd></div>
+          <div><dt>Credit note</dt><dd>12 months; reminders at 60 and 14 days</dd></div>
+          <div><dt>Return windows</dt><dd>5, 30 and 7 days from delivery</dd></div>
+          <div><dt>Ship in full hold; uncollected pick-up</dt><dd>14 days</dd></div>
+          <div><dt>Back-order cancel right</dt><dd>7 days after the promised date</dd></div>
+          <div><dt>Saved projects without a check-in</dt><dd>14 days</dd></div>
+        </dl>
+      </div>
+      <div class="card">
+        <h3>Business-time promises: they pause when we are closed</h3>
+        <dl class="kv">
+          <div><dt>A receipt is checked</dt><dd>2 business hours</dd></div>
+          <div><dt>A paid order is approved</dt><dd>4 business hours</dd></div>
+          <div><dt>An approval or identity check is decided</dt><dd>1 business day</dd></div>
+          <div><dt>A credit note request is answered</dt><dd>1 business day</dd></div>
+          <div><dt>A request to cancel after approval is decided</dt><dd>1 business day</dd></div>
+          <div><dt>A returned device is investigated</dt><dd>2 business days after it arrives</dd></div>
+        </dl>
+        <p class="cap">Staff see the same promises as queue targets. A closed day on Admin’s calendar stops the clock for all of them.</p>
+      </div>
+    </div>
+    <div class="three">
+      <div class="clock"><p class="lab">A calendar clock</p><p class="big">Price held until Thu 8 Oct, 4:12 pm</p><p>19 h 42 min left</p><p class="no">Counts through the night and on Sunday.</p></div>
+      <div class="clock"><p class="lab">A business-time promise</p><p class="big">We will check your receipt by 9:00 am on Monday</p><p>You sent it on Saturday 10 Oct at 5:00 pm. We are open Monday to Saturday, 8 am to 6 pm.</p></div>
+      <div class="clock need"><p class="lab">When the time has run out</p><p class="big">The price hold ended on Thu 8 Oct at 4:12 pm</p><p>We worked out the price again at today’s exchange rate. The amount due is now ₦735,425.56.</p></div>
+    </div>
+    <table>
+      <caption class="sr">Rules for time and clocks</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">What the screen does</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Two clocks, two kinds of sentence</th><td>A calendar clock says “until” and “left”: Price held until Thu 8 Oct, 4:12 pm, 19 h 42 min left. A business-time promise says “by” and gives the exact time: We will check it by 9:00 am on Monday. One sentence never mixes the two.</td><td class="fr">FR-38<br>FR-78</td></tr>
+        <tr><th scope="row">Say the time, not the rule</th><td>The screen works out the exact time using Business Hours and the closed days, so nobody has to count business hours. “2 business hours” may appear as a second line, never alone.</td><td class="fr">FR-78<br>FR-76</td></tr>
+        <tr><th scope="row">Our clock, not the phone’s</th><td>Every countdown and every deadline is read from our clock, and times show in West Africa Time whatever the phone is set to. On a phone set to another zone, the first clock on a screen adds “Nigeria time”.</td><td class="fr">NFR-9<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">A clock ends in a result</th><td>At the end, the card changes to its “time ran out” state and says what happened to the money. A clock never sits at 0 h 0 min. If the phone was offline, the card changes at the next connection.</td><td class="fr">FR-38</td></tr>
+        <tr><th scope="row">What counts is when it reached us</th><td>A receipt counts from the moment we receive it, not the time on the phone or on the bank slip. If a slow connection is holding an upload close to a deadline, the screen says so and says what counts.</td><td class="fr">FR-38<br>FR-55<br><span class="tag add">Gap in PRD</span></td></tr>
+        <tr><th scope="row">A time the person types</th><td>The transfer time on a receipt is read back in words (“Thu 8 Oct, 3:05 pm”). It cannot be in the future or before the order was made.</td><td class="fr">FR-40<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">Opening hours where a promise depends on them</th><td>The “Call or WhatsApp us” block says whether we are open now (“Open until 6 pm”, or “Opens at 8 am on Monday”), from the same hours and closed days.</td><td class="fr">FR-76<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">Messages go when the clock needs them</th><td>Messages that protect money or a deadline go at once, at any hour: payment unconfirmed, price hold at hour 20, expiry at hour 40, issue code at hour 36. The rest wait until 9 am: credit note at 60 and 14 days, back-order running late, a tier change. WhatsApp first, email after 15 minutes.</td><td class="fr">FR-51<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">A code shows its time</th><td>A one-time code says how long it has left in words (“Valid for 9 more minutes”). A vouch code, an issue code and an invitation show their last day or hour wherever they are listed.</td><td class="fr">FR-1<br>FR-5<br>FR-10<br>FR-68</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3 WHO SEES WHAT -->
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. Who sees what</h2>
+    <p class="sub">The server enforces every rule, so the screens are a convenience and never the lock. What the screens do is choose one of three treatments, and a role is never told “Access denied”.</p>
+    <div class="three">
+      <div class="card">
+        <h3>Not shown</h3>
+        <p>For things that are none of this person’s business. The layout closes up as if it was never there: no dash, no blank, no padlock.</p>
+        <div class="spec"><p class="s-lab">A Technician’s room</p><ul><li><span>4MP PoE dome camera</span><span>4</span></li><li><span>8-port PoE switch</span><span>1</span></li></ul></div>
+      </div>
+      <div class="card">
+        <h3>Shown, and who can</h3>
+        <p>For things the person can see exist but cannot do. It names the person or the role who can, and offers a request when there is one.</p>
+        <div class="spec"><p class="s-lab">Chidi, on an order link</p><p>Orders are for Owners and Managers. Ask Tunde.</p><p class="s-lab" style="margin-top:12px">Ifeoma, a Manager</p><p>Only the Owner can ask for a refund.</p><span class="btn outline">Ask Segun for a vouch code</span></div>
+      </div>
+      <div class="card">
+        <h3>Shown, but not now</h3>
+        <p>For things the person may do, but not yet or not here. The button stays visible and dashed, with the reason beside it.</p>
+        <div class="spec"><p class="s-lab">A Project with no products</p><span class="btn off">Create order</span><p>Add at least one product first.</p></div>
+      </div>
+    </div>
+    <div class="scroll" role="region" aria-label="What each person sees in the app, scrolls sideways on a narrow screen" tabindex="0">
+    <table style="min-width:640px">
+      <caption class="sr">What each person sees in the app</caption>
+      <thead><tr><th scope="col">In the app</th><th scope="col">Owner, before approval</th><th scope="col">Owner</th><th scope="col">Manager</th><th scope="col">Technician</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Browse the Catalogue, read manuals and guides</th><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><th scope="row">Prices, totals, tier and discounts</th><td>One line instead: “Prices are shown once your business is approved.”</td><td>Yes</td><td>Yes</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Sort or filter by price</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Projects, rooms and the parts list</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td>Yes, with no prices</td></tr>
+        <tr><th scope="row">Proposals, cart, orders and paying</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td>Not shown; an order link says “Ask the Owner”</td></tr>
+        <tr><th scope="row">Order and delivery status</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td>Status only, no amounts</td></tr>
+        <tr><th scope="row">Credit notes</th><td class="no">Not shown</td><td>Yes</td><td>See, and ask to use one</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">The bank details to pay into</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Ask for a refund</th><td class="no">Not shown</td><td>Yes, with a fresh code</td><td>Only the Owner can</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Make a vouch code</th><td class="no">Not shown</td><td>Yes, once established, with a fresh code</td><td>Ask the Owner for one</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Report a problem; raise a return request</th><td class="no">Not shown</td><td>Yes</td><td>Yes</td><td>Yes; a Manager or the Owner approves it</td></tr>
+        <tr><th scope="row">Add and remove people</th><td class="no">Not shown</td><td>Everyone; a fresh code to change a role</td><td>Technicians only</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Change the Owner, a contact, or close the business</th><td>Yes, with a fresh code</td><td>Yes, with a fresh code</td><td class="no">Not shown</td><td class="no">Not shown</td></tr>
+        <tr><th scope="row">Email and WhatsApp messages</th><td>Decisions only</td><td>With amounts</td><td>With amounts</td><td>Never an amount</td></tr>
+        <tr><th scope="row">Kept on the phone for offline use</th><td>No prices</td><td>Prices, with “as of”</td><td>Prices, with “as of”</td><td>No prices at all</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="cap" style="margin-bottom:16px">Before approval there is only the Owner, who sees two tabs: Catalogue and Get approved. Invitations start once the business is approved.</p>
+    <div class="card" style="margin-bottom:16px">
+      <h3>Your own numbers stay yours</h3>
+      <p>Your cost, your tier discount and your margin appear only to the Owner and Managers working on the Project. The Proposal PDF, the parts list, a shared link and a share message carry none of them, in the visible text or in the file’s hidden data. The client sees client prices and nothing else.</p>
+      <p class="fr" style="font:12.5px var(--mono);color:var(--ink2)">FR-25 · FR-30 · FR-11</p>
+    </div>
+    <h3 class="grp">In the staff console</h3>
+    <table>
+      <caption class="sr">Rules for what staff see</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">What the console does</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">The rail shows what the role can use</th><td>Finance, Operations and Admin each see only their own groups. Support duties show as a group on an Operations account that has them. Nothing is greyed out.</td><td class="fr">FR-52</td></tr>
+        <tr><th scope="row">Two kinds of text box</th><td>Every free-text box says who will read it: “Reason (the business will read this)” or “Internal note (staff only)”. They are never the same box.</td><td class="fr">FR-7<br>FR-72<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">A business never meets staff identifiers</th><td>Staff names, role names, and the staff-only references BA-, P- and L- never appear in anything a business reads. It sees “our team”, “Support” and “our finance team”.</td><td class="fr">Step 19</td></tr>
+        <tr><th scope="row">A NIN stays masked</th><td>Staff see the last four digits. Showing the rest needs a reason code, the console says “This will be recorded” first, and the audit trail logs it.</td><td class="fr">NFR-3<br>FR-53</td></tr>
+        <tr><th scope="row">Details wait for the caller</th><td>Support sees an order or a serial number only after the caller is verified by an in-app code or a call-back.</td><td class="fr">FR-79</td></tr>
+        <tr><th scope="row">Acting as another role is marked</th><td>An Admin using another role’s powers sees a banner saying so, and every such action goes to the founder’s weekly review.</td><td class="fr">FR-52</td></tr>
+        <tr><th scope="row">A business learns nothing about others</th><td>A person who vouched is never told whether the other person was approved. A fraud review is never named to the business.</td><td class="fr">FR-5<br>FR-72</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4 TRUST -->
+  <section aria-labelledby="s4">
+    <h2 id="s4">4. Trust and verification</h2>
+    <p class="sub">Where a mistake or a bad actor costs real money, the screens slow down on purpose and say why. Three tools do it: a fresh code, a second person, and a record that is never rewritten.</p>
+    <h3 class="grp">Proving it is you again: a fresh one-time code</h3>
+    <div class="cols">
+      <table>
+        <caption class="sr">Actions that need a fresh code</caption>
+        <thead><tr><th scope="col">Action</th><th scope="col">Who</th><th scope="col">Protects</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Make a vouch code</th><td>Owner</td><td class="fr">FR-5<br>FR-71</td></tr>
+          <tr><th scope="row">Ask for a refund</th><td>Owner</td><td class="fr">FR-43<br>FR-71</td></tr>
+          <tr><th scope="row">Ask to use a credit note on an order</th><td>Owner, Manager</td><td class="fr">FR-71</td></tr>
+          <tr><th scope="row">Change someone’s role</th><td>Owner</td><td class="fr">FR-71</td></tr>
+          <tr><th scope="row">Change the Owner</th><td>Owner</td><td class="fr">FR-71</td></tr>
+          <tr><th scope="row">Change your own phone or email, or add a WhatsApp number</th><td>Anyone</td><td class="fr">FR-71</td></tr>
+          <tr><th scope="row">Invite a Manager</th><td>Owner</td><td class="fr"><span class="tag add">Added in Step 10</span></td></tr>
+        </tbody>
+      </table>
+      <div class="card">
+        <h3>How the code behaves</h3>
+        <ul>
+          <li><p>It is asked for at the moment of the action, never at sign-in and never before the screen opens.</p></li>
+          <li><p>It goes to a contact on record, partly hidden: “We sent a code to 0803 •••• 5678.”</p></li>
+          <li><p>Six boxes over one real input, as at sign-in. Pasting works. It says how long is left. <span class="tag add">One action per code</span></p></li>
+          <li><p>After the right code, the action finishes in the same step. Nothing is asked twice.</p></li>
+          <li><p>If it does not come: Send again after the countdown, or Call or WhatsApp us.</p></li>
+          <li><p>Staff sign in with a second factor and a 12-hour session. The console warns 5 minutes before it ends.</p></li>
+        </ul>
+      </div>
+    </div>
+    <h3 class="grp">What needs a second person</h3>
+    <table>
+      <caption class="sr">Changes that need a second person</caption>
+      <thead><tr><th scope="col">Change</th><th scope="col">What it needs</th><th scope="col">What the person who asked sees</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">A Platform Rate change above 3%</th><td>A second approver. Above 10% it is refused unless Admin overrides with a reason.</td><td>A price preview, then “Waiting for a second person”.</td><td class="fr">FR-20<br>FR-52</td></tr>
+        <tr><th scope="row">A credit note or refund above ₦100,000 (placeholder)</th><td>A second approver.</td><td>The same waiting line.</td><td class="fr">FR-52</td></tr>
+        <tr><th scope="row">Reversing a payment</th><td>A second approver and a reason.</td><td>The order goes back to Awaiting payment and cannot be approved or shipped until reviewed.</td><td class="fr">FR-41</td></tr>
+        <tr><th scope="row">A receipt whose sender name does not match</th><td>A second reviewer.</td><td>The receipt stays “Under review”.</td><td class="fr">FR-41</td></tr>
+        <tr><th scope="row">Switching the Active Supplier; a bulk price change; a tolerance change; a VAT rate change</th><td>A second approver.</td><td>A preview of what it will do, then the waiting line.</td><td class="fr">FR-52<br>Step 16</td></tr>
+        <tr><th scope="row">New bank details</th><td>Admin edits, Finance approves. They start after 24 hours, and Admin and Finance are emailed.</td><td>Businesses see “Bank details changed on [date]” for 7 days.</td><td class="fr">FR-52</td></tr>
+        <tr><th scope="row">A serial exception</th><td>Operations and Admin both, never the person who opened it.</td><td>The case stays open with both names.</td><td class="fr">FR-67</td></tr>
+        <tr><th scope="row">A stock adjustment above the set size</th><td>Admin signs off.</td><td>The adjustment waits in Approvals.</td><td class="fr">FR-16<br>FR-52</td></tr>
+      </tbody>
+    </table>
+    <p class="cap" style="margin-bottom:16px">Always the same: Approve is off for your own request. A decline needs a reason, and it goes back to the person who asked. Every approval is recorded with both names.</p>
+    <h3 class="grp">Records, personal data and two things at once</h3>
+    <table>
+      <caption class="sr">Records, personal data and races</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">What the screen does</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">A sent receipt stays</th><td>The business cannot delete or edit a receipt once sent. A mistake is fixed by sending a corrected one beside it.</td><td class="fr">FR-40<br>FR-41<br>NFR-5</td></tr>
+        <tr><th scope="row">Money records have no Edit and no Delete</th><td>A correction is a new line that points at the old one (“Reversed”, “Credited”). The console has no button that changes a past line.</td><td class="fr">FR-41</td></tr>
+        <tr><th scope="row">The audit trail is read-only</th><td>Each record in the console has a History panel: who did what, and when. Nobody can edit it, Admin included.</td><td class="fr">FR-53</td></tr>
+        <tr><th scope="row">Documents keep their numbers</th><td>Tax invoices are numbered in sequence. A credit-note document names the invoice it adjusts. A replaced guide keeps its earlier versions.</td><td class="fr">FR-77<br>FR-48</td></tr>
+        <tr><th scope="row">A NIN is typed once and stays hidden</th><td>Masked, with a Show control. Never in a link, a page title, a message, a notification or the browser’s autofill. After the check only the last four digits show.</td><td class="fr">NFR-3<br>FR-4</td></tr>
+        <tr><th scope="row">A client’s or receiver’s details say why</th><td>Wherever someone types a client’s or a receiver’s details, one line says why we keep them and who sees them. Counsel writes the wording.</td><td class="fr">FR-69<br><span class="tag add">Added here</span></td></tr>
+        <tr><th scope="row">WhatsApp is always asked</th><td>Per number, on its own screen. “No thanks” keeps updates in the app. Turning it off is one switch.</td><td class="fr">FR-69</td></tr>
+        <tr><th scope="row">Two things at once</th><td>The first valid action wins. The other person sees the current state, with who and when (“Already approved by Bola A. at 2:14 pm”), never an error. Pressing twice does what pressing once does.</td><td class="fr">NFR-10<br>FR-34<br>FR-57</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5 OFFLINE -->
+  <section aria-labelledby="s5">
+    <h2 id="s5">5. Offline and weak signal</h2>
+    <p class="sub">The PRD gives offline a narrow job: design a Project on site and reach the guides. Anything that commits money needs a connection and says so. This section adds nothing to that scope.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Works with no signal</h3>
+        <ul>
+          <li><p>Browse and search the Catalogue as it was when the phone last synced.</p></li>
+          <li><p>Make and change Projects, rooms, products and quantities.</p></li>
+          <li><p>Show the parts list on screen.</p></li>
+          <li><p>Open saved manuals, guides and PDFs. Videos only if they were saved on request.</p></li>
+          <li><p>See Saved on this phone: what is waiting, and the day to check in by.</p></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Needs a connection, and says why</h3>
+        <ul>
+          <li><p><b>Make a Proposal.</b> “Prices must be current. Connect to make a Proposal.”</p></li>
+          <li><p><b>Use the cart or create an order.</b> “An order is made at today’s price.”</p></li>
+          <li><p><b>Orders, payments, receipts and credit notes.</b> “We check these against the bank.” They are not kept on the phone.</p></li>
+          <li><p><b>Sign in for the first time, any code, any change in Account.</b> “We need to reach you to do this.”</p></li>
+        </ul>
+      </div>
+    </div>
+    <h3 class="grp">Saved projects and the 14-day check-in</h3>
+    <ol class="strip">
+      <li><b>Wed 7 Oct · day 0</b>The phone checks in. Saved projects open.</li>
+      <li><b>Sun 18 Oct · day 11</b>The line under Check now turns brass: “Check in by Wed 21 Oct.” <span class="tag add">Added here</span></li>
+      <li class="need"><b>Tue 20 Oct · day 13</b>A banner on every screen: “Connect by tomorrow to keep working offline.” <span class="tag add">Added here</span></li>
+      <li class="bad"><b>Wed 21 Oct · day 14</b>Saved projects lock. Nothing is deleted. “Connect to open your saved projects.”</li>
+      <li><b>Back online</b>The phone checks in, sends waiting changes, and everything opens.</li>
+    </ol>
+    <table>
+      <caption class="sr">Rules for offline and weak signal</caption>
+      <thead><tr><th scope="col">Rule</th><th scope="col">What the screen does</th><th scope="col">Protects</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Changes live on the phone first</th><td>Every edit is saved on the phone at once and sent when there is signal. A line says “3 changes waiting”. Check now is always in Saved on this phone, because some phones do not sync in the background.</td><td class="fr">FR-28<br>NFR-6</td></tr>
+        <tr><th scope="row">The server’s clock decides a conflict</th><td>When two people changed the same thing, the later one by our receipt time wins, never by the phone’s clock. The other version waits in Needs a look with Keep latest and Use mine. Owners and Managers see who made each change. A Technician sees “Two people changed the same item”.</td><td class="fr">FR-28</td></tr>
+        <tr><th scope="row">Nothing is thrown away</th><td>A product that left the Catalogue stays in the Project, marked Unavailable with a warning. A deleted room and an earlier version can be restored for 30 days.</td><td class="fr">FR-28<br>FR-26</td></tr>
+        <tr><th scope="row">A Technician’s phone holds no prices</th><td>Not on the screen, not in the saved data, not in a message.</td><td class="fr">FR-11</td></tr>
+        <tr><th scope="row">One phone, several people</th><td>Each person’s saved work sits in its own space, tied to their role. Signing out keeps it, and Remove clears it. When someone is removed or changes role, the phone clears their space the next time it connects, and says why.</td><td class="fr">FR-28<br>FR-10</td></tr>
+        <tr><th scope="row">The phone may lose saved files</th><td>A phone can clear saved files when space runs short, or after about a week unused in a browser. The app asks the phone to keep them, warns when it cannot, and on an iPhone asks to install first.</td><td class="fr">FR-28<br>FR-50<br>NFR-6</td></tr>
+        <tr><th scope="row">Slow is not offline</th><td>After 8 seconds of waiting, a screen says “Slow connection. Still trying.” and keeps trying. Text comes first, lists load 20 at a time, and video waits to be asked for.</td><td class="fr">FR-55<br><span class="tag add">Added here: 8 seconds</span></td></tr>
+        <tr><th scope="row">An action that may have gone through</th><td>If the signal drops after a button that makes an order or moves money, the screen says what is known: “We have not heard back. Your order may have been made. Check Orders, or try again: you cannot make two.” A receipt upload keeps its details and resumes.</td><td class="fr">FR-34<br>FR-55<br>NFR-10<br><span class="tag add">Added here</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: money and numbers, time and clocks, who sees what together with trust and verification, and offline and weak signal.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 21, the accessibility floor (proposal)</title>
+<style>
+/*
+  STEP 21 SHEET: the accessibility floor. The standard, the colour evidence (computed from the tokens), the rules by area, what
+  changes in screens already confirmed, and how it is proved.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction. Nothing here is decided until you confirm it.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+  Contrast ratios were computed with the WCAG 2.2 relative luminance formula.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1160px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:880px;margin:0 0 28px}
+section{margin:0 0 40px}
+h2{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+.sub{max-width:880px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+tbody th{width:220px;font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sw{display:inline-block;width:64px;padding:5px 0;text-align:center;border:1px solid var(--control);font:700 14px var(--sans)}
+.pass{display:inline-block;padding:2px 8px;border:1px solid var(--ok);color:var(--ok);font:700 12px var(--sans)}
+.chg{display:inline-block;padding:2px 8px;border:1px solid var(--brass);background:var(--warn-tint);color:var(--warn);font:700 12px var(--sans)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.card h3{font:700 16px/1.3 var(--serif)}
+.card p{margin-top:6px;font-size:14px}
+.card.need{background:var(--warn-tint);border-top-color:var(--brass)}
+.notes{max-width:880px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:860px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="kicker">Step 21 of the walk-through</p>
+  <h1>The accessibility floor</h1>
+  <p class="lede">Proposal for your reaction. You said this product is regulated, and that it must meet WCAG 2.2 AA, so this is not a nice-to-have. This sheet sets the floor in five parts: the standard we hold ourselves to, the colour evidence worked out from the actual tokens, the rules by area, the four small changes it makes to screens you have already confirmed, and how we prove it before launch. The look of contrast belongs to the design system (DESIGN.md). The behaviour belongs to EXPERIENCE.md. Nothing here is decided until you confirm it.</p>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. The standard</h2>
+    <div class="cards">
+      <div class="card"><h3>WCAG 2.2, level AA, on every screen</h3><p>The app on a phone and on a desktop browser, the staff console, and the PDFs, emails and WhatsApp messages it produces. Level A and AA are met in full. Where AAA is cheap (a 3 px focus ring, plain language), we take it.</p></div>
+      <div class="card"><h3>English, light, one language</h3><p>The page language is set to English for Nigeria. No other language and no dark mode in version 1, as you decided, so there is nothing to translate and nothing to invert. Reading level is aimed at about Grade 8 and checked when copy is reviewed.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. Colour, checked from the tokens</h2>
+    <p class="sub">Text needs 4.5 to 1, and parts of a control or a focus ring need 3 to 1. Every pair the screens actually use was worked out. The weakest text pair is 6.37 to 1.</p>
+    <table>
+      <thead><tr><th scope="col">Pair as used</th><th scope="col">Where</th><th scope="col" class="num">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="sw" style="background:#FAF6EC;color:#1A1812">Ink</span> on paper</th><td>Body text</td><td class="num">16.44 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#FFFFFF;color:#4A4434">Ink 2</span> on sheet</th><td>Helper text, secondary</td><td class="num">9.69 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#F0E9D6;color:#4A4434">Ink 2</span> on aged</th><td>Notes, panels</td><td class="num">8.00 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#FAF6EC;color:#153D2E">Green</span> on paper</th><td>Links, headings</td><td class="num">11.19 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#153D2E;color:#FFFFFF">White</span> on green</th><td>Top bar, filled buttons</td><td class="num">12.08 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#153D2E;color:#C9DCCF">Pale</span> on green</th><td>Small text on the console bar</td><td class="num">8.41 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#F6EACB;color:#6E4400">Brass</span> on tint</th><td>Needs-you labels and banners</td><td class="num">7.05 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#F0E9D6;color:#6B4E0C">Brass</span> on aged</th><td>Eyebrow labels</td><td class="num">6.37 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#F6E4DE;color:#8A1C14">Red</span> on tint</th><td>Errors, blocked</td><td class="num">7.56 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#FFFFFF;color:#1B5E3A">Good</span> on sheet</th><td>"Matches", "Clear"</td><td class="num">7.75 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row"><span class="sw" style="background:#8A1C14;color:#FFFFFF">White</span> on red</th><td>The red "Close the account" button</td><td class="num">9.30 to 1</td><td>4.5</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row">Control edge on paper</th><td>Field and button borders</td><td class="num">4.45 to 1</td><td>3</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row">Green ring on paper</th><td>The focus ring</td><td class="num">11.19 to 1</td><td>3</td><td><span class="pass">Passes</span></td></tr>
+        <tr><th scope="row">Green ring on the green bar</th><td>Focus on a top-bar button</td><td class="num">1.00 to 1</td><td>3</td><td><span class="chg">Change: white ring there, 12.08 to 1</span></td></tr>
+      </tbody>
+    </table>
+    <p class="sub" style="margin-top:10px">Colour is also never the only signal: every tinted state carries words, and every status has a label. The thin hairlines between rows are decoration and carry no meaning, so they are not held to a ratio.</p>
+  </section>
+
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. The rules, by area</h2>
+    <table>
+      <thead><tr><th scope="col">Area</th><th scope="col">What we do</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Text size and zoom</th><td>Body 15 px, inputs 16 px so a phone never zooms in by itself, nothing under 12 px. Everything works at 200% with no loss. The phone app reflows to a 320 px width with no sideways scrolling. The system's larger-text setting is honoured.</td></tr>
+        <tr><th scope="row">Screen readers</th><td>Every screen has the same landmarks (header, navigation, main) and one top heading, then headings in order. Lists, tables with captions and column headings, and timelines as ordered lists. Icon-only buttons have a name ("Cart, 2 items"). A progress bar has its figure in words. A switch is announced as a switch with its word. Code boxes are one labelled group.</td></tr>
+        <tr><th scope="row">Announcements</th><td>Information is announced politely, failures at once. Going offline and back online is announced. A countdown is announced at the start and at 1 hour, 15 minutes and the end, never every tick.</td></tr>
+        <tr><th scope="row">Images</th><td>A product photo is named for the product. A decorative image says nothing. A photo in a guide has a short description, written by the person who adds it, so a technician who cannot see it still gets the step.</td></tr>
+        <tr><th scope="row">Forms</th><td>A visible label for every field. Errors are in words beside the field and are also listed at the top of a long form, with a suggestion. Anything legal or financial can be checked, corrected or undone before it is final. Nothing is asked twice in the same journey: the sender's details are remembered, the proposal's client details fill the order, the voucher's details fill the request.</td></tr>
+        <tr><th scope="row">Signing in</th><td>No test of memory or reading. Codes can be pasted and filled in. Passkeys are offered.</td></tr>
+        <tr><th scope="row">Getting help</th><td>"Call or WhatsApp us" is always in the same place: the last block of a screen, and under Account.</td></tr>
+        <tr><th scope="row">Movement and pointers</th><td>No drag, no shake, no tilt. An action happens on release, so it can be cancelled by moving away. A pointer-only gesture always has a plain button as well.</td></tr>
+        <tr><th scope="row">Focus is never hidden</th><td>A sticky bar (the tab bar, a "Done" bar, a console header) never covers what has focus. The page scrolls the focused control clear of it.</td></tr>
+        <tr><th scope="row">Time</th><td>Nothing times out unseen. The console warns before it ends a session. A code shows its time left. Offers that matter, like a price hold, say their exact end time.</td></tr>
+        <tr><th scope="row">Motion and flashing</th><td>Nothing flashes. Nothing moves unless it helps. The system's reduce-motion setting is obeyed.</td></tr>
+        <tr><th scope="row">Windows high contrast</th><td>Borders are real borders, not shadows, so a control is still visible when the system forces its own colours.</td></tr>
+        <tr><th scope="row">Documents we produce</th><td>Proposals, parts lists, tax invoices and credit-note documents are tagged PDFs: real text, a title, the language, headings and true tables, and a description for the logo. WhatsApp and email are plain text first, with links that say where they go.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="s4">
+    <h2 id="s4">4. What this changes in screens you have confirmed</h2>
+    <div class="cards">
+      <div class="card need"><h3>Small text goes up to 12 px</h3><p>The small capital labels above headings and a few notes were drawn at 11 px. They become 12 px. Nothing else changes in the layout.</p></div>
+      <div class="card need"><h3>The staff console reflows when zoomed</h3><p>It is built for a desktop, 1280 px wide, as decided. Below 1024 px, which includes anyone who zooms in, the rail becomes a menu button and side-by-side panes stack. A wide table scrolls inside its own box. Without this, a staff member who zooms to 400% could not use it.</p></div>
+      <div class="card need"><h3>A white ring on the green bars</h3><p>On the green top bar and on filled green buttons, focus shows as a white ring, because a green ring would vanish.</p></div>
+      <div class="card need"><h3>A photo description in the guide editor</h3><p>Step 18's guide editor gets one more field under each photo: "Describe the photo, for people who cannot see it". A step with a photo and no description cannot be published.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s5">
+    <h2 id="s5">5. How it is proved</h2>
+    <table>
+      <thead><tr><th scope="col">When</th><th scope="col">What is checked</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">On every change</th><td>An automated accessibility check runs on every screen and every state in the pattern sheet. A new failure stops the release.</td></tr>
+        <tr><th scope="row">In every story</th><td>The acceptance criteria say what a keyboard user, a screen-reader user and someone zoomed to 200% can do. A story is not done until they can.</td></tr>
+        <tr><th scope="row">Before each release</th><td>A person goes through the main journeys using only a keyboard, then with a screen reader (TalkBack and VoiceOver for the app, NVDA for the console), then zoomed to 200% and 400%, then with reduced motion and forced colours.</td></tr>
+        <tr><th scope="row">Before launch</th><td>Real users test it, including people who use a screen reader and people with low vision, on a phone, on weak data. What they find is fixed or written down and decided.</td></tr>
+        <tr><th scope="row">After launch</th><td>A published accessibility statement with the "Call or WhatsApp us" line. Every report is a case, like any other.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the standard and colour, zoom and the console, screen readers and documents, and how it is proved.</p>
+</main>
+</body>
+</html>

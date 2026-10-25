@@ -2,7 +2,7 @@
 title: "PRD: integrator"
 status: final
 created: 2026-09-27
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # PRD: integrator
@@ -14,7 +14,9 @@ This PRD turns the integrator product brief into buildable requirements. It is w
 
 Every FR carries a status and a build priority. **Confirmed** means the founder decided it. **Default** means a guard added during review that builds as written unless the founder overrides it. **Proposed** is reserved for a rule the founder has not yet approved; none is Proposed at this revision. Build priority 1, 2, or 3 follows §6.1. Inferences made without confirmation are tagged `[ASSUMPTION]` inline and indexed in §9. Technical-how, the edge-case register for architecture, rejected alternatives, the breakeven model, and regulatory research are in `addendum.md`.
 
-**Status at this revision (7 October 2026).** Every FR is Confirmed or Default, so all can go to epics now, though FR-43, FR-59, FR-61, FR-63, FR-66, and FR-77 are marked for counsel or accountant review. All 15 founder decisions in §8.1 are Confirmed. Other open items are in §8.2 and the five questions in §8.3. Build order is in §6.1.
+**Status at this revision (7 October 2026).** Every FR is Confirmed or Default, so all can go to epics now, though FR-43, FR-59, FR-61, FR-63, FR-66, and FR-77 are marked for counsel or accountant review. All 15 founder decisions in §8.1 are Confirmed. Other open items are in §8.2 and §8.3. Build order is in §6.1.
+
+**Update (9 October 2026).** The settled positions from the UX design (`prd-change-requests.md` in the UX folder) and the architecture spine's product-facing decisions are folded into 41 FRs, each marked "From UX design and architecture". FR-27 and FR-60 change existing text. The UX's still-open items are §8.3 questions 6 to 18.
 
 ## 1. Vision
 
@@ -219,7 +221,9 @@ An Owner can complete a profile of name, date of birth, address, NIN, and an opt
 
 #### FR-4: NIN verification
 *Status: Confirmed (one automatic attempt, then manual), with Default guards. Priority 1.*
-Verification passes when the NIN exists, the registered name matches the profile name once normalised, and the date of birth matches. The platform makes one automatic attempt; provider timeouts and errors retry with backoff up to 3 times over 24 hours without using the attempt up, and only a definitive mismatch moves the profile to manual review by Admin, after which all later NIN verification for that account is manual. A NIN can belong to one Business Account only; a duplicate goes to manual review flagged as a duplicate. Admin can reject with a reason, and the Owner can resubmit up to 3 times. An Owner without a NIN can ask for Admin-reviewed alternative verification (a passport or residence permit plus the business's CAC registration number). Realizes UJ-2, UJ-6.
+Verification passes when the NIN exists, the registered name matches the profile name once normalised, and the date of birth matches. The platform makes one automatic attempt; provider timeouts and errors retry with backoff up to 3 times over 24 hours without using the attempt up, and only a definitive mismatch moves the profile to manual review by Admin, after which all later NIN verification for that account is manual. A NIN can belong to one Business Account only; a duplicate goes to manual review flagged as a duplicate. Admin can reject with a reason, and the Owner can resubmit up to 3 times. An Owner without a NIN contacts the platform; Admin verifies them by phone or WhatsApp (a passport or residence permit plus the business's CAC registration number) and records the check. There is no in-app route. Realizes UJ-2, UJ-6.
+
+**From UX design and architecture (9 October 2026).** When the NIN service's retries run out after 24 hours, the profile goes to manual review and the Owner is told; after 3 rejected resubmissions the Owner is asked to call or WhatsApp the platform. When Admin asks, an optional step to send a photo of the NIN slip or ID card appears among the Get approved steps (contact, NIN, Trade Name, vouch, and Terms). A person without a NIN is handled as above.
 
 **Consequences (testable):**
 - After a definitive mismatch no further automatic attempt is made for that account.
@@ -247,7 +251,7 @@ A Level 2 Owner can submit a Vouch Code, confirm the Trade Name, and accept the 
 
 #### FR-7: Approve Level 3
 *Status: Confirmed, with Default guards. Priority 1.*
-Admin reviews each Level 3 request on a screen that shows the voucher (Business Account, User, history, and open claims), the Trade Name, and a checklist (online presence, proof of an installed job, a phone call), and records a reason on every decision. On approval the Business Account becomes Level 3 and Selling Prices, Projects, Carts, Proposals, and Orders unlock for its Owner and Managers (Technicians per FR-11). If the voucher is suspended before the decision, the request is flagged for explicit Admin re-confirmation; a vouchee later suspended for fraud suspends the voucher's vouching rights pending review. Realizes UJ-2, UJ-6.
+Admin reviews each Level 3 request on a screen that shows the voucher (Business Account, User, history, and open claims), the Trade Name, and a checklist (online presence, proof of an installed job, a phone call), and records a reason on every decision. On approval the Business Account becomes Level 3 and Selling Prices, Projects, Carts, Proposals, and Orders unlock for its Owner and Managers (Technicians per FR-11). If the voucher is suspended before the decision, the applicant re-confirms with an explicit tick and the request is flagged for explicit Admin re-confirmation; a vouchee later suspended for fraud suspends the voucher's vouching rights pending review. Realizes UJ-2, UJ-6.
 
 **Consequences (testable):**
 - No account reaches Level 3 without an Admin approval or a direct Admin grant (FR-8).
@@ -257,6 +261,8 @@ Admin reviews each Level 3 request on a screen that shows the voucher (Business 
 #### FR-8: Seed the first cohort
 *Status: Confirmed, with Default guards. Priority 1.*
 Admin can create a Business Account for the first Integrators from the founder's network, and generate Vouch Codes on behalf of the platform, before any Established Integrator exists. A directly created account is Pending Activation: its Owner verifies a contact, completes NIN verification (FR-4), supplies the Trade Name, and accepts the Terms before Level 3 features unlock. Realizes UJ-6.
+
+**From UX design and architecture (9 October 2026).** Admin creates a seeded business from a "Create a business" screen with a Pending Activation list, and can issue a platform Vouch Code for a named prospect. Staff who created a business cannot confirm its Payments or issue its Credit Notes (FR-52). A Pending Activation Owner sees the same Get approved steps with a different opening line.
 
 **Consequences (testable):**
 - Directly created accounts are recorded in the audit trail with the Admin who created them.
@@ -293,6 +299,7 @@ The platform enforces role permissions server-side, not only in the interface.
 | Generate Vouch Codes | Yes | Request only | No |
 | See Credit Notes and request their application to an Order | Yes | Yes | No |
 | Request a Credit Note refund by bank transfer (with a fresh one-time code) | Yes | No | No |
+| See the business's Cases | All | All | Their own |
 | Raise Return Requests (a Technician's request needs Manager or Owner approval) | Yes | Yes | Yes |
 | Approve a Technician's Return Request | Yes | Yes | No |
 | Manage Users | All roles | Technicians only | No |
@@ -311,6 +318,8 @@ The platform enforces role permissions server-side, not only in the interface.
 *Status: Default. Priority 1.*
 Sign-up and Level 3 approval require acceptance of the current Terms and Privacy Notice, recorded with version, time, User, and IP. Invitees accept at first login, and Admin-seeded Owners accept before activation. A new Terms version blocks Orders until the Owner re-accepts. WhatsApp messaging needs an explicit per-number opt-in and an opt-out. The Privacy Notice covers third-party data Integrators enter, such as client details on Proposals and delivery receivers.
 
+**From UX design and architecture (9 October 2026).** The Terms are one document, accepted at sign-up and again at the Level 3 request, where its key points are shown. Admin publishes each version with a plain list of what changed, a preview of the Owner's screen, and counsel's approval date and reference. A new version interrupts only the Owner, on next open, and blocks only Order creation until accepted.
+
 **Consequences (testable):**
 - An Order cannot be created by a Business Account whose Owner has not accepted the current Terms.
 - A WhatsApp message is never sent to a number without a recorded opt-in.
@@ -320,6 +329,8 @@ Sign-up and Level 3 approval require acceptance of the current Terms and Privacy
 *Status: Default. Priority 1.*
 An Owner or Manager can maintain the Trade Name, a logo (PNG or JPG up to 2 MB), address, phone, email, an optional TIN, and a declaration of whether the business is VAT-registered. The Trade Name is required before the first Proposal; a missing logo falls back to a name-only header. The VAT-registered declaration controls the Proposal VAT line (FR-30) and tax invoices (FR-77), and Staff may verify the TIN.
 
+**From UX design and architecture (9 October 2026).** A business can declare itself VAT-registered without a TIN and is prompted to add one.
+
 **Consequences (testable):**
 - A Proposal cannot be generated without a Trade Name.
 - A Business Account that has not declared itself VAT-registered cannot switch on the Proposal VAT line.
@@ -327,6 +338,8 @@ An Owner or Manager can maintain the Trade Name, a logo (PNG or JPG up to 2 MB),
 #### FR-71: Authentication and recovery
 *Status: Default. Priority 1.*
 Users log in with a one-time code sent to their verified contact, or a passkey where the device supports it. A fresh one-time code (step-up) is required before generating a Vouch Code, requesting a refund or the application of a Credit Note, changing a role, changing the Owner, or changing a contact. Integrator sessions last 30 days idle and Staff sessions 12 hours, and Staff must use multi-factor authentication. An Owner who loses their contact recovers access through Admin with an ID check and a 72-hour cooling period, announced to every contact on record. A change of Owner is started by the Owner (or by Admin-assisted recovery), and the incoming Owner must verify a contact and pass NIN verification before the transfer completes.
+
+**From UX design and architecture (9 October 2026).** Recovery for an Owner who lost their contact is an ID check by phone; the 72-hour wait starts when the check passes, access then opens by itself, and every contact on file is told, with a "call us if this was not you" line. Managers and Technicians have no recovery route: the Owner removes and re-invites them. Each sensitive action needs its own fresh one-time code, valid 10 minutes, including adding or removing a passkey, adding a WhatsApp number, inviting a Manager, and applying a Credit Note. A User sees where they are logged in and can log out everywhere else, and is logged out after 30 idle days.
 
 **Consequences (testable):**
 - A refund request cannot be submitted without a fresh one-time code.
@@ -336,6 +349,8 @@ Users log in with a one-time code sent to their verified contact, or a passkey w
 #### FR-72: Holds, revocation, blocklist, and closure
 *Status: Default. Priority 1.*
 Admin, or Finance for payment fraud with Admin ratifying within one Business Day, can put a Business Account on Hold (no new Orders and no refunds, while Payments are still processed), revoke Level 3, disable a User, and add a NIN hash, contact, or sending bank account to a blocklist checked at sign-up and at Payment confirmation. Each action needs a reason, is audited, and notifies the Owner unless Admin flags a fraud review. An Owner can close a Business Account only when no Order is open (not Completed, Expired, or Cancelled), no Return Request or Case is open, and no Credit Note has an unrefunded balance; personal data is then erased or pseudonymised, except records the law requires to be kept.
+
+**From UX design and architecture (9 October 2026).** A blocked person sees a neutral refusal. A Hold placed by Finance is ratified or lifted by Admin within 1 Business Day in Approvals. Revoking Level 3 returns the business to the Get approved steps with prices hidden, and Orders already made are still processed. A bank credit from a blocklisted sender sits among unmatched credits, marked blocked.
 
 **Consequences (testable):**
 - A Business Account on Hold cannot create an Order or receive a refund.
@@ -359,6 +374,8 @@ Operations can create and edit Products with these fields:
 
 A Product cannot become active without the fields later requirements rely on. Discontinued Products stay on existing Projects with a warning. Realizes UJ-6.
 
+**From UX design and architecture (9 October 2026).** Each Product Range carries an Admin-set flag for NCC type approval or SONCAP. Each of the four returnability flags must be answered Yes or No, with no default. A Product has a serial-format field.
+
 **Consequences (testable):**
 - Operations cannot edit Platform Markup (see FR-13).
 - A Product missing its Warranty Period (or an explicit "none"), serialised flag, returnability flags, or required compliance reference cannot be activated.
@@ -379,6 +396,8 @@ Admin can set a default Platform Markup per Product Range (initially 25%), overr
 *Status: Confirmed, with Default guards. Priority 1.*
 A Product can hold Supplier Costs from several Suppliers, with exactly one Active Supplier. A Supplier must be approved by Admin before it can become the Active Supplier, and each Supplier agreement should state return, dead-on-arrival, and counterfeit-chargeback terms before its Products are listed. Admin switches the Active Supplier; Operations enters the Supplier Costs. Realizes UJ-6.
 
+**From UX design and architecture (9 October 2026).** "Approve" on a Supplier stays off until its returns, dead-on-arrival, and counterfeit-chargeback terms are recorded; Admin can instead approve with a written reason. The shorter of the Supplier's and the 30-day dead-on-arrival window applies. Stopping a Supplier takes its Products off sale after a preview, with a replacement named per Product.
+
 **Consequences (testable):**
 - Wholesale Price always derives from the Active Supplier's cost.
 - A switch to a Supplier with no Supplier Cost, or a cost of zero or less, is refused, and the Active Supplier cannot be removed without a replacement.
@@ -386,7 +405,9 @@ A Product can hold Supplier Costs from several Suppliers, with exactly one Activ
 
 #### FR-15: Bulk upload of Products
 *Status: Confirmed, with Default guards. Priority 1.*
-Operations can upload a spreadsheet from a downloadable template to create and update many Products at once. SKU is the match key; a missing, ambiguous, or repeated key is a failed row. Valid rows are applied and failed rows are reported with their row number and reason. Admin-only columns (Platform Markup and Active Supplier) are ignored for Operations with a note per row. A dry-run report shows creates, updates, and price changes before anything is applied. A Supplier Cost change above 15%, or any file that changes prices on more than 20 Products, lands as a pending change for Admin approval, and the previous state is kept for one-click rollback. `[ASSUMPTION: valid rows are applied and invalid rows are reported, not rejected as a whole file.]` Realizes UJ-6.
+Operations can upload a spreadsheet from a downloadable template to create and update many Products at once. SKU is the match key; a missing, ambiguous, or repeated key is a failed row. Valid rows are applied and failed rows are reported with their row number and reason; for a file over the price-change threshold below, no row applies until Admin approves. Admin-only columns (Platform Markup and Active Supplier) are ignored for Operations with a note per row. A dry-run report shows creates, updates, and price changes before anything is applied. A Supplier Cost change above 15%, or any file that changes prices on more than 20 Products, lands as a pending change for Admin approval, and the previous state is kept for one-click rollback. `[ASSUMPTION: valid rows are applied and invalid rows are reported, not rejected as a whole file.]` Realizes UJ-6.
+
+**From UX design and architecture (9 October 2026).** A file that changes prices on more than 20 Products, or moves a cost by more than 15%, waits for Admin approval as a whole file, with a one-click rollback afterwards.
 
 **Consequences (testable):**
 - A launch file of 500 or more rows imports in a single upload.
@@ -396,6 +417,8 @@ Operations can upload a spreadsheet from a downloadable template to create and u
 #### FR-16: Stock quantities and status
 *Status: Confirmed (threshold as safety buffer), with Default ledger rules. Priority 1.*
 Each Product has an on-hand quantity and a reserved quantity, and available = on-hand − reserved. A Product is In Stock when its available quantity is above its Stock Threshold, and otherwise Out of Stock; units at or below the threshold are held as safety stock, which Operations may release to a Back-order Item. Operations set the threshold per Product `[ASSUMPTION: Operations owns Stock Thresholds.]`, record stock changes through the ledger in FR-74, and cannot set on-hand below reserved without an Admin override; adjustments above a set size need Admin sign-off (FR-52).
+
+**From UX design and architecture (9 October 2026).** Releasing safety stock to a Back-order Item is a stock-ledger line with a reason. The stock-adjustment size that needs Admin sign-off is an Admin setting (placeholder).
 
 **Consequences (testable):**
 - A Product at or below its threshold cannot be ordered unless back-order is enabled for it.
@@ -431,6 +454,8 @@ Users from Level 1 up can search by name, brand, model, and SKU with typo tolera
 *Status: Default (adds build scope; supports FR-66 and SM-C1). Priority 1.*
 Operations record each stock receipt with the Supplier, date, quantity, batch or lot reference, landed cost (the Supplier's invoice cost plus freight, duty, and clearing, with the rate used), and serial numbers for serialised Products (FR-65). Every stock change (receipt, reservation, release, adjustment, or quarantine) is a ledger entry with a reason and reference. Back-order Order Lines carry "ordered from Supplier" and "received" markers set by Operations. A batch, as FR-66 uses the word, is a goods-in record. Realizes UJ-6.
 
+**From UX design and architecture (9 October 2026).** Landed-cost components accept USD or NGN. Goods-in records serial numbers, and dispatch verifies them. A batch is a goods-in record, so a suspected counterfeit can be marked per batch or per Product.
+
 **Consequences (testable):**
 - Stock on hand equals the sum of ledger entries.
 - A back-order line cannot be marked received without a goods-in record.
@@ -445,6 +470,8 @@ Operations record each stock receipt with the Supplier, date, quantity, batch or
 *Status: Confirmed (formula, VAT inclusion), with Default rounding rules. Priority 1.*
 The platform computes each unit's Selling Price as Supplier Cost × (1 + Platform Markup) × (1 − the applicable discount, FR-23) × (1 + VAT rate), converted to naira at the Platform Rate, with the pre-VAT amount never below the margin floor (FR-13). Integrators see and pay naira only; USD is never shown to them. Arithmetic is decimal, never binary floating point: the naira Selling Price of a unit is computed at full precision and rounded half-up to the kobo once, a line total is the unit price times the quantity, and an Order total is the sum of its lines. Realizes UJ-1.
 
+**From UX design and architecture (9 October 2026).** The app may add displayed prices in whole kobo for display only; it never computes a price used for a Proposal or Order, and its rounding matches this rule and the addendum's test vectors.
+
 **Consequences (testable):**
 - At NGN 1,330 per USD, a USD 100 Supplier Cost with a 25% Platform Markup and no discount is NGN 166,250.00 before VAT, plus NGN 12,468.75 VAT, for a Selling Price of NGN 178,718.75 per unit.
 - The test vectors in the addendum (quantity 1,000, three lines of 10.10, and a discounted line) pass.
@@ -453,6 +480,8 @@ The platform computes each unit's Selling Price as Supplier Cost × (1 + Platfor
 #### FR-20: Set the Platform Rate
 *Status: Confirmed (including the guards, decision 7). Priority 1.*
 Finance sets the Platform Rate to the rate at which the platform can actually buy dollars that day, recording the reference source and any spread, and reconfirms it each Business Day. Finance changes it when the market rate has moved more than NGN 5 from the rate in force (a trigger separate from the NGN 5 Proposal tolerance in FR-35). A change above 3% needs a second approver and shows a price preview with the number of open Carts, Projects, and unlocked Orders it affects; a change above 10% is refused as a probable typing error unless Admin overrides with a reason. A rate older than 48 hours blocks Order creation until it is reconfirmed, and Finance or Admin can freeze Order creation with a "prices are being updated" notice. A change takes effect immediately on displayed prices. Realizes UJ-6.
+
+**From UX design and architecture (9 October 2026).** One message covers both frozen Order creation and a rate older than 48 hours, without naming the cause. The 48 hours are calendar hours; the Platform Rate page warns before a weekend; warnings at hours 36 and 44 are placeholders.
 
 **Consequences (testable):**
 - A rate of zero or below is refused.
@@ -483,6 +512,8 @@ The platform calculates each Business Account's Loyalty Tier monthly, at 00:00 W
 *Status: Confirmed. Priority 2.*
 Owners and Managers can see their current tier, their spend toward the next tier (in naira at the current Platform Rate), and the date of the next recalculation; a tier change is shown 7 days before it takes effect. Realizes UJ-1.
 
+**From UX design and architecture (9 October 2026).** The expected tier change is projected from spend so far, and the naira thresholds shown move with the Platform Rate.
+
 **Consequences (testable):**
 - A tier change is visible before it takes effect.
 
@@ -510,6 +541,8 @@ Prices shown use the Business Account's current Loyalty Tier, and an Order uses 
 *Status: Confirmed, with a Default Parts List. Priority 1.*
 A Level 3 User can create a named Project that opens with one default Room, rename any Room at any time, add further Rooms, and save the Project. Each Project provides a Parts List across its Rooms, shown on screen and downloadable without prices. Realizes UJ-1.
 
+**From UX design and architecture (9 October 2026).** A Room can be deleted, with a confirmation when it holds items, and restored for 30 days as in FR-28.
+
 **Consequences (testable):**
 - A new Project always contains one Room.
 - Renaming a Room never affects its items.
@@ -525,14 +558,16 @@ A User can add Products with whole-number quantities of at least 1 (or fractiona
 
 #### FR-27: Price visibility in Projects
 *Status: Confirmed. Priority 1.*
-Owners and Managers see line prices, Room totals, and Project totals; Technicians see no prices. Prices shown offline carry an "as of" time. Realizes UJ-1, UJ-5.
+Owners and Managers see line prices, Room totals, and Project totals. Technicians see no prices and no Back-order Discount, but do see Lead Time and the discontinued and quarantined warnings. Prices shown offline carry an "as of" time and turn brass after a day; offline, Owners and Managers hold prices only for Products in the Business Account's Projects and those they recently viewed (FR-73). Realizes UJ-1, UJ-5.
 
 **Consequences (testable):**
-- A Technician's view of the same Project shows items and quantities only.
+- A Technician's view of the same Project shows items, quantities, Lead Times, and warnings, and no money field or Back-order Discount.
 
 #### FR-28: Offline design
 *Status: Confirmed (offline scope), with Default sync rules. Priority 2.*
-A User can browse and search the last-synced Catalogue and create and edit Projects without a connection, and changes sync when the connection returns. Sync merges per Room and per Project Item, last writer wins per field by the server's receipt time (never the device clock), deletions are recorded and not lost, Owners and Managers can see who changed what, and a sync screen lists conflicts and restores earlier versions for 30 days. At sync each item is checked against the live Catalogue and flagged Unavailable with a warning, never discarded. A cache is partitioned by User and role, is purged at the next connection after a User is removed or changes role, and refuses to open after 14 days without a check-in. Realizes UJ-5.
+A User can browse and search the last-synced Catalogue and create and edit Projects without a connection, and changes sync when the connection returns. Sync merges per Room and per Project Item, last writer wins per field by the server's receipt time (never the device clock), deletions are recorded and not lost, Owners and Managers can see who changed what, and a sync screen lists conflicts and restores earlier versions for 30 days. At sync each item is checked against the live Catalogue and flagged Unavailable with a warning, never discarded. A cache is partitioned by User and role. At the next connection after a User is removed or changes role, their queued edits are uploaded and held (below) and then the cache is purged. Saved Projects lock, without deletion, after 14 days without a check-in. Realizes UJ-5.
+
+**From UX design and architecture (9 October 2026).** A check-in is any successful connection. Saved Projects lock on day 14 without one, with a warning line on day 11 and a banner on day 13; nothing is deleted and waiting changes are kept. Logging out with changes waiting keeps them on the phone, locked, until the next login. A Technician sees a later change without the other person's name and can keep or restore their own version. Edits queued by a User who is removed or changes role before they sync are held for an Owner or Manager to accept or discard, never applied automatically. The on-screen Parts List works offline; its PDF needs a connection. Orders, Payments, and Credit Notes are not kept on the phone in v1.
 
 **Consequences (testable):**
 - Two Technicians editing different Rooms offline lose no edits.
@@ -550,6 +585,8 @@ A User can browse and search the last-synced Catalogue and create and edit Proje
 *Status: Confirmed (one margin, one-month validity, custom lines), with Default guards. Priority 1.*
 An Owner or Manager can generate a Proposal for a Project by entering the client's details (name, company, address, email, phone, site address) and one Integrator Margin for the whole Project. The platform snapshots the Project's contents with the Selling Prices and Tier Discount in force (the Integrator's cost), records the Proposal Rate, and sets an expiry one month later. A Proposal needs at least one Project Item with a quantity of at least 1 and a Trade Name, and requires a connection. The Integrator can also add custom lines (labour, travel, commissioning) with a description, quantity, and price; they appear on the Proposal only and are never ordered through the platform. Realizes UJ-1.
 
+**From UX design and architecture (9 October 2026).** Of the client's details, only the name is required. Custom lines are entered VAT-included.
+
 **Consequences (testable):**
 - Only one Integrator Margin applies to the whole Project, and a margin below zero is refused; one above 100% asks for confirmation.
 - The Proposal stores the Project snapshot, the Integrator's cost at that moment, and the Platform Rate used at generation.
@@ -558,6 +595,8 @@ An Owner or Manager can generate a Proposal for a Project by entering the client
 #### FR-30: Proposal PDF
 *Status: Confirmed (line prices and Room totals, Trade Name and logo), with Default guards. Priority 1.*
 The Proposal PDF shows the Integrator's Trade Name and logo, the client's details, line-item prices and Room totals at client prices, any custom lines, Lead Time on Back-order lines, the expiry date, and a validity sentence ("prices hold while the exchange rate stays within NGN 5 of the quoted rate, otherwise they adjust"). It never shows Supplier Cost, Wholesale Price, Platform Markup, Tier Discount, Back-order Discount, Integrator Margin, or the Selling Price the Integrator pays, in visible text or metadata. A Business Account that has declared itself VAT-registered (FR-70) can choose per Proposal whether the PDF shows a VAT line: with it, line items and Room totals appear before VAT, followed by a VAT line and a VAT-inclusive grand total; without it, every price is VAT-inclusive. The VAT line is the grand total minus the sum of the line amounts shown before VAT, so the lines and the VAT line add up exactly to the grand total, with any kobo difference falling on the VAT line; each pre-VAT line amount is its VAT-inclusive line total divided by (1 + the VAT rate), rounded to the kobo. `[ASSUMPTION: the Integrator Margin applies to the VAT-inclusive Selling Price, which gives the same client total as applying margin before VAT and adding VAT after.]` Realizes UJ-1.
+
+**From UX design and architecture (9 October 2026).** The PDF carries no platform branding. The validity sentence is in plain words and adjusts if the rate moves by more than NGN 5. The VAT line is offered only to VAT-registered businesses.
 
 **Consequences (testable):**
 - A forbidden-field test searches the PDF's visible text and metadata for each of the figures listed above and finds none.
@@ -590,6 +629,8 @@ A Proposal expires at the end of the day, West Africa Time, one calendar month a
 *Status: Confirmed, with a Default scope. Priority 1.*
 An Owner or Manager can add Products to their own Cart and order from it without a Project. A Cart cannot be saved as, or converted into, a Project. Realizes UJ-3.
 
+**From UX design and architecture (9 October 2026).** A Cart Order has an optional name, otherwise "Direct buy" and the item count. Lines that cannot be ordered are listed at the top of the Cart.
+
 **Consequences (testable):**
 - There is no action that turns a Cart into a Project.
 - A Cart belongs to one User and is not shared.
@@ -597,6 +638,8 @@ An Owner or Manager can add Products to their own Cart and order from it without
 #### FR-34: Create an Order
 *Status: Confirmed (whole Project, Technicians excluded, repeat Orders allowed); guards Default. Priority 1.*
 An Owner or Manager can create an Order from a whole Project or from a Cart. A Project is ordered whole, not by Room or item, and a Project can be ordered more than once, with each Order captured at its own prices. At creation the platform checks every line: lines that are Out of Stock without back-order, discontinued, quarantined, or otherwise unorderable are listed, and the user removes or replaces them in the Project or Cart; nothing is dropped silently. An Order needs at least one line with a quantity of at least 1. A Business Account can hold at most 2 unpaid Orders per Project. The Order is bound to the Order Quote the user confirmed: if the Platform Rate, Loyalty Tier, Proposal validity, Back-order terms, or stock availability changes while the confirmation screen is open, the platform refuses and shows the new Order Quote for re-confirmation. Creating an Order is idempotent, so a double submit creates one Order. Realizes UJ-1, UJ-3.
+
+**From UX design and architecture (9 October 2026).** Lines that cannot be ordered are listed at review.
 
 **Consequences (testable):**
 - An Order created from a Project contains every orderable Project Item, or the user has first resolved the unorderable ones.
@@ -607,6 +650,8 @@ An Owner or Manager can create an Order from a whole Project or from a Cart. A P
 #### FR-35: Order pricing against the Proposal
 *Status: Confirmed (NGN 5 tolerance, Proposal Rate); refinements Default. Priority 1.*
 When an Order is created from a Project with an unexpired Proposal, and the Project's contents are identical to the Proposal's snapshot, and the current Platform Rate is within NGN 5 of the Proposal Rate, the Order uses the Proposal Rate; otherwise it uses the current Platform Rate. The Proposal Rate applies only to the first Order created from a Proposal, and the NGN 5 tolerance is an Admin setting. The Tier Discount is always the one in effect at order creation (FR-24). Before committing, the user sees the goods total next to the Proposal's goods total at the Integrator's cost (before Integrator Margin), with the difference split into exchange rate, tier, items added or removed, and availability, and delivery shown on its own line. `[ASSUMPTION: the tolerance protects the exchange rate only, while the Tier Discount is applied fresh.]` Realizes UJ-1.
+
+**From UX design and architecture (9 October 2026).** Beside the breakdown by cause, the Owner or Manager also sees their margin at today's cost.
 
 **Consequences (testable):**
 - With a Proposal Rate of NGN 1,330, a current rate of 1,334 keeps 1,330 and a current rate of 1,336 uses 1,336.
@@ -625,7 +670,9 @@ Where an Order includes Back-order Items, the Owner or Manager must explicitly o
 
 #### FR-37: Fulfilment Method and delivery cost
 *Status: Confirmed (zone-based cost, courier), with Default guards. Priority 1.*
-At order creation the Owner or Manager chooses Pick-up or Delivery. For Pick-up they choose a Store. For Delivery they enter a structured address (State, local government area, area, landmark, receiver name, and receiver phone), the Delivery Zone is looked up from State and local government area, and a flat Zone Rate per Shipment is added to the Amount Due, with the charge shown for the Shipments that the chosen ship-in-parts or ship-in-full option (FR-39) implies. If the zone cannot be resolved or has no rate, Order creation is blocked with an offer of a manual zone pick or a delivery price from Operations. A courier partner carries the delivery. Operations cannot add a Shipment that raises the Integrator's charge after payment; extra courier cost is absorbed and reported. Realizes UJ-1.
+At order creation the Owner or Manager chooses Pick-up or Delivery. For Pick-up they choose a Store. For Delivery they enter a structured address (State, local government area, area, landmark, receiver name, and receiver phone), the Delivery Zone is looked up from State and local government area, and a flat Zone Rate per Shipment is added to the Amount Due, with the charge shown for the Shipments that the chosen ship-in-parts or ship-in-full option (FR-39) implies. If the zone cannot be resolved or has no rate, Order creation is blocked with an offer of a manual zone pick or a delivery price from Operations. A courier partner carries the delivery. Operations cannot add a Shipment that raises the Integrator's charge after payment; extra courier cost is absorbed and reported. The one exception is a Shipment the business itself requests through the FR-39 send-what-is-ready offer. Realizes UJ-1.
+
+**From UX design and architecture (9 October 2026).** A business can request a delivery price from the delivery screen. Operations answers within about 1 Business Day with a VAT-inclusive price, based on a staff-only courier quote, valid to the end of the next Business Day, or with a reason when the platform cannot deliver. A delivery price never rises after payment, except as in FR-39. The courier's actual charge is recorded for reporting only. Both times are placeholders.
 
 **Consequences (testable):**
 - The Amount Due includes the Zone Rate before payment.
@@ -641,6 +688,8 @@ At order creation the Owner or Manager chooses Pick-up or Delivery. For Pick-up 
 
 **Expiry.** An Order with no Receipt uploaded expires 48 hours after creation; an Order with a Receipt expires 48 hours after the last Receipt upload or Unconfirmed decision, and never later than 7 days after creation. At expiry, confirmed Payments become a Credit Note and later bank credits go to Finance's unmatched queue. A Credit Note applied to an Order counts as a Payment for the lock and for expiry (FR-43). Realizes UJ-1.
 
+**From UX design and architecture (9 October 2026).** The time that counts for a Receipt is when the platform receives the upload's details; the image may finish uploading later.
+
 **Consequences (testable):**
 - A correct Receipt uploaded at hour 20 and confirmed at hour 30 keeps its locked price.
 - At NGN 1,330 an Order of USD 500 of goods has an Amount Due of NGN 714,875. If NGN 600,000 is confirmed in time and the remainder is paid at hour 30 when the rate is NGN 1,400, the Order reprices to NGN 752,500 and the balance due is NGN 152,500.
@@ -653,6 +702,8 @@ At order creation the Owner or Manager chooses Pick-up or Delivery. For Pick-up 
 *Status: Confirmed (parts or full, in-stock first), with a Default hold limit. Priority 1.*
 The Owner or Manager chooses whether an Order ships in parts or in full. In parts, in-stock items ship first and Back-order Items follow. Shipping in full holds in-stock lines for up to 14 days after Approval, after which the Integrator is offered shipping in parts. Realizes UJ-4.
 
+**From UX design and architecture (9 October 2026).** In the 14-day offer to send what is ready, the business pays the extra delivery at the Zone Rate before it goes, or declines and waits for the full Order.
+
 **Consequences (testable):**
 - Each Shipment is charged its own delivery cost.
 - A line held for a full shipment is offered in parts after 14 days.
@@ -660,6 +711,8 @@ The Owner or Manager chooses whether an Order ships in parts or in full. In part
 #### FR-57: Cancel an Order
 *Status: Confirmed (decisions 5 and 10). Priority 1.*
 An Owner or Manager can cancel an Order that has not been Approved. Cancelling or expiring an Order that holds confirmed Payments creates a Credit Note for the confirmed amount (credit-only), pending Receipts go to Finance, and an Order with a Payment under review cannot be cancelled without Finance's consent. After Approval, cancellation is a request: Shipments are frozen until Operations decides within one Business Day, a Back-order Item the platform has already ordered from a Supplier cannot be cancelled, and cancellation applies per Shipment, with unshipped Shipments cancellable and shipped goods following the returns rules (FR-58 to FR-68). A Back-order Item more than 7 days past its promised ship-by date can be cancelled by the Owner or Manager for a Credit Note whether or not it has been ordered from the Supplier, and Operations credits a line the Supplier cannot supply. Realizes UJ-1, UJ-4.
+
+**From UX design and architecture (9 October 2026).** Cancelling creates the Credit Note by itself for confirmed Payments; Receipts not yet checked go to Finance, and a Payment under review needs Finance's consent. A reason is optional before Approval and required for a cancellation request after it.
 
 **Consequences (testable):**
 - A cancelled Order moves to Cancelled and its Amount Due is cleared.
@@ -670,6 +723,8 @@ An Owner or Manager can cancel an Order that has not been Approved. Cancelling o
 #### FR-75: Amend an Order before Approval
 *Status: Default. Priority 1.*
 An Owner or Manager can change the delivery address, receiver, Store, or the parts-or-full choice on an Order that is Awaiting Payment, or on a Paid Order before Approval through a request to Operations. Amending never changes goods prices; a change of Delivery Zone or Fulfilment Method updates only the delivery charge. Realizes UJ-1.
+
+**From UX design and architecture (9 October 2026).** Operations answers a change request on a Paid Order within the approval target (4 Business Hours).
 
 **Consequences (testable):**
 - An amendment changes no goods price and never resets the Price Lock window.
@@ -691,6 +746,8 @@ An Owner or Manager can see the platform's bank details (managed under FR-52) an
 #### FR-41: Confirm payments
 *Status: Confirmed (per-Payment confirmation and decisions 3 and 4), with Default statement matching. Priority 1.*
 Finance confirms a Payment only when it matches a credit on the platform's bank statement for amount, sender, and reference (statement upload or CSV import in v1), and records the confirmed amount, which may differ from the declared amount. A bank reference can be used once. A sender whose name does not match the Owner or Trade Name needs a second reviewer. A daily queue lists bank credits that have no Payment. Each confirmation writes an immutable ledger line, and corrections are compensating lines. A Payment can be Reversed by Finance with a reason and a second approver; that returns the Order to Awaiting Payment and blocks Approval and shipping until reviewed. A Receipt or bank credit for an Expired, Cancelled, or already Paid Order goes to the unmatched queue for Finance to resolve with a Credit Note. An Unconfirmed Payment tells the Integrator to re-upload a Receipt or pay the full amount; after 3 Unconfirmed uploads on one Order, a staff review is required. Finance aims to confirm within two Business Hours (FR-78). Realizes UJ-6.
+
+**From UX design and architecture (9 October 2026).** The review shows the bank statement's age and coverage and suggests no matches beyond it. A matched credit dated before the Receipt upload is a written check. A third Unconfirmed upload goes to Admin as "Needs review". A second reviewer must be a different person. Unmatched bank credits are reviewed daily, and a credit from an unknown sender is held while the bank is asked. One bank credit can be split across Orders by allocation, but never allocated beyond its amount.
 
 **Consequences (testable):**
 - A Payment whose bank reference was already used is refused.
@@ -716,6 +773,8 @@ An Order stays in Awaiting Payment until the confirmed Payments in naira, togeth
 
 **Limits.** A Credit Note cannot be transferred to another Business Account and can be used only to buy from the platform. It can be applied for 12 months after issue, Owners are reminded 60 and 14 days before it expires, and a balance left after expiry can be refunded on request (counsel to confirm). Realizes UJ-4, UJ-6.
 
+**From UX design and architecture (9 October 2026).** A refund is for the whole balance only. Finance sends the transfer in the bank portal and records the bank reference before marking the Credit Note Refunded. A pending refund shows as a banner, not a status. Finance's rejection of an application shows its reason.
+
 **Consequences (testable):**
 - A Credit Note cannot be spent without Finance applying it, and cannot be applied above its balance.
 - An application is evaluated at the time of the request, even if Finance completes it later.
@@ -740,6 +799,8 @@ The platform issues a numbered tax invoice for each Paid Order (buyer Trade Name
 *Status: Confirmed, with a Default credit-line action. Priority 1.*
 Operations can approve a Paid Order after a stock check, which moves it to Approved and its Shipments to Processing. If the check finds an Order Line physically unavailable, Operations can credit that line: the line is cancelled, its reservation released, a Credit Note requested from Finance, and the Integrator notified, and the rest of the Order is approved. An Order whose every line is credited becomes Cancelled with a Credit Note for the full confirmed amount. Realizes UJ-6.
 
+**From UX design and architecture (9 October 2026).** Because stock is reserved at Paid, Approve needs a shelf check per line and stays off until every in-stock line is found or credited.
+
 **Consequences (testable):**
 - Only a Paid Order can be approved.
 - An Order with every line credited is never left Paid with no Shipments.
@@ -752,7 +813,7 @@ Operations can approve a Paid Order after a stock check, which moves it to Appro
 
 **Order statuses.** Order-level statuses are Awaiting Payment, Paid, Approved, Completed, Expired, and Cancelled, and an Order cannot become Completed while any Shipment is Lost or Delivery Failed; those states open a non-delivery Case.
 
-**Uncollected Pick-ups and courier tracking.** For an uncollected Pick-up, Integrators are reminded at 7 days and Operations may cancel and restock after 30 days, issuing a credit-only Credit Note less the restocking fee. v1 has no automated courier integration: Operations updates statuses by hand using the courier's tracking. Realizes UJ-1, UJ-4.
+**Uncollected Pick-ups and courier tracking.** For an uncollected Pick-up, Integrators are reminded at 7 days, the Shipment is marked Uncollected at 14, and it is cancelled and restocked after 30 days, issuing a credit-only Credit Note less the restocking fee. v1 has no automated courier integration: Operations updates statuses by hand using the courier's tracking. Realizes UJ-1, UJ-4.
 
 **Consequences (testable):**
 - Operations changes Shipment statuses; Integrators cannot.
@@ -808,6 +869,8 @@ Operations and Admin can create, edit, and deactivate Stores (name, address, and
 *Status: Confirmed, with Default versioning. Priority 2.*
 Operations can attach, replace, and remove Documentation on a Product, and see a list of Products that have none. Suppliers do not log in. Documentation is versioned; replacing or removing it marks copies that Users saved offline as Superseded or Withdrawn at their next sync. Realizes UJ-6.
 
+**From UX design and architecture (9 October 2026).** Staff write guides in a console editor: steps, each with one optional photo and one optional warning, a version note, and a live phone preview. Removing Documentation needs a reason. A withdrawn manual saved offline opens only after "Open anyway". Format and size limits are placeholders.
+
 **Consequences (testable):**
 - Supported formats are PDF, video, and written step-by-step guides.
 - A saved copy of a replaced manual shows a Superseded warning after sync.
@@ -850,6 +913,8 @@ The platform sends notifications through a matrix of event, recipient role, chan
 
 Amounts go only to Owners and Managers, and Technician messages carry none. Time-sensitive events go by WhatsApp with an email fallback if undelivered after 15 minutes, and removed Users receive nothing. WhatsApp respects each number's opt-in (FR-69). Staff alerts are defined in FR-78. Realizes UJ-1, UJ-7.
 
+**From UX design and architecture (9 October 2026).** Money and deadline events send at once; others wait until 9 am. A counterfeit recall notice stays on Home until someone taps "I have seen this". There is no in-app inbox and no push notification in v1. The every-message table in EXPERIENCE.md is the proposed notification matrix for the 12 launch events.
+
 **Consequences (testable):**
 - A notification names the Order, Proposal, or Case it concerns.
 - A Technician's notification text contains no amount.
@@ -882,11 +947,13 @@ Amounts go only to Owners and Managers, and Technician messages carry none. Time
 Segregation of duties:
 - No Staff member confirms a Payment, or issues or pays a Credit Note, for a Business Account they created, approved, or vouched for.
 - Whoever investigated a return does not decide it (Admin decides when Operations investigated).
-- Refunds and Credit Notes above a set amount (placeholder NGN 100,000), Platform Rate changes above 3%, Active Supplier switches, bulk price changes, and any change to the underpayment tolerance need a second approver.
+- Refunds and Credit Notes above a set amount (placeholder NGN 100,000, an Admin setting), Platform Rate changes above 3%, VAT rate changes, Back-order Discounts above 10%, Active Supplier switches, bulk price changes, and any change to the underpayment tolerance need a second approver.
 - Stock adjustments above a set size need Admin sign-off.
 - Any use of Admin powers "acting as" another role is flagged for the founder's weekly review.
 
 Integrators see a "bank details changed on [date]" banner for 7 days after any change.
+
+**From UX design and architecture (9 October 2026).** Everything needing a second person sits on one Approvals page; a decline reason goes back to the requester, and no one can approve their own request. A VAT rate change also needs a second approver. The platform records who created, approved, or vouched for each business, and shows a written reason when segregation blocks an action. The founder is an Admin account with a founder flag.
 
 **Consequences (testable):**
 - A Staff member can use only the capabilities their role holds.
@@ -913,6 +980,8 @@ The platform records an append-only audit trail with hash chaining and credentia
 
 Entries hold entity identifiers and field differences, not copies of a NIN or full name, so personal data can be erased elsewhere. The founder reviews Admin and Finance override events weekly, and an alert fires on unusual patterns such as many NIN reads or many Credit Notes by one user. Financial entries are kept at least 6 years `[ASSUMPTION: confirm the period with the accountant]`.
 
+**From UX design and architecture (9 October 2026).** The founder's weekly review lists acting-as use, an accepted late counterfeit report, a stock adjustment above the set size, a Payment reversal, a ratified Hold, a second-person serial correction, a Credit Note with a second approver, and any rate override above 10%, and cannot be signed off until each is reviewed. A NIN read needs a reason code (manual check, duplicate check, dispute, or other with a note). Audit entries hold identifiers, not names, and "Look up" is Admin only.
+
 **Consequences (testable):**
 - Audit entries cannot be edited or deleted by any application role.
 - A NIN read appears in the audit trail with who, when, and the reason code.
@@ -921,6 +990,8 @@ Entries hold entity identifiers and field differences, not copies of a NIN or fu
 *Status: Default. Priority 1.*
 Every staff role has a named deputy, and an out-of-office switch moves that person's queue to the deputy with an "acting for" flag in the audit trail. Staff accounts are disabled on departure, which revokes their sessions and reassigns their queue items, and the last active Admin cannot be deactivated. Business Hours are kept in West Africa Time with a holiday calendar maintained by Admin.
 
+**From UX design and architecture (9 October 2026).** A closed-day calendar pauses target clocks, and the app reads the Business Hours calendar for "open now" lines and by-times.
+
 **Consequences (testable):**
 - An out-of-office switch moves the queue within a minute and flags the deputy's actions.
 - Deactivating the last Admin is refused.
@@ -928,6 +999,8 @@ Every staff role has a named deputy, and an out-of-office switch moves that pers
 #### FR-78: Staff work queues
 *Status: Default. Priority 1.*
 The console has a queue for each of Receipts, Level 3 requests, NIN reviews, Order approvals, Credit Note requests, and returns. Each shows the count, the age of the oldest item, and its owner; staff are alerted on arrival by email and WhatsApp; items escalate to Admin at 75% of their target; and the on-time rate per queue is reported. Targets: Receipts within two Business Hours; Level 3 and NIN reviews within one Business Day; Order approval within four Business Hours; Credit Note requests within one Business Day; returns investigated within two Business Days of arrival. Business Hours count only inside Business Hours (a Receipt uploaded at 5pm Saturday is due by 9am Monday).
+
+**From UX design and architecture (9 October 2026).** Each queue shows its owner: the role holder and a named deputy. An item is soft-locked while someone has it open, and taking it over needs a reason. Any queue past 75% of its target raises an escalation notice.
 
 **Consequences (testable):**
 - A queue item older than 75% of its target is escalated to Admin.
@@ -964,6 +1037,8 @@ The platform stays usable on slow or patchy mobile data, including browsing, lar
 *Status: Default. Priority 2.*
 Every contact with Support opens a Case: the Integrator can open one in the app ("Report a problem"), and Support opens one when a call or WhatsApp message arrives, recording channel, caller, serial number or Order Line, outcome, and time, including Cases resolved remotely or refused. Before disclosing any Order or serial-number detail, Support verifies the caller with an in-app one-time code or a callback to the verified phone. WhatsApp is used only through the platform's WhatsApp Business account. The first Case time starts the reporting window (FR-59). Realizes UJ-7.
 
+**From UX design and architecture (9 October 2026).** A "Give Support a code" button on the Help sheet shows a 6-digit code the caller reads aloud; Support enters it in the console to verify the caller and records a callback. The Support desk is a console area.
+
 **Consequences (testable):**
 - A Case exists for every contact, including those closed remotely.
 - Support cannot view a serial's Order details without a recorded caller verification.
@@ -981,6 +1056,8 @@ Support can look up a device's serial number and see the Shipment, Order Line, a
 *Status: Confirmed (48-hour window, Support first), with Default rules. Priority 3.*
 If remote assistance does not fix a device fault, Support can generate an Issue Code for the Case, tied to the Business Account and listing one or more serial numbers (or an Order Line and quantity where a Product has no serial number, which Support verifies against the Order Line). A Return Request for a device reason cannot be raised without a valid Issue Code. An Issue Code is valid for 48 hours from generation, and the device must reach a Store, or be handed to a courier with a tracking reference, within that window; the clock is paused for up to 7 days while a Technician-raised request awaits a Manager's approval. If the window passes, the Return Request lapses and Support must generate a new Issue Code, and the reporting window (FR-59) is not reset. Remote assistance happens by phone and WhatsApp, outside the platform. `[ASSUMPTION: each Issue Code serves one Return Request, and handing a device to a courier with a tracking reference counts as returned within the window.]` Realizes UJ-7.
 
+**From UX design and architecture (9 October 2026).** The Issue Code reaches the Integrator in the Case and fills the return form. A Technician-raised Return Request pauses the 48 hours for up to 7 days while it awaits approval.
+
 **Consequences (testable):**
 - An Issue Code works once, for the Business Account and serial numbers it was generated for.
 - Support cannot generate an Issue Code for a serial number with no dispatch record unless a serial exception is approved.
@@ -989,6 +1066,8 @@ If remote assistance does not fix a device fault, Support can generate an Issue 
 #### FR-58: Raise a Return Request
 *Status: Confirmed (Technicians raise, Managers approve), with Default structure. Priority 3.*
 A Technician, Manager, or Owner can raise a Return Request for a device reason by entering the Issue Code, the reason (transit damage, wrong item, dead on arrival, warranty claim, or suspected counterfeit), the quantity, photos, and the device's serial number where the Product has one. A change of mind needs a return authorisation from Support instead of a fault check. A non-delivery claim has no Issue Code: an Owner or Manager opens it when a Shipment is Lost or overdue. A request raised by a Technician waits for a Manager or Owner to match it to the specific Order Line and approve or decline it before it reaches the platform, and a request raised by a Manager or Owner is approved at creation. `[ASSUMPTION: the platform suggests the matching Order Line from the serial number and the approver confirms or corrects it, and the corrected line must contain the serial or Product bound to the code, belong to the same Business Account, and be delivered.]` Realizes UJ-7.
+
+**From UX design and architecture (9 October 2026).** Owners and Managers see all of a business's Cases; a Technician sees their own.
 
 **Consequences (testable):**
 - A Return Request for a device reason cannot be raised without a valid Issue Code.
@@ -1000,6 +1079,8 @@ A Technician, Manager, or Owner can raise a Return Request for a device reason b
 *Status: Confirmed (decision 8); counsel to vet. Priority 3.*
 A Return Request must start within these windows, measured from the courier-confirmed delivery date or the collection date: 5 days for transit damage or a wrong item, 30 days for a dead-on-arrival unit (or the Supplier's window where it is shorter), 7 days for a change of mind, and the Warranty Period for a warranty claim. A suspected counterfeit can be reported until the Warranty Period plus 90 days, and later with Admin approval. The window is met by the time of the first logged Case, not by the time the Return Request is raised. Admin can change the windows, and a change applies only to Cases opened afterwards.
 
+**From UX design and architecture (9 October 2026).** The app never blocks a report: one past the window still opens a Case.
+
 **Consequences (testable):**
 - A request is judged against the window by the first Case time.
 - A window change never affects a Case already open.
@@ -1009,7 +1090,7 @@ A Return Request must start within these windows, measured from the courier-conf
 When a device arrives, Support photographs the unit, label, and packaging, records the physical serial number, and investigates it. A physical serial that does not match a serial listed on the Issue Code rejects the return automatically and flags the account. A non-serialised return needs photos taken before shipping and a sealed-packaging check. Admin or Operations then decide the remedy (FR-61), following the Supplier's or manufacturer's RMA process where one exists; whoever investigated does not decide. A unit that tests fine is returned at the Integrator's cost, which is added to their next Amount Due or deducted from an open Credit Note and shown in the decision. A Support member may reclassify the reason with a note, which re-evaluates the window, exclusions, and remedy, and the Integrator sees the change. Realizes UJ-7.
 
 **Consequences (testable):**
-- A Return Request moves through Raised, Approved by the Integrator, Item Received, Under Investigation, Decided, Awaiting Finance or Awaiting RMA, and Resolved, or is Rejected or Lapsed, with each change recorded with who and when; Decided means a remedy is chosen and Resolved means it has been delivered.
+- A Return Request moves through Raised, Approved by the Integrator, Item Received, Under Investigation, Decided, Awaiting Finance or Awaiting RMA, and Resolved, or is Rejected or Lapsed (a device arriving after a lapse is Held), with each change recorded with who and when; Decided means a remedy is chosen and Resolved means it has been delivered.
 - A mismatched serial rejects the return and flags the account.
 - The Integrator sees the status and any rejection reason.
 
@@ -1026,6 +1107,8 @@ The remedy depends on the reason. Transit damage and wrong item: a replacement f
 *Status: Confirmed (decision 8). Priority 3.*
 The Integrator sends or brings the device to a Store, either a collection point or the Main Store, or hands it to a courier with a tracking reference. Where the fault is the platform's own (its error, transit damage, a verified dead-on-arrival unit, or a counterfeit), the platform reimburses actual courier cost, evidenced by the courier's receipt and capped at the Zone Rate for the same route, by Credit Note, one claim per return; otherwise the Integrator pays. Realizes UJ-7.
 
+**From UX design and architecture (9 October 2026).** The courier handover form asks for a photo of the courier's receipt.
+
 **Consequences (testable):**
 - Each Return Request records who pays freight and the amount reimbursed.
 
@@ -1039,6 +1122,8 @@ These are not returnable for change of mind: Back-order Items, special orders, s
 #### FR-64: Warranty pass-through
 *Status: Confirmed (decision 8). Priority 3.*
 Each Product records the manufacturer's Warranty Period. The platform shows each delivered Order Line's warranty expiry, computed from the dispatch date, or the manufacturer's earlier date where known, and treats a warranty claim as a Return Request resolved through the manufacturer's RMA, with no labour cover and no platform warranty beyond dead on arrival. A Product with no Warranty Period has no warranty and warranty claims for it are refused with a reason. `[ASSUMPTION: the warranty clock starts when the platform dispatches the goods, because manufacturers typically start it at distributor shipment, so the platform passes on a shorter effective warranty than the manufacturer's headline period.]` Realizes UJ-7.
+
+**From UX design and architecture (9 October 2026).** Delivered Order Lines show "Warranty until", and the Orders list has a Problems segment.
 
 **Consequences (testable):**
 - A delivered Order Line shows its warranty expiry date.
@@ -1205,7 +1290,7 @@ All 15 decisions were confirmed by the founder on 7 October 2026; decision 1 was
 ### 8.2 Counsel and accountant confirmations
 
 - **Accountant:** VAT registration at this scale, tax-invoice fields and numbering, VAT on delivery charges and Credit Notes, e-invoicing timing (reported for smaller businesses from July 2027), and the retention period for financial records.
-- **Counsel:** whether the Credit Note ledger counts as deposit-taking, VAT on prepayments, insolvency treatment of balances, the 12-month expiry and refund terms, the returns terms and exclusions, consumer-law exposure for business buyers, obligations under the Nigeria Data Protection Act 2023 (retention, breach notification, access and erasure), NCC type approval and SONCAP obligations for listed Products, and whether the wallet is permissible.
+- **Counsel:** whether the Credit Note ledger counts as deposit-taking, VAT on prepayments, insolvency treatment of balances, the 12-month expiry and refund terms, the returns terms and exclusions, consumer-law exposure for business buyers, obligations under the Nigeria Data Protection Act 2023 (retention, breach notification, access and erasure), NCC type approval and SONCAP obligations for listed Products, whether the wallet is permissible, the nine wording items under Voice and Tone in the UX `EXPERIENCE.md`, and what is measured about use, cookies, and analytics.
 
 ### 8.3 Open questions
 
@@ -1214,6 +1299,22 @@ All 15 decisions were confirmed by the founder on 7 October 2026; decision 1 was
 3. **Supplier lead times and Supplier orders.** The platform places Supplier orders only after payment (FR-18); confirm Suppliers can meet the promised Lead Times on that basis.
 4. **Breakeven inputs.** Published benchmarks stand in for real quotes. Replace them with actual agency quotes, salaries, and rent, and decide how inventory float (about USD 48,000 peak funding including float) is financed.
 5. **Return window for distant Integrators.** The 48-hour Issue Code is judged against the courier handover (FR-68); confirm whether a longer window is needed for far zones once courier times are known.
+
+Raised by the UX design (9 October 2026), for the founder unless marked:
+
+6. **Sign-in limits (FR-1).** Wrong-code and resend caps, and the lockout time.
+7. **Rejected Level 3 requests (FR-6, FR-7).** Whether a rejected request can be made again, and with what.
+8. **Queues without targets (FR-71, FR-78).** Owner recovery requests, Operations' cancel and change requests, delivery-price requests, and call-back-due Cases have no queue or target; the UX uses 1 Business Day for cancel requests and delivery prices and the approval target for changes. FR-66's 14-day counterfeit clock has no card on the Admin home.
+9. **Closing with a credit-only balance (FR-72).** Such an account cannot close for up to 12 months; the UX draws a "call us" exception.
+10. **Fractional quantities (FR-26).** Which units of measure allow them.
+11. **Documentation versions per phone (FR-50).** Whether the server records which version each phone downloaded, to show how many phones hold an old one.
+12. **Receiver's one-time code (FR-45).** How the Pick-up receiver's code is generated and sent.
+13. **Unusual-pattern alerts (FR-53).** The baseline of usual counts per person.
+14. **Staff sign-in (FR-71).** The method for staff two-step sign-in and 12-hour sessions (the UX shows a code or passkey, then a second check).
+15. **Dashboard inputs (FR-80).** A plan start date setting, the cost inputs SM-6 needs that the console does not hold, and confirming that Finance exports sit on a Reports and exports page.
+16. **Supplier orders (FR-17, FR-74).** With no Supplier order entity, back-orders show only promised ship-by dates and a late flag.
+17. **Zones (FR-47, FR-56).** Checks that an area belongs to exactly one zone, the initial local government areas per zone, and real Zone Rates and estimates.
+18. **Product Ranges.** Creating, renaming, and retiring a range is assumed to be Admin's.
 
 ## 9. Assumptions Index
 

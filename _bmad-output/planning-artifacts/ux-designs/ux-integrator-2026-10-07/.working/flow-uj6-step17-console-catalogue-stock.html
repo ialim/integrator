@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 17, the staff console, Operations: products, stock and goods in (proposal)</title>
+<style>
+/*
+  STEP 17 WIREFRAMES: the staff console, Operations: the product list, one product, stock and goods in, and the bulk upload.
+  Bola in Operations keeps the catalogue, receives stock, and loads a spreadsheet.
+  Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
+  Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
+  Facts: PRD FR-12 to FR-18, FR-52, FR-53, FR-65, FR-66, FR-73, FR-74, UJ-3, UJ-4, UJ-6.
+  Frames are 1240 px wide, for a desktop browser. Now is Mon 12 Oct 2026, 2:30 pm, inside Business Hours.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;--bezel:#2B281F;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.45 var(--sans)}
+h1,h2,h3,h4,h5,p,ul,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none;margin:0}
+button{font:inherit;color:inherit;margin:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.i{display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1760px;margin:0 auto;padding:28px 24px 56px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.page h1.top{margin:0 0 10px;font:700 30px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:900px;margin:0 0 26px}
+.fig{margin:0 0 34px}
+.fig figcaption{margin:0 0 10px;max-width:1000px;font:600 14px/1.3 var(--sans)}
+.fig figcaption span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.deskwrap{overflow-x:auto;padding-bottom:6px}
+.browser{position:relative;width:1240px;background:var(--sheet);border:1px solid var(--ink)}
+.chrome{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:var(--aged);border-bottom:1px solid var(--rule)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--control)}
+.chrome .tabname{margin:8px 0 0 12px;padding:7px 16px;background:var(--sheet);border:1px solid var(--rule);border-bottom:0;font:12px/1 var(--sans);color:var(--ink2)}
+.topbar{display:flex;align-items:center;gap:18px;min-height:50px;padding:0 20px;background:var(--green);color:#fff}
+.topbar .brand{font:italic 700 21px/1 var(--serif)}
+.topbar .area{font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#C9DCCF}
+.topbar .time{margin-left:auto;font-size:13px;color:#E6F0E9}
+.topbar .me{display:flex;align-items:center;gap:10px;font:600 13px var(--sans)}
+.topbar .role{padding:3px 9px;border:1px solid #C9DCCF;font:700 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:660px}
+.nav{padding:10px 0 18px;background:var(--aged);border-right:1px solid var(--ink)}
+.nav h2{padding:12px 18px 6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.nav .a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:38px;padding:0 18px;color:var(--ink);font:600 14px var(--sans)}
+.nav .a.on{background:var(--sheet);box-shadow:inset 4px 0 0 var(--green);color:var(--green)}
+.nav .n{min-width:26px;padding:1px 6px;border:1px solid var(--control);background:var(--sheet);font:700 12px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
+.nav .n.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.main{padding:22px 24px 30px;min-width:0}
+.main h1{font:700 26px/1.15 var(--serif);color:var(--green)}
+.main .sub{margin:4px 0 14px;font-size:13px;color:var(--ink2)}
+.notice{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:9px 12px;background:var(--warn-tint);border-left:4px solid var(--brass);font:600 13px/1.3 var(--sans)}
+.notice .i{color:var(--brass)}
+.notice .b{margin-left:auto}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;background:var(--green);border:1px solid var(--green);border-radius:2px;color:#fff;font:600 14px var(--sans);white-space:nowrap}
+.b.o{background:var(--sheet);color:var(--green)}
+.b.danger{background:var(--sheet);border-color:var(--bad);color:var(--bad)}
+.b.big{min-height:46px;padding:0 18px}
+.b.sm{min-height:34px;padding:0 10px;font-size:13px}
+.b[disabled]{background:var(--aged);border:1px dashed var(--control);color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);border-radius:2px;background:var(--sheet);font:600 12px/1.2 var(--sans);color:var(--ink);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.chip.bad{border-color:var(--bad);background:var(--bad-tint);color:var(--bad)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+.okmark{display:inline-flex;align-items:center;gap:5px;font:700 12.5px var(--sans);color:var(--ok)}
+.okmark.no{color:var(--bad)}
+.okmark.need{color:var(--warn)}
+.cmp{border-top:2px solid var(--ink)}
+.cmp div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.cmp dt{font-size:13px;color:var(--ink2)}
+.cmp dd{font:700 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums;text-align:right}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:7px 8px;background:var(--aged);border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);text-align:left;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl .nw{white-space:nowrap}
+.tbl .mono{font:12px/1.3 var(--mono);white-space:nowrap}
+.tbl small{display:block;font-size:12px;color:var(--ink2)}
+.tbl tr.attn td{background:var(--warn-tint)}
+.tbl tr.attn td:first-child{box-shadow:inset 4px 0 0 var(--brass)}
+.tbl tr.sel td{box-shadow:inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.tbl tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--green),inset 0 2px 0 var(--green),inset 0 -2px 0 var(--green)}
+.after{margin-top:12px;padding:9px 11px;background:var(--aged);border-left:4px solid var(--green);font-size:13px}
+.after.need{background:var(--warn-tint);border-left-color:var(--brass)}
+.after.err{background:var(--bad-tint);border-left-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font:600 13px var(--sans)}
+.fchip.on{border-color:var(--green);background:var(--green);color:#fff}
+.fchip.hot{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.search{display:flex;align-items:center;gap:8px;min-height:40px;margin-bottom:12px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:13.5px;color:var(--ink2)}
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.bar .search{flex:1;margin:0}
+.field{margin-top:10px}
+.field label{display:block;margin-bottom:4px;font:600 13px var(--sans)}
+.field label small{font-weight:400;color:var(--ink2)}
+.field .in{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:0 12px;border:1px solid var(--control);background:var(--sheet);font-size:14px}
+.field .in.num{font-variant-numeric:tabular-nums}
+.field .in.need{border:2px solid var(--brass);background:var(--warn-tint);color:var(--warn)}
+.field .in.lock{background:var(--aged);color:var(--ink2)}
+.field .in.ta{align-items:flex-start;min-height:64px;padding:9px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.sect{margin:0 0 14px}
+.sect h3{margin-bottom:6px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.sect .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.sect .row span:first-child{color:var(--ink2)}
+.tri{display:grid;grid-template-columns:196px minmax(0,1fr) 250px;gap:0}
+.tri > nav{padding-right:16px}
+.tri > nav li{padding:9px 12px;border:1px solid var(--control);border-bottom:0;background:var(--sheet);font:600 13.5px var(--sans);color:var(--ink2)}
+.tri > nav li:last-child{border-bottom:1px solid var(--control)}
+.tri > nav li.on{background:var(--green);border-color:var(--green);color:#fff}
+.tri > nav li.warn{color:var(--warn);background:var(--warn-tint)}
+.tri > .formcol{padding:0 20px;border-left:1px solid var(--ink);border-right:1px solid var(--rule);min-width:0}
+.tri > aside{padding-left:18px;min-width:0}
+.tri aside h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.gate li{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.gate .i{margin-top:1px}
+.gate .ok .i{color:var(--ok)}
+.gate .no .i{color:var(--warn)}
+.gate b{font:700 13px/1.3 var(--sans)}
+.gate small{display:block;font-size:12px;color:var(--ink2)}
+.tg{margin:16px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 15px/1.2 var(--serif)}
+.stat{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-bottom:14px;border-top:3px double var(--ink);border-bottom:3px double var(--ink)}
+.stat div{padding:10px 12px;border-right:1px solid var(--rule)}
+.stat div:last-child{border-right:0}
+.stat dt{font-size:12px;color:var(--ink2)}
+.stat dd{margin-top:2px;font:700 22px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.stat dd small{font:600 12px var(--sans);color:var(--ink2)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:0}
+.two > section{padding:0 20px;min-width:0}
+.two > section:first-child{padding-left:0}
+.two > section:last-child{padding-right:0;border-left:1px solid var(--ink)}
+.two h2{margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.steps{display:flex;margin:0 0 14px}
+.steps li{flex:1;padding:8px 12px;border:1px solid var(--control);border-right:0;background:var(--sheet);font:600 13px var(--sans);color:var(--ink2)}
+.steps li:last-child{border-right:1px solid var(--control)}
+.steps li.on{background:var(--green);border-color:var(--green);color:#fff}
+.steps li.done{color:var(--green)}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.tile{padding:10px 12px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.tile .v{font:700 24px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.tile p{margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.tile.hot{background:var(--warn-tint);border-color:var(--brass)}
+.tile.bad{background:var(--bad-tint);border-color:var(--bad)}
+.states{margin-top:38px}
+.states h2.h{margin:0 0 4px;font:700 22px/1.2 var(--serif);color:var(--green)}
+.states .sub2{max-width:900px;margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.grp{margin:22px 0 12px;padding-bottom:5px;border-bottom:2px solid var(--ink);font:700 16px/1.2 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
+.sc{background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--control);padding:12px 14px}
+.sc.need{border-left-color:var(--brass);background:var(--warn-tint)}
+.sc.err{border-left-color:var(--bad);background:var(--bad-tint)}
+.sc .lab{margin-bottom:6px;font:700 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.sc h4{font:700 15.5px/1.3 var(--sans)}
+.sc p{margin-top:4px;font-size:14px}
+.notes{max-width:900px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></symbol>
+</svg>
+
+<main class="page">
+  <p class="kicker">Step 17 of the walk-through</p>
+  <h1 class="top">The staff console, Operations: products, stock, goods in, and the bulk upload</h1>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell. This is the catalogue side of Operations: the list of products, one product and what it needs before it can go live, stock and the record of goods coming in, and loading many products from a spreadsheet. Four desktop frames, then a sheet of states. Documentation, suppliers, stores and zones come in the next step. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+
+  <figure class="fig">
+    <figcaption>1. Products and stock<span>Every product on one page, with what needs attention first: drafts that cannot go live, products at or below their stock threshold, and products with no documentation. One row shows the stock, the back-order terms and the documentation at a glance.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Products and stock · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 2:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a on">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <h1>Products and stock</h1>
+          <p class="sub">512 active · 3 drafts · 9 discontinued. Prices follow the Active Supplier's cost, the markup, and the Platform Rate.</p>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>3 drafts are missing things they need before they can go live. 5 products are at or below their stock threshold.<span class="b">Show what needs attention</span></p>
+          <div class="bar"><div class="search"><svg class="i"><use href="#i-search"/></svg>Search by SKU, name, brand or model</div><span class="b">Add a product</span></div>
+          <div class="filters"><span class="fchip on">All · 524</span><span class="fchip hot">Needs attention · 8</span><span class="fchip">At or below threshold · 5</span><span class="fchip">Out of stock · 7</span><span class="fchip">Back-order on · 11</span><span class="fchip">No documentation · 211</span><span class="fchip">Drafts · 3</span><span class="fchip">Discontinued · 9</span></div>
+          <table class="tbl">
+            <caption style="position:absolute;left:-9999px">Products</caption>
+            <thead><tr><th scope="col">SKU</th><th scope="col">Product</th><th scope="col">Range</th><th scope="col">Status</th><th scope="col">Stock now</th><th scope="col">Back-order</th><th scope="col">Docs</th><th scope="col">Active supplier</th></tr></thead>
+            <tbody>
+              <tr class="sel" aria-current="true"><td class="mono">CAM-0412</td><td>4MP PoE dome camera<small>Northgate · DM4P</small></td><td>IP cameras</td><td><span class="chip">Active</span></td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>In stock</span><small>11 available · 13 on hand</small></td><td>Off</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Guide, manual</span></td><td>Northgate Distribution</td></tr>
+              <tr><td class="mono">NVR-0208</td><td>8-channel PoE NVR, 2 TB drive<small>Northgate · NV8P2</small></td><td>Recorders</td><td><span class="chip">Active</span></td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>In stock</span><small>5 available · 5 on hand</small></td><td>Off</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Guide, manual</span></td><td>Northgate Distribution</td></tr>
+              <tr class="attn"><td class="mono">CBL-0305</td><td>Cat6 cable, 305 m box<small>Kable Co · C6-305</small></td><td>Cabling</td><td><span class="chip">Active</span></td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>In stock</span><small>22 available · 22 on hand</small></td><td>Off</td><td><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>None yet</span></td><td>Kable Co</td></tr>
+              <tr><td class="mono">SWT-0108</td><td>8-port PoE switch<small>Meridian · SW8P</small></td><td>Switches</td><td><span class="chip">Active</span></td><td>Out of stock<small>0 on hand</small></td><td>On · 8% · about 3 weeks</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Guide, manual</span></td><td>Meridian Supply</td></tr>
+              <tr class="attn"><td class="mono">SWT-0116</td><td>16-port PoE switch<small>Meridian · SW16P</small></td><td>Switches</td><td><span class="chip">Active</span></td><td>Out of stock<small>0 on hand</small></td><td>Off</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Guide</span></td><td>Meridian Supply</td></tr>
+              <tr class="attn"><td class="mono">CAM-0415</td><td>8MP PoE bullet camera<small>Northgate · BL8P</small></td><td>IP cameras</td><td><span class="chip warn">Draft</span><small>4 things missing</small></td><td>Not on sale</td><td>Off</td><td>None yet</td><td>Northgate Distribution</td></tr>
+              <tr><td class="mono">CAM-0399</td><td>2MP analogue dome camera<small>Northgate · AD2</small></td><td>IP cameras</td><td><span class="chip">Discontinued</span></td><td>Not on sale<small>3 on hand</small></td><td>Off</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Manual</span></td><td>Northgate Distribution</td></tr>
+            </tbody>
+          </table>
+          <p class="after" style="margin-top:12px">A product at or below its stock threshold cannot be ordered unless back-order is on for it. Discontinued products stay on projects that already hold them, with a warning.</p>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>2. One product, and what it needs to go live<span>The form has five sections and a checklist on the right. A product cannot be made active until the checklist is clear, and the page says exactly what is missing. Markup and Active Supplier are Admin's, so they are shown and locked.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">CAM-0415 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 2:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a on">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px"><div><h1 style="font-size:24px">CAM-0415 · 8MP PoE bullet camera</h1><p class="sub" style="margin-bottom:0"><span class="chip warn">Draft</span> Not on sale. Cannot go live yet: 4 things are missing.</p></div><div class="actions" style="margin:0"><span class="b o">Save draft</span><span class="b" aria-disabled="true">Make it active</span></div></div>
+          <div class="tri">
+            <nav aria-label="Sections"><ul>
+              <li>Identity</li>
+              <li>Measures</li>
+              <li class="on">Returns and compliance</li>
+              <li>Lifecycle and cost</li>
+              <li>Stock and content</li>
+            </ul></nav>
+            <section class="formcol" aria-labelledby="f1">
+              <h2 id="f1" style="margin-bottom:6px;font:700 17px var(--serif)">Returns and compliance</h2>
+              <div class="grid2">
+                <div class="field"><label>Is it serialised? <small>needed</small></label><div class="in need">Choose Yes or No</div></div>
+                <div class="field"><label>Warranty Period <small>needed, or None</small></label><div class="in need">Months, or tick None</div></div>
+                <div class="field"><label>Dead-on-arrival window</label><div class="in">30 days <small style="color:var(--ink2)">usual</small></div></div>
+                <div class="field"><label>Compliance reference <small>needed for this range</small></label><div class="in need">NCC type approval number</div></div>
+              </div>
+              <div class="field"><label>Returnability <small>answer each one, needed</small></label>
+                <div class="grid2">
+                  <div class="in need">Special order · Yes or No</div>
+                  <div class="in need">End-of-life · Yes or No</div>
+                  <div class="in need">Refurbished or demonstration · Yes or No</div>
+                  <div class="in need">Software or licence · Yes or No</div>
+                </div></div>
+              <p class="after">These answers decide what a business can return for a change of mind, and whether a serial number is asked at dispatch. They are not optional.</p>
+              <h3 class="tg">Cost and price</h3>
+              <table class="tbl"><thead><tr><th scope="col">Supplier</th><th scope="col" class="num">Cost</th><th scope="col">Set on</th><th scope="col">Active</th></tr></thead>
+                <tbody><tr><td>Northgate Distribution</td><td class="num">USD 55.00</td><td>12 Oct</td><td><span class="chip good">Active</span></td></tr></tbody></table>
+              <dl class="cmp" style="margin-top:10px">
+                <div><dt>Active supplier <span class="chip" style="margin-left:6px"><svg class="i" style="display:inline;width:12px;height:12px;vertical-align:-2px"><use href="#i-lock"/></svg> Admin sets this</span></dt><dd>Northgate Distribution</dd></div>
+                <div><dt>Platform Markup <span class="chip" style="margin-left:6px"><svg class="i" style="display:inline;width:12px;height:12px;vertical-align:-2px"><use href="#i-lock"/></svg> Admin only</span></dt><dd>25%, from IP cameras</dd></div>
+                <div><dt>Wholesale price today, Base tier, VAT included</dt><dd>₦101,103.75</dd></div>
+              </dl>
+            </section>
+            <aside aria-labelledby="g1">
+              <h2 id="g1">Before it can go live</h2>
+              <ul class="gate">
+                <li class="ok"><svg class="i"><use href="#i-check"/></svg><span><b>SKU is unique</b><small>CAM-0415 is never reused or changed</small></span></li>
+                <li class="ok"><svg class="i"><use href="#i-check"/></svg><span><b>Identity and measures</b><small>Name, brand, model, range, images, unit</small></span></li>
+                <li class="ok"><svg class="i"><use href="#i-check"/></svg><span><b>A supplier cost above zero</b></span></li>
+                <li class="no"><svg class="i"><use href="#i-alert"/></svg><span><b>Serialised, yes or no</b><small>Needed</small></span></li>
+                <li class="no"><svg class="i"><use href="#i-alert"/></svg><span><b>Warranty Period, or None</b><small>Needed</small></span></li>
+                <li class="no"><svg class="i"><use href="#i-alert"/></svg><span><b>The four returnability answers</b><small>Needed</small></span></li>
+                <li class="no"><svg class="i"><use href="#i-alert"/></svg><span><b>Compliance reference</b><small>Needed for IP cameras</small></span></li>
+              </ul>
+              <p class="after need">Documentation is not needed to go live. Until you add it, businesses see "Documentation coming soon."</p>
+              <p class="after" style="margin-top:8px">Every change to a product is written to the record, with who and when.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>3. Stock and goods in<span>The stock for one product and the ledger behind it, with the form for goods arriving: supplier, batch, landed cost, and serial numbers. Every stock change is a ledger line with a reason. Stock on hand always equals the sum of those lines.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Goods in · CAM-0412 · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 2:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a on">Goods in</span>
+          <span class="a">Bulk upload</span>
+          <span class="a">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <h1 style="font-size:24px">CAM-0412 · 4MP PoE dome camera</h1>
+          <p class="sub">Stock is one pool for the whole catalogue, held at the central warehouse.</p>
+          <dl class="stat">
+            <div><dt>On hand</dt><dd>13</dd></div>
+            <div><dt>Reserved</dt><dd>2</dd></div>
+            <div><dt>Available</dt><dd>11</dd></div>
+            <div><dt>Threshold</dt><dd>5</dd></div>
+            <div><dt>Status</dt><dd style="font-size:16px;padding-top:4px"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>In stock</span></dd></div>
+          </dl>
+          <div class="two">
+            <section aria-labelledby="l1">
+              <h2 id="l1">The ledger, newest first</h2>
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Stock ledger</caption>
+                <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col" class="num">Change</th><th scope="col">Reason and reference</th><th scope="col" class="num">On hand after</th></tr></thead>
+                <tbody>
+                  <tr><td class="nw">12 Oct, 9:12 am</td><td>Adjustment<small>Bola A.</small></td><td class="num">−1</td><td>Damaged in the store</td><td class="num">13</td></tr>
+                  <tr><td class="nw">7 Oct, 2:40 pm</td><td>Dispatch<small>Bola A.</small></td><td class="num">−6</td><td>INT-0042, delivery 1</td><td class="num">14</td></tr>
+                  <tr><td class="nw">7 Oct, 12:52 pm</td><td>Reserved<small>by the system</small></td><td class="num">6 held</td><td>INT-0042 became Paid</td><td class="num">20</td></tr>
+                  <tr><td class="nw">5 Oct, 11:15 am</td><td>Dispatch<small>Bola A.</small></td><td class="num">−7</td><td>INT-0036, delivery 1</td><td class="num">20</td></tr>
+                  <tr><td class="nw">3 Oct, 9:40 am</td><td>Dispatch<small>Bola A.</small></td><td class="num">−4</td><td>INT-0038, delivery 1</td><td class="num">27</td></tr>
+                  <tr><td class="nw">28 Sep, 3:10 pm</td><td>Goods in<small>Bola A.</small></td><td class="num">+25</td><td>Batch B-0925 · Northgate Distribution</td><td class="num">31</td></tr>
+                </tbody>
+              </table>
+              <div class="actions"><span class="b o">Adjust stock…</span><span class="b o">Release safety stock to back-order…</span></div>
+              <p class="after need">Any adjustment above the set size needs an Admin to sign it off, and you cannot set on hand below what is reserved without an Admin override.</p>
+            </section>
+            <section aria-labelledby="g2">
+              <h2 id="g2">Record goods in</h2>
+              <div class="grid2">
+                <div class="field" style="margin-top:0"><label>Supplier</label><div class="in">Northgate Distribution</div></div>
+                <div class="field" style="margin-top:0"><label>Date received</label><div class="in">Mon 12 Oct 2026</div></div>
+                <div class="field"><label>Quantity</label><div class="in num">30</div></div>
+                <div class="field"><label>Batch or lot reference</label><div class="in">B-1012</div></div>
+              </div>
+              <h3 class="tg" style="margin-top:12px;font-size:14px">Landed cost</h3>
+              <dl class="cmp">
+                <div><dt>Supplier's invoice, total</dt><dd>USD 1,116.30</dd></div>
+                <div><dt>Freight</dt><dd>USD 90.00</dd></div>
+                <div><dt>Duty and clearing</dt><dd>USD 120.00</dd></div>
+                <div><dt>Rate used</dt><dd>₦1,368.00</dd></div>
+                <div><dt><b>Per unit</b></dt><dd>USD 44.21 · ₦60,479.28</dd></div>
+              </dl>
+              <div class="field"><label>Serial numbers <small>this product is serialised</small></label><div class="in" style="font-family:var(--mono);font-size:13px;color:var(--ink2)">Scan a barcode, or paste a list</div></div>
+              <p style="margin-top:6px;font-size:13px"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>30 of 30 captured, all unique, all in the right format</span></p>
+              <div class="actions"><span class="b big">Record goods in</span></div>
+              <p class="after">On recording: on hand 13 → 43, available 11 → 41. A ledger line is written with this reason and reference. Batch B-1012 can later be marked Suspected if it has to be.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. Bulk upload, with a dry run first<span>Load or update many products from a spreadsheet. Nothing is applied until the dry run has been read. Failed rows are listed with their row number and the reason, and a file that changes many prices waits for Admin.</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Bulk upload · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 2:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Order approvals<span class="n">2</span></span>
+          <span class="a">Returns<span class="n">2</span></span>
+          <span class="a">Support cases<span class="n">3</span></span>
+          <h2>Work</h2>
+          <span class="a">Shipments</span>
+          <span class="a">Back-orders<span class="n hot">1</span></span>
+          <span class="a">Orders</span>
+          <span class="a">Stores and zones</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a">Goods in</span>
+          <span class="a on">Bulk upload</span>
+          <span class="a">Documentation</span>
+          <span class="a">Suppliers</span>
+        </nav>
+        <div class="main">
+          <h1>Bulk upload</h1>
+          <p class="sub">catalogue-12-oct.xlsx · 190 rows · chosen by Bola A. at 2:21 pm · matched on SKU</p>
+          <ol class="steps"><li class="done">1 Get the template</li><li class="done">2 Choose the file</li><li class="on">3 Read the dry run</li><li>4 Apply</li></ol>
+          <div class="tiles">
+            <div class="tile"><p class="v">38</p><p>new products</p></div>
+            <div class="tile"><p class="v">112</p><p>products updated</p></div>
+            <div class="tile hot"><p class="v">41</p><p>price changes</p></div>
+            <div class="tile bad"><p class="v">6</p><p>rows failed</p></div>
+            <div class="tile"><p class="v">9</p><p>notes</p></div>
+          </div>
+          <p class="notice" role="status"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>This file changes prices on 41 products, which is more than 20, and 3 rows move a supplier cost by more than 15%. An Admin must approve it before anything is applied.<span class="b">Send for Admin approval</span></p>
+          <table class="tbl">
+            <caption style="position:absolute;left:-9999px">Rows that failed</caption>
+            <thead><tr><th scope="col" class="num">Row</th><th scope="col">SKU</th><th scope="col">Why it failed</th></tr></thead>
+            <tbody>
+              <tr><td class="num">14</td><td class="mono">(empty)</td><td>The SKU is missing, so we cannot tell which product this is.</td></tr>
+              <tr><td class="num">27</td><td class="mono">CBL-0210</td><td>This SKU is repeated: it is also on row 9. Only the first is used.</td></tr>
+              <tr><td class="num">52</td><td class="mono">SWT-0124</td><td>The unit "bx" is not one we know. Use each, metre, or box of a number.</td></tr>
+              <tr><td class="num">88</td><td class="mono">CAM-0431</td><td>The supplier cost is zero or less.</td></tr>
+              <tr><td class="num">131</td><td class="mono">ACC-0207</td><td>No Warranty Period, and not marked None. It cannot go active.</td></tr>
+              <tr><td class="num">160</td><td class="mono">NVR-0231</td><td>The serial number format does not match the pattern for this product.</td></tr>
+            </tbody>
+          </table>
+          <div class="actions"><span class="b o">Download the failed rows with reasons</span><span class="b o">Download the dry-run report</span><span class="b o">Choose a corrected file</span></div>
+          <p class="after">The valid rows are not lost. Valid rows are applied and failed rows are reported, never the whole file thrown out. 9 notes: on rows 12, 13, 33 and 6 more, the Platform Markup or Active Supplier column was filled in. Those are Admin's, so they were ignored.</p>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <section class="states" aria-labelledby="ss">
+    <h2 class="h" id="ss">States</h2>
+    <p class="sub2">Brass cards need something from someone. Red cards mean it did not work or is blocked. Plain cards are information. Wording is a placeholder.</p>
+
+    <h3 class="grp">Products</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Cannot go live</p><h4>Make it active is off, and the checklist says why</h4><p>It stays off until the serialised answer, the Warranty Period (or None), the four returnability answers and any compliance reference are in. The button names what is missing.</p></div>
+      <div class="sc"><p class="lab">SKU</p><h4>Unique, and fixed once saved</h4><p>A SKU cannot be edited or reused. A duplicate is refused with a link to the product that has it.</p></div>
+      <div class="sc"><p class="lab">Admin's fields</p><h4>Markup and Active Supplier are shown and locked</h4><p>An Operations person sees them with a lock and "Admin only". A bulk file that fills them in has those columns ignored, with a note on each row.</p></div>
+      <div class="sc need"><p class="lab">Discontinued</p><h4>Stays on projects that already hold it, with a warning</h4><p>It is not on sale and cannot be added to a new project or cart.</p></div>
+      <div class="sc err"><p class="lab">Suspected or quarantined</p><h4>Cannot be added, and every project that has it shows a warning</h4><p>Marking a product or a batch Suspected is Operations or Admin's, and a hold on a whole product needs a second approver. It stops its sale, quarantines stock, blocks payment confirmation and shipment of affected lines, and tells everyone affected. Clearing it puts it back on sale.</p></div>
+      <div class="sc err"><p class="lab">Supplier cost</p><h4>Zero or less is refused</h4><p>The Active Supplier cannot be removed without a replacement, and only an Admin switches it. A switch shows how many carts and projects it touches.</p></div>
+      <div class="sc err"><p class="lab">Back-order discount</p><h4>Above 10% needs an Admin, and below the floor is refused</h4><p>Changing a discount or a lead time never changes an order line already made.</p></div>
+    </div>
+
+    <h3 class="grp">Stock and goods in</h3>
+    <div class="grid">
+      <div class="sc err"><p class="lab">Below what is reserved</p><h4>On hand cannot go below reserved</h4><p>The save is refused and says how many are reserved and for which orders. Only an Admin can override.</p></div>
+      <div class="sc need"><p class="lab">A big adjustment</p><h4>Above the set size, an Admin signs it off</h4><p>It waits in Approvals. Until then the stock does not change. The set size is a rule Admin controls.</p></div>
+      <div class="sc"><p class="lab">Safety stock</p><h4>Units at or below the threshold are held back</h4><p>"Release safety stock to back-order" makes them available to a back-order line. It is a ledger line with a reason.</p></div>
+      <div class="sc err"><p class="lab">Serial numbers on goods in</p><h4>A repeat, a wrong count, or a wrong format</h4><p>"NG4P-77124 is already dispatched on INT-0038." "29 entered, 30 needed." "NG4P-7712 is too short." Nothing is saved until the list is right.</p></div>
+      <div class="sc need"><p class="lab">A back-order line arrives</p><h4>Mark it received only with a goods-in record</h4><p>The line carries "ordered from supplier" and "received" markers. It cannot be marked received without a goods-in record, so stock and the promise stay true.</p></div>
+      <div class="sc"><p class="lab">The books agree</p><h4>On hand always equals the ledger</h4><p>A daily check compares the two. If they ever differ, it shows on Today for Operations and for Admin, never silently.</p></div>
+    </div>
+
+    <h3 class="grp">Bulk upload</h3>
+    <div class="grid">
+      <div class="sc"><p class="lab">The template</p><h4>Download it from the page, with a version number</h4><p>A file made from an old template is told which columns changed. SKU is the match key. A missing or repeated key fails the row.</p></div>
+      <div class="sc need"><p class="lab">Waiting for Admin</p><h4>A banner on Products and Bulk upload</h4><p>"Catalogue file 12 Oct is waiting for an Admin. Nothing has changed yet." It also appears under Approvals for Admin.</p></div>
+      <div class="sc"><p class="lab">After approval</p><h4>Applied, with a one-click rollback</h4><p>The previous state of every touched product is kept. Rolling back puts it all back, and writes both actions to the record.</p></div>
+      <div class="sc err"><p class="lab">A file that cannot be read</p><h4>Wrong type, empty, or over the size limit</h4><p>Said in one line before the dry run. The 500-row launch file must load in a single upload.</p></div>
+    </div>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: the products list, the product page and its go-live checklist, stock and goods in, and the bulk upload.</p>
+</main>
+</body>
+</html>

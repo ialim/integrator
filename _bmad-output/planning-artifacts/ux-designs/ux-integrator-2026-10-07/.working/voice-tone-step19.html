@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>integrator: Step 19, voice and tone (proposal)</title>
+<style>
+/*
+  STEP 19 SHEET: voice and tone, the formats we always use, the word list, message patterns, and the words that need counsel.
+  Direction A (Ledger) look, light only. A proposal for the owner's reaction. Every example is from a screen the owner has
+  already confirmed, or from the PRD's own words. Nothing here is decided until you confirm it.
+  Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
+  green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
+  error tint #F6E4DE, control #7A7258, hairline #D9CFB5.
+*/
+:root{color-scheme:light;
+  --paper:#FAF6EC;--sheet:#FFFFFF;--aged:#F0E9D6;--desk:#E7DFCB;--warn-tint:#F6EACB;--bad-tint:#F6E4DE;
+  --ink:#1A1812;--ink2:#4A4434;--green:#153D2E;--brass:#6B4E0C;--ok:#1B5E3A;--warn:#6E4400;--bad:#8A1C14;
+  --rule:#D9CFB5;--control:#7A7258;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",Menlo,monospace;}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.page{max-width:1160px;margin:0 auto;padding:30px 24px 60px}
+.kicker{margin:0 0 6px;font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{margin:0 0 10px;font:700 32px/1.15 var(--serif);color:var(--green)}
+.lede{max-width:860px;margin:0 0 28px}
+section{margin:0 0 38px}
+h2{margin:0 0 6px;font:700 23px/1.2 var(--serif);color:var(--green)}
+.sub{max-width:860px;margin:0 0 14px;font-size:14px;color:var(--ink2)}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.rule{padding:14px 16px;background:var(--paper);border:1px solid var(--control);border-top:3px double var(--ink)}
+.rule h3{font:700 16px/1.3 var(--serif)}
+.rule .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.say,.dont{padding:8px 10px;font-size:13.5px;background:var(--sheet);border:1px solid var(--rule)}
+.say{border-left:5px solid var(--ok)}
+.dont{border-left:5px solid var(--bad)}
+.say b,.dont b{display:block;margin-bottom:2px;font:700 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase}
+.say b{color:var(--ok)}
+.dont b{color:var(--bad)}
+table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--control);font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+thead th{background:var(--aged);border-bottom:2px solid var(--ink);font:700 12.5px var(--sans)}
+tbody th{font-weight:600}
+td.mono,.mono{font:13px/1.4 var(--mono)}
+td small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink2)}
+.quote{font:15px/1.45 var(--serif);color:var(--ink)}
+.msgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.msg{padding:12px 14px;background:var(--paper);border:1px solid var(--control);border-left:6px solid var(--green)}
+.msg h3{font:700 15px/1.3 var(--sans)}
+.msg p{margin-top:5px;font-size:14px}
+.msg .eg{margin-top:8px;padding:8px 10px;background:var(--sheet);border:1px solid var(--rule);font-size:13.5px}
+.msg .eg b{display:block;margin-bottom:2px;font:700 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.msg.wa{border-left-color:var(--brass)}
+.chip{display:inline-block;padding:3px 8px;border:1px solid var(--control);background:var(--sheet);font:600 12px/1.2 var(--sans);white-space:nowrap}
+.chip.warn{border-color:var(--brass);background:var(--warn-tint);color:var(--warn)}
+.notes{max-width:860px;margin:30px 0 0;padding-left:14px;border-left:3px double var(--brass);font:16px/1.5 var(--serif);color:var(--green)}
+@media (max-width:820px){.rules,.msgs{grid-template-columns:1fr}.rule .pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="kicker">Step 19 of the walk-through</p>
+  <h1>Voice and tone: how integrator speaks</h1>
+  <p class="lede">Proposal for your reaction. This is the cross-cutting layer that makes the 18 steps you have confirmed sound like one product: six rules for the voice, the tone for each moment, the formats we always use, the word list, patterns for common messages, and a register of the words that must be checked by counsel or the accountant before launch. It covers the app, the staff console, WhatsApp and email messages, and the PDFs. Every example is taken from a screen you have already confirmed, or from the PRD's own words, which we never change. Nothing here is decided until you confirm it.</p>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. The voice in six rules</h2>
+    <p class="sub">The reader is a working integrator in Nigeria, often on a phone, often in a hurry, sometimes standing on a ladder. The voice is plain, steady and respectful.</p>
+    <div class="rules">
+      <div class="rule"><h3>1. Plain words, short sentences</h3><div class="pair"><div class="say"><b>Say</b>We could not confirm your payment.</div><div class="dont"><b>Do not say</b>Payment verification unsuccessful.</div></div></div>
+      <div class="rule"><h3>2. Say what happened, why, and what to do next</h3><div class="pair"><div class="say"><b>Say</b>This code has expired. Codes work for 48 hours. Ask the person who gave it to you for a new one.</div><div class="dont"><b>Do not say</b>Invalid code.</div></div></div>
+      <div class="rule"><h3>3. A button says what it does</h3><div class="pair"><div class="say"><b>Say</b>Send receipt. Ask for a refund. Put on hold.</div><div class="dont"><b>Do not say</b>Submit. OK. Confirm. Proceed.</div></div></div>
+      <div class="rule"><h3>4. Stay calm about clocks and money</h3><div class="pair"><div class="say"><b>Say</b>Price held for 3 h 12 min. Send your receipt before 8 Oct, 10:42 am.</div><div class="dont"><b>Do not say</b>Hurry! Offer ending soon!</div></div></div>
+      <div class="rule"><h3>5. Never blame, never joke</h3><div class="pair"><div class="say"><b>Say</b>That code is not right. Check the 6 digits and try again.</div><div class="dont"><b>Do not say</b>Oops! You typed the wrong code.</div></div></div>
+      <div class="rule"><h3>6. One name for one thing</h3><div class="pair"><div class="say"><b>Say</b>Credit note, every time, everywhere.</div><div class="dont"><b>Do not say</b>Credit, balance, wallet, store credit, for the same thing.</div></div></div>
+    </div>
+    <p class="sub" style="margin-top:12px">No exclamation marks and no emoji anywhere. No "Oops", no "Sorry" for something routine, no idioms that do not travel. Sentence case everywhere: capitals only on the small label above a heading.</p>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. Tone for each moment</h2>
+    <p class="sub">The same voice, turned up or down for what is happening.</p>
+    <table>
+      <thead><tr><th scope="col">Moment</th><th scope="col">Tone</th><th scope="col">An example already in the screens</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Status and information</th><td>Calm and factual</td><td class="quote">"Delivery 1 is on its way. Courier partner, tracking CP-88213."</td></tr>
+        <tr><th scope="row">A success</th><td>Brief. Says the result and what comes next.</td><td class="quote">"Receipt sent. We check it against our bank statement, usually within 2 business hours."</td></tr>
+        <tr><th scope="row">Waiting on us</th><td>Honest about working hours</td><td class="quote">"We work 8 am to 6 pm, Monday to Saturday. We will tell you on WhatsApp and email as soon as it is confirmed."</td></tr>
+        <tr><th scope="row">Needs the person</th><td>Direct. One action.</td><td class="quote">"Pay for order INT-0044. Price held for 3 h 12 min."</td></tr>
+        <tr><th scope="row">Something failed</th><td>Plain and kind. Never alarming.</td><td class="quote">"We could not reach the NIN service. We will keep trying for up to 24 hours and tell you the result. You can close the app."</td></tr>
+        <tr><th scope="row">A rule says no</th><td>Firm. Gives the reason. Offers a way on.</td><td class="quote">"Back-order items cannot be returned for a change of mind. Call or WhatsApp us to talk it through."</td></tr>
+        <tr><th scope="row">Money moves, or it cannot be undone</th><td>Serious and complete. No cheerfulness. Lists what happens.</td><td class="quote">"Close Adeyemi Integrated Systems? This cannot be undone."</td></tr>
+        <tr><th scope="row">The staff console</th><td>Shortest. Imperative. The same nouns as the app.</td><td class="quote">"Confirm payment." "Reason (required, kept on record)."</td></tr>
+        <tr><th scope="row">Legal and regulated text</th><td>Verbatim, and approved by counsel before launch</td><td class="quote">The Terms key points, refund terms, privacy lines. See section 6.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. The formats we always use</h2>
+    <p class="sub">Nigerian conventions, British spelling, and the same format on every screen, email and PDF.</p>
+    <table>
+      <thead><tr><th scope="col">Thing</th><th scope="col">Format</th><th scope="col">Example</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Money, to a business</th><td>Naira sign, commas, always two decimals, and "VAT included" where it is a price. Never dollars.</td><td class="mono">₦731,729.94</td></tr>
+        <tr><th scope="row">Money, in the console</th><td>Naira for orders and payments. Dollars only for supplier costs, the rate and the dashboard, always labelled.</td><td class="mono">USD 37.21 · ₦1,368.00 to the dollar</td></tr>
+        <tr><th scope="row">A reduction</th><td>A real minus sign before the naira sign</td><td class="mono">−₦38,250.00</td></tr>
+        <tr><th scope="row">Percent</th><td>No space</td><td class="mono">2%</td></tr>
+        <tr><th scope="row">A date</th><td>Day name, day, month. Add the year when it is not this year, or in a document.</td><td class="mono">Wed 7 Oct · 7 Oct 2026</td></tr>
+        <tr><th scope="row">A range of dates</th><td>"to", never a dash</td><td class="mono">Mon 5 Oct to Sun 11 Oct</td></tr>
+        <tr><th scope="row">A time</th><td>12-hour, with am or pm, in West Africa Time. The zone is named only on settings and exports.</td><td class="mono">11:24 am</td></tr>
+        <tr><th scope="row">Time left</th><td>Hours and minutes with short units. Business hours say so when the clock stops outside 8 am to 6 pm, Monday to Saturday.</td><td class="mono">3 h 12 min · 47 h left · 2 business hours · 1 business day</td></tr>
+        <tr><th scope="row">A phone number</th><td>Local form, grouped 4-3-4. Hidden part shown with dots.</td><td class="mono">0803 555 0142 · 0803 ••• 0142</td></tr>
+        <tr><th scope="row">A reference</th><td>Letters, a dash, digits. Shown in a monospace face so it can be read aloud and copied.</td><td class="mono">INT-0042 order · CN-0012 credit note · C-0231 case · RR-0087 return request</td></tr>
+        <tr><th scope="row">A code a person reads out or types</th><td>Groups of four, capitals, no look-alike letters</td><td class="mono">7KQ4-M2XD-9PTA vouch code · IC-4829-QK7M issue code</td></tr>
+        <tr><th scope="row">A serial number</th><td>As the maker prints it</td><td class="mono">NG4P-77124</td></tr>
+        <tr><th scope="row">An internal reference, staff only</th><td>Never shown to a business</td><td class="mono">BA-0243 business · P-1187 profile · L-20644 audit entry</td></tr>
+        <tr><th scope="row">A person</th><td>First name inside a team. Name and initial in the console. Full name on documents.</td><td class="mono">Chidi · Chidi O. · Chidi Okafor</td></tr>
+        <tr><th scope="row">A size or measure</th><td>A number, a space, the unit</td><td class="mono">305 m · 2 TB · 4MP · 2.1 MB · 0.9 kg</td></tr>
+        <tr><th scope="row">Spelling</th><td>British</td><td>colour, licence, organise, cheque</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="s4">
+    <h2 id="s4">4. The word list</h2>
+    <p class="sub">The PRD's terms are exact, and downstream work must use them. A business never sees some of them, so the screens use a friendlier word for the same thing. The left column is what a business reads.</p>
+    <table>
+      <thead><tr><th scope="col">What a business reads</th><th scope="col">PRD term</th><th scope="col">We never say</th><th scope="col">Why</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">business</th><td>Business Account</td><td>account holder, company</td><td>Short, and it is what an integrator calls their own</td></tr>
+        <tr><th scope="row">approved · not yet approved</th><td>Access Level 1, 2, 3 · onboarded</td><td>Level 1, Level 2, Level 3</td><td>Levels are internal. A business sees four steps (Step 7).</td></tr>
+        <tr><th scope="row">trade name</th><td>Trade Name</td><td>brand name</td><td>It appears on proposals</td></tr>
+        <tr><th scope="row">vouch code</th><td>Vouch Code</td><td>referral code, invite code</td><td>It is a statement that you know someone, not a promotion</td></tr>
+        <tr><th scope="row">established integrator</th><td>Established Integrator</td><td>premium, verified seller, partner</td><td>No ranks, no badges</td></tr>
+        <tr><th scope="row">project · room</th><td>Project · Room</td><td>job, site</td><td>One word, as in the PRD</td></tr>
+        <tr><th scope="row">proposal</th><td>Proposal</td><td>quote, quotation, estimate</td><td>A proposal commits both sides, so it has its own word</td></tr>
+        <tr><th scope="row">order</th><td>Order</td><td>purchase, booking</td><td></td></tr>
+        <tr><th scope="row">receipt</th><td>Receipt</td><td>proof of payment, evidence</td><td>It is the bank's slip</td></tr>
+        <tr><th scope="row">price hold · price held</th><td>Price Lock</td><td>lock, locked price</td><td>Said as an event with a clock, not as a feature</td></tr>
+        <tr><th scope="row">credit note</th><td>Credit Note</td><td>wallet, credit, balance, store credit</td><td>Not a wallet. The accountant and counsel care about the word.</td></tr>
+        <tr><th scope="row">refund</th><td>refund</td><td>cash back, reversal</td><td>Never "no refunds" wording anywhere</td></tr>
+        <tr><th scope="row">tier (Tier 2)</th><td>Loyalty Tier</td><td>level, status, membership, rank</td><td>Because "level" is taken by access</td></tr>
+        <tr><th scope="row">delivery · pick-up</th><td>Delivery · Pick-up</td><td>collection, shipping</td><td></td></tr>
+        <tr><th scope="row">store</th><td>Store (the Main Store)</td><td>branch, warehouse, shop</td><td></td></tr>
+        <tr><th scope="row">back-order</th><td>Back-order Item</td><td>pre-order, made to order</td><td>It has its own rules, so it has its own word</td></tr>
+        <tr><th scope="row">issue code</th><td>Issue Code</td><td>RMA number, return code</td><td>RMA is the maker's and stays inside the console</td></tr>
+        <tr><th scope="row">return request · problem · case</th><td>Return Request · Case</td><td>claim, complaint, ticket</td><td>"Report a problem" starts a case. "Case C-0231" is its number.</td></tr>
+        <tr><th scope="row">our team · our finance team · Support</th><td>Admin · Finance · Operations</td><td>the admin, the back office</td><td>A business never sees our role names</td></tr>
+        <tr><th scope="row">Owner · Manager · Technician</th><td>the same</td><td>admin, staff, user</td><td>Capitalised, because they are names of roles</td></tr>
+        <tr><th scope="row">National Identification Number (NIN)</th><td>NIN</td><td>ID number</td><td>Spelled out once on a screen, then NIN</td></tr>
+        <tr><th scope="row">VAT included</th><td>VAT</td><td>tax, inclusive</td><td>Always beside a price</td></tr>
+        <tr><th scope="row">exchange rate · the rate</th><td>Platform Rate</td><td>FX, our rate</td><td>Shown as "₦1,368 to the dollar" only where a change in it is explained</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="s5">
+    <h2 id="s5">5. Patterns for common messages</h2>
+    <p class="sub">Each pattern has a fixed shape so a new screen can be written without a meeting.</p>
+    <div class="msgs">
+      <div class="msg"><h3>A button</h3><p>A verb and, when it helps, the object. The primary button is the only filled one on a screen. A button that opens a dialog ends in an ellipsis. A button that cannot be pressed stays visible, looks dashed, and the reason is written next to it.</p><div class="eg"><b>Example</b>Send receipt · Ask for a refund · Put on hold… · Approve and send to Support</div></div>
+      <div class="msg"><h3>An error</h3><p>Four short parts, in this order: what happened, why if we know, what to do, and where to get help. It never shows a code or a technical word.</p><div class="eg"><b>Example</b>We could not confirm your payment. We could not match your transfer of ₦800,000.00 to our bank statement. Check the amount and the reference on your receipt. Need help? Call or send us a WhatsApp message.</div></div>
+      <div class="msg"><h3>A success</h3><p>One line with the result, and one with what happens next. No celebration.</p><div class="eg"><b>Example</b>Vouch code made for Hammed Bello. It works once, only for him, until Fri 9 Oct, 4:10 pm.</div></div>
+      <div class="msg"><h3>An empty place</h3><p>Says why it is empty and offers the single next step. Never a cartoon.</p><div class="eg"><b>Example</b>No projects yet. Make your first one: a name is all we ask.</div></div>
+      <div class="msg"><h3>Waiting and loading</h3><p>Nothing for the first second. After that, words, and a bar with a percentage for anything that takes long, like a receipt upload. Never a spinner on its own.</p><div class="eg"><b>Example</b>Sending, 62%. Waiting for signal.</div></div>
+      <div class="msg"><h3>A confirmation dialog</h3><p>The title is the question and names the thing. The body lists what will happen. The buttons are the verb and Cancel. Red is for something that cannot be undone.</p><div class="eg"><b>Example</b>Put Sade AV Systems on hold? They cannot make new orders. They cannot be paid a refund. Payments for orders already made are still processed.</div></div>
+      <div class="msg"><h3>A role says no</h3><p>Names who can do it. Never "Access denied". The row or button a role can never use is not shown at all.</p><div class="eg"><b>Example</b>Only the Owner can ask for a refund.</div></div>
+      <div class="msg"><h3>No signal</h3><p>Says what still works, how fresh it is, and that changes will send later.</p><div class="eg"><b>Example</b>No signal. You are working from what is saved on this phone, checked today 7:10 am. Changes sync when you are back online.</div></div>
+      <div class="msg wa"><h3>A WhatsApp or email message</h3><p>Names the order, proposal or case first. Says what happened, then what to do. One link. Under 300 characters on WhatsApp. Signed "integrator". A Technician's message never carries an amount. The PRD's own literals are never reworded.</p><div class="eg"><b>To an Owner</b>Order INT-0042: payment of ₦731,729.94 confirmed. We are checking stock and will approve it today. integrator</div></div>
+      <div class="msg wa"><h3>A message to a Technician</h3><p>The same shape, with the money left out and the thing the person can do kept.</p><div class="eg"><b>To a Technician</b>Delivery 1 of order INT-0042 is on its way. Courier partner, tracking CP-88213. integrator</div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s6">
+    <h2 id="s6">6. Words that must be checked before launch</h2>
+    <p class="sub">The screens carry placeholder wording for these. Each one is a promise or a legal statement, so counsel or the accountant must approve the final text. They stay in a single register so none is missed.</p>
+    <table>
+      <thead><tr><th scope="col">Words</th><th scope="col">Where they appear</th><th scope="col">Checked by</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">The Terms key points: reporting windows (5, 30 and 7 days), the 15% restocking fee, back-order and exclusions, credit notes lasting 12 months, warranty limits</th><td>Sign-up, the approval request, the new-Terms screen</td><td><span class="chip warn">Counsel</span></td></tr>
+        <tr><th scope="row">Credit note expiry and refund terms, including refunding what is left after expiry</th><td>Credit notes screens, messages</td><td><span class="chip warn">Counsel</span></td></tr>
+        <tr><th scope="row">The privacy lines about the NIN, and who can see it</th><td>Confirm who you are, the Privacy Notice</td><td><span class="chip warn">Counsel</span> (NDPA 2023)</td></tr>
+        <tr><th scope="row">VAT wording on proposals, tax invoices and credit-note documents</th><td>Proposal PDF, documents</td><td><span class="chip warn">Accountant</span></td></tr>
+        <tr><th scope="row">The proposal's validity sentence about the exchange rate</th><td>Proposal PDF footer</td><td><span class="chip warn">Counsel</span> and the founder</td></tr>
+        <tr><th scope="row">Recall and counterfeit notices, and what "I think it is fake" implies</th><td>Home, order banners, return screens</td><td><span class="chip warn">Counsel</span></td></tr>
+        <tr><th scope="row">Hold, revoke and blocklist messages to a business</th><td>Banners, messages</td><td><span class="chip warn">Counsel</span></td></tr>
+        <tr><th scope="row">"We keep what the law says we must" when an account is closed</th><td>Closing the account</td><td><span class="chip warn">Counsel</span> and <span class="chip warn">Accountant</span></td></tr>
+        <tr><th scope="row">"Bank details changed on [date]" banner</th><td>Payment screens for 7 days after a change</td><td><span class="chip warn">Finance</span> and the founder</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="notes">Questions for you are in the chat: spelling and formats, the tone for each moment, the word list, and the patterns for messages.</p>
+</main>
+</body>
+</html>
