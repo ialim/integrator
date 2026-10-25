@@ -644,7 +644,7 @@ As the builder,
 I want the project scaffolded from the architecture's stack with its structural rules checked automatically,
 So that every later story is built on the same layout and cannot quietly break the single write path.
 
-**Requirements:** AD-1, AD-2, AD-11; architecture Consistency Conventions
+**Requirements:** AD-1, AD-2, AD-11; architecture Consistency Conventions; test design R-11; TC-1, TC-2, TC-4
 
 **Acceptance Criteria:**
 
@@ -686,6 +686,18 @@ So that every later story is built on the same layout and cannot quietly break t
 **Given** a new table's primary key
 **When** a row is created through the `Shared` id helper
 **Then** the key is a UUIDv7.
+
+**Given** the test suite
+**When** it connects to a database
+**Then** it uses PostgreSQL 17, and CI fails if any test connection is anything else (test design R-11).
+
+**Given** the `Shared` Clock
+**When** tests or staging run
+**Then** the current time can be set and advanced without waiting, and every module reads time only through it (TC-2).
+
+**Given** local and test environments
+**When** a test needs a starting state
+**Then** factories and a seeding command create it by calling Actions, and neither is available in production (TC-4).
 
 ### Story 1.2: Production hosting with an hourly offsite copy and founder alerts
 
@@ -776,7 +788,7 @@ As an Admin,
 I want to create Finance, Operations and Admin accounts and deactivate them when someone leaves,
 So that each person has their own audited sign-in and a departed colleague loses access at once.
 
-**Requirements:** FR-52, FR-76; AD-4, AD-15; edge-case row 14; UX-DR11
+**Requirements:** FR-52, FR-76; AD-4, AD-15; edge-case row 14; UX-DR11; test design TC-3
 
 **Acceptance Criteria:**
 
@@ -814,6 +826,10 @@ So that each person has their own audited sign-in and a departed colleague loses
 **Given** a Finance or Operations account
 **When** it requests the Staff page or its Actions
 **Then** the server refuses.
+
+**Given** the email provider's fake
+**When** a test configures it
+**Then** it can script success, definitive failure, timeout or error for each call, and every later provider fake offers the same (TC-3).
 
 ### Story 1.5: Each role sees only its own work
 
@@ -1287,7 +1303,7 @@ As the builder,
 I want every Pricing formula and the price snapshot proven against the addendum's test vectors before anything stores a price,
 So that Proposals, Orders, invoices and Credit Notes never need their stored prices migrated.
 
-**Requirements:** FR-19, FR-23, FR-30, FR-35, FR-38, FR-61; NFR-4; AD-7; addendum test vectors
+**Requirements:** FR-19, FR-23, FR-30, FR-35, FR-38, FR-61; NFR-4; AD-7; addendum test vectors; test design R-01
 
 **Acceptance Criteria:**
 
@@ -1329,6 +1345,14 @@ So that Proposals, Orders, invoices and Credit Notes never need their stored pri
 **Given** these formulas
 **When** the Pricing test suite runs
 **Then** every addendum test vector is a named test.
+
+**Given** the addendum vectors and the other pricing cases
+**When** they are stored
+**Then** they live in one shared file in the repository that the app's money tests also read from Story 6.5 (test design R-01).
+
+**Given** generated carts of random products, quantities, discounts and rates
+**When** a property test prices them
+**Then** unit price times quantity always equals the line, the lines always sum to the total, and no pre-VAT price falls below the margin floor.
 
 ### Story 2.10: Admin changes a markup and sees what it will do
 
@@ -1577,7 +1601,7 @@ As a Finance officer,
 I want warnings as the Platform Rate ages and a way to pause new orders,
 So that nobody orders at a rate we can no longer honour.
 
-**Requirements:** FR-20; NFR-9; AD-5
+**Requirements:** FR-20; NFR-9; AD-5; test design R-08; TC-2
 
 **Acceptance Criteria:**
 
@@ -1609,6 +1633,18 @@ So that nobody orders at a rate we can no longer honour.
 **Given** a rate change waiting for a second person
 **When** the requester submits it
 **Then** they can choose to pause new orders while it waits, off by default.
+
+**Given** a test or staging environment
+**When** someone runs the sweep-tick command
+**Then** one sweep runs at the Clock's current time, so timers can be exercised without waiting (TC-2).
+
+**Given** any timer Action
+**When** it is tested
+**Then** it is run just before, exactly at and just after its deadline, and twice in a row, and does the right thing each time (test design R-08).
+
+**Given** two schedulers running at once
+**When** the sweep is due
+**Then** it runs on one server only.
 
 *Note: nothing creates Orders yet. Epic 7 reads this Query and shows the single "Prices are being updated" message.*
 
@@ -1859,7 +1895,7 @@ As an Owner who is not yet approved,
 I want to browse the Catalogue and see what is in stock,
 So that I can judge whether the platform carries what I install.
 
-**Requirements:** FR-2, FR-55, FR-73; NFR-7; AD-13; UX-DR42
+**Requirements:** FR-2, FR-55, FR-73; NFR-7; AD-13; UX-DR42; test design R-03
 
 **Acceptance Criteria:**
 
@@ -1900,6 +1936,10 @@ So that I can judge whether the platform carries what I install.
 **Given** a screen-reader user
 **When** they reach the list
 **Then** it is announced as a list, each row is one target at least 56px high, and stock status is in words.
+
+**Given** a new API resource or sync payload
+**When** it is added without an entry in the field-visibility registry
+**Then** CI fails and names it (test design R-03).
 
 ### Story 3.7: Search, filter and sort
 
@@ -2264,7 +2304,7 @@ As an Admin,
 I want to check an identity by hand without exposing the NIN more than I must,
 So that honest people get verified and every look at a NIN is on record.
 
-**Requirements:** FR-4, FR-53; NFR-3; AD-16; edge-case row 4
+**Requirements:** FR-4, FR-53; NFR-3; AD-16; edge-case row 4; test design R-07
 
 **Acceptance Criteria:**
 
@@ -2303,6 +2343,14 @@ So that honest people get verified and every look at a NIN is on record.
 **Given** one staff member reveals more NINs in a day than the alert threshold (a placeholder setting)
 **When** the threshold is passed
 **Then** the founder is alerted (PRD §8.3 question 13).
+
+**Given** a canary NIN driven through sign-up, the automatic check, manual review, reveal and export
+**When** the logs, exception reports, queue payloads, outbox payloads and exports are searched
+**Then** the NIN appears in none of them (test design R-07).
+
+**Given** a backup taken before a NIN's 30-day deletion
+**When** it is restored into a clean environment after the deletion has run
+**Then** the NIN cannot be decrypted.
 
 ### Story 4.6: Deputies and out of office
 
@@ -3116,7 +3164,7 @@ As an Owner,
 I want a Project made on one phone to appear on my team's devices,
 So that the office and the site are looking at the same job.
 
-**Requirements:** FR-28; AD-12, AD-22; edge-case row 34
+**Requirements:** FR-28; AD-12, AD-22; edge-case row 34; test design R-05
 
 **Acceptance Criteria:**
 
@@ -3155,6 +3203,10 @@ So that the office and the site are looking at the same job.
 **Given** the merge rules
 **When** they are implemented
 **Then** the server and the app both run the same specification's test vectors.
+
+**Given** two writing transactions that commit in the opposite order to their `change_seq`
+**When** a phone pulls changes
+**Then** neither row is skipped, proven by a test against PostgreSQL (test design R-05).
 
 ### Story 6.3: Add, rename, delete and restore Rooms
 
@@ -3329,7 +3381,7 @@ As an Owner,
 I want a person's saved work cleared from their phone when they leave or change role,
 So that prices and projects do not linger on a device I no longer control.
 
-**Requirements:** FR-10, FR-28; AD-12; edge-case rows 9, 10
+**Requirements:** FR-10, FR-28; AD-12; edge-case rows 9, 10; test design R-06
 
 **Acceptance Criteria:**
 
@@ -3352,6 +3404,10 @@ So that prices and projects do not linger on a device I no longer control.
 **Given** a removed User
 **When** their store is cleared
 **Then** the Projects themselves stay with the business.
+
+**Given** a Manager demoted to Technician on a phone that holds a price sheet
+**When** the phone reconnects
+**Then** a browser test that inspects the local IndexedDB store finds no price field (test design R-06).
 
 *Note: the screen where an Owner or Manager accepts or discards held edits is built in Epic 12.*
 
@@ -3492,7 +3548,7 @@ As an Owner or Manager,
 I want the Proposal to look like my own document and reveal nothing about my costs,
 So that my client sees my business and my price, and nothing else.
 
-**Requirements:** FR-30; edge-case row 30; UX-DR23, UX-DR43
+**Requirements:** FR-30; edge-case row 30; UX-DR23, UX-DR43; test design R-10
 
 **Acceptance Criteria:**
 
@@ -3523,6 +3579,10 @@ So that my client sees my business and my price, and nothing else.
 **Given** the PDF file
 **When** it is stored and served
 **Then** it is private, served only through a short-lived signed link, and tagged with real text, a title, the language, headings, true tables and a described logo.
+
+**Given** distinctive sentinel values planted for the Supplier Cost, Wholesale Price, Platform Markup, Tier Discount, Back-order Discount, Integrator Margin and the Integrator's Selling Price
+**When** the forbidden-field test renders the PDF and searches its extracted text and its metadata
+**Then** no sentinel is found (test design R-10).
 
 ### Story 6.12: Replace and expire a Proposal
 
@@ -4534,7 +4594,7 @@ As an Owner or Manager,
 I want my price kept when I pay in time, and a clear new amount when I do not,
 So that a move in the naira never surprises me.
 
-**Requirements:** FR-35, FR-38; AD-7; edge-case rows 42, 43, 44
+**Requirements:** FR-35, FR-38; AD-7; edge-case rows 42, 43, 44; test design R-04
 
 **Acceptance Criteria:**
 
@@ -4573,6 +4633,10 @@ So that a move in the naira never surprises me.
 **Given** Finance reviewing a Receipt that is late for the price hold
 **When** the review loads
 **Then** it shows a repricing preview.
+
+**Given** the FR-38 rules
+**When** they are tested
+**Then** they are written as one decision table covering in time, late, straddling a boundary, a corrected re-upload, the underpayment tolerance and a bank credit whose value time is after the upload, and each row is driven by the controlled Clock and the fake statement import (test design R-04).
 
 ### Story 8.11: An Order with Receipts expires
 
