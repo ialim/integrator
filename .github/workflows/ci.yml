@@ -1,0 +1,128 @@
+# The merge gate. Every job must pass; with branch protection on `main`
+# requiring these checks (see README), any failure blocks the merge.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.4'
+  PHP_EXTENSIONS: pdo_pgsql, pgsql, intl, mbstring, zip, bcmath
+
+jobs:
+  php-lint:
+    name: PHP lint (Pint, Larastan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Pint
+        run: vendor/bin/pint --test
+      - name: Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+  php-tests:
+    name: PHP tests (unit, feature, architecture) on PostgreSQL 17
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: integrator_test
+          POSTGRES_USER: integrator
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U integrator -d integrator_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: integrator
+      DB_PASSWORD: secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Unit tests
+        run: php artisan test --testsuite=Unit
+      - name: Feature tests
+        run: php artisan test --testsuite=Feature
+      - name: Architecture tests
+        run: php artisan test --testsuite=Architecture
+      - name: Module and flow tests
+        run: php artisan test --testsuite=Modules,Flows
+      - name: The test database guard refuses anything but PostgreSQL 17 (TC-1)
+        run: |
+          set +e
+          output=$(DB_CONNECTION=sqlite php artisan test 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+          test "$status" -ne 0
+          echo "$output" | grep -q 'Tests refused: database connection \[sqlite\]'
+      - name: Each architecture rule fails on its fixture and names the file
+        run: |
+          set +e
+          output=$(ARCH_FIXTURES=1 php artisan test --testsuite=Architecture 2>&1)
+          status=$?
+          set -e
+          test "$status" -ne 0
+          missing=0
+          for rule in \
+            'AD-1, Actions are the only writers' \
+            'AD-2, strict module boundaries' \
+            'The foreign-key rule' \
+            'Clock-only time' \
+            'AD-15, providers behind module interfaces' \
+            'AD-11, UUIDv7 keys everywhere'; do
+            echo "$output" | grep -qF "${rule}" || { echo "No failure reported for rule: ${rule}"; missing=1; }
+          done
+          test "$missing" -eq 0
+
+  app:
+    name: App (ESLint, Prettier, tsc, Vitest, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ESLint and Prettier
+        run: npm run lint
+      - name: Type check
+        run: npm run typecheck
+      - name: Vitest
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Assets are in public/build
+        run: test -f public/build/manifest.json

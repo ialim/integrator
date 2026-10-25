@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+        - bootstrap/app.php
+        - database
+        - routes
+        - tests/Architecture/Support
+        - tests/Support
+    excludePaths:
+        - app/Modules/*/Tests/*
+    ignoreErrors:
+        # Shared kernel traits are used by models that later stories add.
+        - identifier: trait.unused
+          path: app/Modules/Shared/Support/HasUuidV7.php

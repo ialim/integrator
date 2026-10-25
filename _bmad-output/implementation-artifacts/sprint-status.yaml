@@ -29,14 +29,14 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-25-2026 12:00
-last_updated: 10-25-2026 12:00
+last_updated: 10-25-2026 21:30
 project: integrator
 project_key: NOKEY
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 development_status:
-  epic-1: backlog
-  1-1-scaffold-the-project-with-its-rules-enforced: backlog
+  epic-1: in-progress
+  1-1-scaffold-the-project-with-its-rules-enforced: review
   1-2-production-hosting-with-an-hourly-offsite-copy-and-founder-a: backlog
   1-3-staff-sign-in-to-the-console-with-two-steps: backlog
   1-4-admin-creates-and-deactivates-staff-accounts: backlog
