@@ -83,6 +83,26 @@ PHP commands run as `docker compose run --rm app <command>`.
 - **Test seeding only through Actions (TC-4).** Factories extend `Database\Factories\ActionFactory`, and the
   seeding command exists only when `APP_ENV` is `local` or `testing`.
 
+## Production, backups and alerts
+
+Production runs on Laravel Cloud; the founder applies the settings by hand from `docs/operations/`:
+
+- [`laravel-cloud.md`](docs/operations/laravel-cloud.md): environment, database, queue, scheduler, object
+  storage and every secret, in Laravel Cloud and in GitHub.
+- [`alerts.md`](docs/operations/alerts.md): founder alerts by email, and the heartbeat monitor for backups.
+- [`restore-runbook.md`](docs/operations/restore-runbook.md): restoring from the hourly offsite copy, the
+  4-hour target, the quarterly drill and its log.
+- [`spend-alerts.md`](docs/operations/spend-alerts.md): billing alerts to set at each provider.
+
+The hourly copy is `.github/workflows/offsite-backup.yml` running `scripts/ops/backup.sh`; the restore is
+`scripts/ops/restore.sh`. The `app` image carries `pg_dump` 17, `age` and `rclone`, and `compose.yaml` has a
+MinIO service (S3 API on port 9000, console on 9001) standing in for the buckets locally.
+
+| What | Command |
+| --- | --- |
+| Restore drill on a throwaway stack (needs Docker; run from Git Bash on Windows) | `bash tests/Ops/drill.sh` |
+| Send a test founder alert | `php artisan alerts:test` |
+
 ## Modules
 
 `app/Modules/` holds 13 modules: Shared, Identity, Catalogue, Pricing, Projects, Orders, CreditNotes,
@@ -95,14 +115,17 @@ Fulfilment, Documentation, Notifications, Returns, Staff, Reporting. Each has `A
 
 `.github/workflows/ci.yml` runs on every push and pull request: Pint, Larastan, Pest (unit, feature,
 architecture, module and flow suites) on a PostgreSQL 17 service, the database-guard and fixture checks,
-ESLint, Prettier, `tsc`, Vitest and `npm run build`. Any failing step fails the workflow.
+ESLint, Prettier, `tsc`, Vitest and `npm run build`, a gitleaks secret scan of every commit (with a check that
+it fails on a planted secret; settings in `.gitleaks.toml`), and the restore drill (`tests/Ops/drill.sh`).
+Any failing step fails the workflow.
 
 For a failure to block the merge, the repository owner must switch on branch protection once:
 
 1. On GitHub, open **Settings**, then **Branches** (or **Rules**, then **Rulesets**).
 2. Add a rule for `main`.
 3. Turn on **Require status checks to pass before merging** and **Require branches to be up to date**.
-4. Add the three checks: `PHP lint (Pint, Larastan)`,
-   `PHP tests (unit, feature, architecture) on PostgreSQL 17` and `App (ESLint, Prettier, tsc, Vitest, build)`.
+4. Add the five checks: `PHP lint (Pint, Larastan)`,
+   `PHP tests (unit, feature, architecture) on PostgreSQL 17`, `App (ESLint, Prettier, tsc, Vitest, build)`,
+   `Secret scan (gitleaks)` and `Restore drill (backup to MinIO, restore into a clean database)`.
    They appear in the list after the workflow has run once.
 5. Save.

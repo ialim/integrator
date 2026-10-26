@@ -126,3 +126,123 @@ jobs:
         run: npm run build
       - name: Assets are in public/build
         run: test -f public/build/manifest.json
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.28.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: No secret in any commit
+        run: docker run --rm -v "$PWD:/repo" -w /repo "$GITLEAKS_IMAGE" git --redact --no-banner --verbose --config .gitleaks.toml .
+      - name: The scan fails on a committed secret
+        run: |
+          planted="$(mktemp -d)"
+          git -C "$planted" init -q
+          token="ghp_$(head -c 4096 /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 36)"
+          printf 'GITHUB_TOKEN=%s\n' "$token" > "$planted/settings.env"
+          git -C "$planted" add settings.env
+          git -C "$planted" -c user.name=ci -c user.email=ci@example.invalid commit -qm 'planted secret'
+          set +e
+          # A distinct exit code, so a fatal gitleaks error (exit 1) cannot pass for a finding.
+          docker run --rm -v "$planted:/repo" -v "$PWD/.gitleaks.toml:/gitleaks.toml:ro" -w /repo "$GITLEAKS_IMAGE" \
+            git --redact --no-banner --exit-code 42 --config /gitleaks.toml .
+          status=$?
+          set -e
+          test "$status" -eq 42 || { echo "gitleaks did not report the committed secret (exit $status)"; exit 1; }
+
+  drill:
+    name: Restore drill (backup to MinIO, restore into a clean database)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Back up a seeded database and its objects, restore them and check the app serves them
+        run: bash tests/Ops/drill.sh
+
+  backup-workflow:
+    name: Backup workflow tools on ubuntu-24.04 (pg_dump 17, age, rclone, heartbeat)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: integrator
+          POSTGRES_USER: integrator
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U integrator -d integrator"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_URL: postgresql://integrator:secret@127.0.0.1:5432/integrator
+      RCLONE_CONFIG_MINIO_TYPE: s3
+      RCLONE_CONFIG_MINIO_PROVIDER: Other
+      RCLONE_CONFIG_MINIO_ENDPOINT: http://127.0.0.1:9000
+      RCLONE_CONFIG_MINIO_ACCESS_KEY_ID: integrator
+      RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY: integrator-local
+      RCLONE_CONFIG_MINIO_FORCE_PATH_STYLE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      # Service containers cannot take a command, and MinIO needs `server /data`.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=integrator -e MINIO_ROOT_PASSWORD=integrator-local \
+            pgsty/minio:RELEASE.2026-08-04T00-00-00Z server /data
+          for _ in $(seq 1 30); do curl -fsS http://127.0.0.1:9000/minio/health/live && break; sleep 2; done
+          curl -fsS http://127.0.0.1:9000/minio/health/live
+      # The same commands as the install step in offsite-backup.yml.
+      - name: Install pg_dump 17, age and rclone
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y --no-install-recommends postgresql-client-17 age rclone
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          age --version
+          rclone --version | head -n1
+      - name: Seed the database and the source bucket
+        run: |
+          /usr/lib/postgresql/17/bin/psql "$DB_URL" -v ON_ERROR_STOP=1 -c \
+            "CREATE TABLE receipts (id integer PRIMARY KEY); INSERT INTO receipts SELECT generate_series(1, 10);"
+          rclone mkdir MINIO:source
+          rclone mkdir MINIO:offsite
+          echo "receipt" | rclone rcat MINIO:source/receipts/one.txt
+      - name: Start a local heartbeat listener
+        run: |
+          mkdir -p "$RUNNER_TEMP/heartbeat"
+          touch "$RUNNER_TEMP/heartbeat/ping"
+          nohup python3 -m http.server 8099 --bind 127.0.0.1 --directory "$RUNNER_TEMP/heartbeat" \
+            > "$RUNNER_TEMP/heartbeat.log" 2>&1 &
+          for _ in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8099/ && break; sleep 1; done
+      - name: Run scripts/ops/backup.sh as the workflow does
+        env:
+          PG_DUMP: /usr/lib/postgresql/17/bin/pg_dump
+          BACKUP_STEP_FILE: /tmp/offsite-backup-step
+          BACKUP_HEARTBEAT_URL: http://127.0.0.1:8099/ping
+          OFFSITE_S3_ENDPOINT: http://127.0.0.1:9000
+          OFFSITE_S3_BUCKET: offsite
+          OFFSITE_S3_ACCESS_KEY_ID: integrator
+          OFFSITE_S3_SECRET_ACCESS_KEY: integrator-local
+          SOURCE_S3_ENDPOINT: http://127.0.0.1:9000
+          SOURCE_S3_BUCKET: source
+          SOURCE_S3_ACCESS_KEY_ID: integrator
+          SOURCE_S3_SECRET_ACCESS_KEY: integrator-local
+        run: |
+          age-keygen -o "$RUNNER_TEMP/throwaway.key" 2>/dev/null
+          BACKUP_DATABASE_URL="$DB_URL" BACKUP_AGE_RECIPIENT="$(age-keygen -y "$RUNNER_TEMP/throwaway.key")" \
+            bash scripts/ops/backup.sh
+      - name: The copy is in the bucket and the success ping arrived
+        run: |
+          listing="$(rclone lsf --recursive --files-only MINIO:offsite)"
+          echo "$listing"
+          test "$(grep -cE '^integrator-[0-9]{8}T[0-9]{6}Z\.dump\.age$' <<< "$listing")" -eq 1
+          grep -qx 'objects/receipts/one.txt' <<< "$listing"
+          cat "$RUNNER_TEMP/heartbeat.log"
+          grep -q '"GET /ping HTTP' "$RUNNER_TEMP/heartbeat.log"

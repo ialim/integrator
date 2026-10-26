@@ -33,5 +33,27 @@ services:
       timeout: 5s
       retries: 10
 
+  # An S3 API stand-in for the offsite bucket and for object storage, so the
+  # backup, restore and drill scripts run locally and in CI without a real
+  # provider. Local credentials only; production uses the founder's provider.
+  # MinIO no longer publishes images, so this is the community build of it.
+  minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: integrator
+      MINIO_ROOT_PASSWORD: integrator-local
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   pgsql-data:
+  minio-data:

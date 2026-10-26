@@ -1,0 +1,15 @@
+# Secret scan settings for CI (gitleaks). Gitleaks' default rules, plus an
+# allowlist for tooling files whose content only looks like keys: the BMad
+# file manifest (SHA-256 file hashes) and the vendored test-pattern guides
+# (example tokens in documentation). Never allowlist application paths.
+title = "integrator secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Tooling files with hashes and documentation examples, not secrets"
+paths = [
+  '''^_bmad/_config/files-manifest\.csv$''',
+  '''^\.claude/skills/[^/]+/resources/knowledge/api-testing-patterns\.md$''',
+]

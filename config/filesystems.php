@@ -60,6 +60,23 @@ return [
             'report' => false,
         ],
 
+        // The offsite copy: any S3-compatible bucket at a second provider, outside
+        // Laravel Cloud (AD-20). scripts/ops/backup.sh writes it with the same
+        // settings. Production's app environment does not get these credentials;
+        // see docs/operations/laravel-cloud.md.
+        'offsite' => [
+            'driver' => 's3',
+            'key' => env('OFFSITE_S3_ACCESS_KEY_ID'),
+            'secret' => env('OFFSITE_S3_SECRET_ACCESS_KEY'),
+            'region' => env('OFFSITE_S3_REGION', 'auto'),
+            'bucket' => env('OFFSITE_S3_BUCKET'),
+            'endpoint' => env('OFFSITE_S3_ENDPOINT'),
+            'root' => env('OFFSITE_S3_PREFIX', ''),
+            'use_path_style_endpoint' => env('OFFSITE_S3_USE_PATH_STYLE_ENDPOINT', true),
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*

@@ -1,0 +1,16 @@
+# Overlay for tests/Ops/drill.sh. The drill runs as its own compose project
+# (integrator-drill) with fresh volumes, so it is a throwaway environment and
+# never touches the development database. Nothing is published to the host,
+# so it can run while the development stack is up.
+services:
+  app:
+    ports: !reset []
+    volumes:
+      - drill-scratch:/drill
+  pgsql:
+    ports: !reset []
+  minio:
+    ports: !reset []
+
+volumes:
+  drill-scratch:
