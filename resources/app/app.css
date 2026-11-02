@@ -1,15 +1,26 @@
 @import 'tailwindcss';
+@import '../tokens/ledger.css';
 
 @source '../views/app.blade.php';
 
-/* Ledger tokens. System font stacks only: no bundled font files. */
-@theme {
-    --color-ledger-green: #153d2e;
-    --color-paper: #faf6ec;
-    --color-aged: #f0e9d6;
-    --color-ink: #1a1812;
-    --color-brass: #6b4e0c;
-    --color-error: #8a1c14;
-    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+/* Tailwind names for the Ledger tokens, which live only in resources/tokens/ledger.css. */
+@theme inline {
+    --color-ledger-green: var(--ledger-green);
+    --color-paper: var(--ledger-surface-paper);
+    --color-sheet: var(--ledger-surface-sheet);
+    --color-aged: var(--ledger-surface-aged);
+    --color-ink: var(--ledger-ink);
+    --color-ink-secondary: var(--ledger-ink-secondary);
+    --color-brass: var(--ledger-brass);
+    --color-caution: var(--ledger-caution);
+    --color-caution-tint: var(--ledger-caution-tint);
+    --color-good: var(--ledger-good);
+    --color-error: var(--ledger-error);
+    --color-error-tint: var(--ledger-error-tint);
+    --color-control-edge: var(--ledger-control-edge);
+    --color-hairline: var(--ledger-hairline);
+    --font-sans: var(--ledger-font-sans);
+    --font-serif: var(--ledger-font-serif);
+    --font-mono: var(--ledger-font-mono);
+    --radius-sm: var(--ledger-radius-sm);
 }

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use Database\Factories\Staff\FirstAdminScenario;
+
 /**
  * The named states `php artisan app:seed-test-state` can create. Each entry is
  * an invokable class that builds its state only through {@see ActionFactory}
@@ -16,7 +18,7 @@ final class TestStateScenarios
     public static function all(): array
     {
         return [
-            //
+            'first-admin' => FirstAdminScenario::class,
         ];
     }
 }

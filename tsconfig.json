@@ -14,7 +14,7 @@
         "verbatimModuleSyntax": true,
         "skipLibCheck": true,
         "noEmit": true,
-        "types": ["vite/client"]
+        "types": ["vite/client", "node"]
     },
-    "include": ["resources/app", "vite.config.ts"]
+    "include": ["resources/app", "resources/console", "tests/Accessibility", "vite.config.ts", "playwright.config.ts"]
 }

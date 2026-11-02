@@ -12,7 +12,3 @@ parameters:
         - tests/Support
     excludePaths:
         - app/Modules/*/Tests/*
-    ignoreErrors:
-        # Shared kernel traits are used by models that later stories add.
-        - identifier: trait.unused
-          path: app/Modules/Shared/Support/HasUuidV7.php

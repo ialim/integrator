@@ -14,10 +14,19 @@ export default tseslint.config(
             'bootstrap/**',
             '_bmad/**',
             '_bmad-output/**',
+            '.claude/**',
+            'test-results/**',
+            'playwright-report/**',
         ],
     },
     {
-        files: ['resources/app/**/*.{ts,tsx}', 'vite.config.ts'],
+        files: [
+            'resources/app/**/*.{ts,tsx}',
+            'resources/console/**/*.ts',
+            'tests/Accessibility/**/*.ts',
+            'vite.config.ts',
+            'playwright.config.ts',
+        ],
         extends: [js.configs.recommended, ...tseslint.configs.strict],
         languageOptions: {
             ecmaVersion: 2022,

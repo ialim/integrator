@@ -32,7 +32,9 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    // Never below 12 hours: a staff session must not lapse from idleness before
+    // the console signs it out at 12 hours after sign-in (Staff module).
+    'lifetime' => max(12 * 60, (int) env('SESSION_LIFETIME', 12 * 60)),
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 

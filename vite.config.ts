@@ -6,7 +6,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/app/main.tsx'],
+            input: [
+                'resources/app/main.tsx',
+                'resources/css/filament/console/theme.css',
+                'resources/console/session.ts',
+            ],
             refresh: true,
         }),
         react(),
@@ -19,7 +23,7 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['resources/app/**/*.test.{ts,tsx}'],
+        include: ['resources/app/**/*.test.{ts,tsx}', 'resources/console/**/*.test.ts'],
         setupFiles: ['resources/app/test/setup.ts'],
     },
 });

@@ -97,6 +97,8 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Times are bound without an offset; a UTC session keeps timestamptz values exact.
+            'timezone' => 'UTC',
         ],
 
         'sqlsrv' => [

@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Staff\Models\StaffMember;
+
 return [
 
     /*
@@ -40,6 +42,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // The staff console's own guard (AD-18). Only /console uses it; Sanctum's
+        // guard list (config/sanctum.php) never names it, so /api/v1 refuses a
+        // staff session, and no Integrator account is ever a staff member.
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff_members',
+        ],
     ],
 
     /*
@@ -60,17 +70,18 @@ return [
     */
 
     'providers' => [
-        // The Identity module's User model (Epic 3) and the Staff guard (Story 1.3)
-        // replace this; until then no route authenticates.
+        // The Identity module's User model arrives with Epic 3; until then no
+        // route authenticates through `web`.
         'users' => [
             'driver' => 'eloquent',
             'model' => 'App\\Modules\\Identity\\Models\\User',
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // Staff members, found by lower-cased email; see the Staff module's StaffUserProvider.
+        'staff_members' => [
+            'driver' => 'staff',
+            'model' => StaffMember::class,
+        ],
     ],
 
     /*

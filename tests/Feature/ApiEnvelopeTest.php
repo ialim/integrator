@@ -105,5 +105,5 @@ it('serves the SPA shell on app paths', function () {
 
     $this->get('/consoles')->assertOk()->assertSee('<div id="app"></div>', false);
     $this->get('/api')->assertNotFound();
-    $this->get('/console')->assertNotFound();
+    $this->get('/console')->assertRedirect(); // the staff console, not the SPA
 });

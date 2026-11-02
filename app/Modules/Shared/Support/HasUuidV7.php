@@ -16,7 +16,7 @@ trait HasUuidV7
         return Id::generate();
     }
 
-    public function isValidUniqueId($value): bool
+    public function isValidUniqueId(mixed $value): bool
     {
         return is_string($value) && Id::isValid($value);
     }

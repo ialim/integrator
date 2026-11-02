@@ -13,7 +13,12 @@
 /.zed
 /auth.json
 /node_modules
+/playwright-report
+/test-results
 /public/build
+/public/css/filament
+/public/fonts/filament
+/public/js/filament
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage

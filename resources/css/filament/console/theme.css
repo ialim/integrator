@@ -1,0 +1,514 @@
+/*
+ * The staff console in the Ledger look. Every colour, face, size and shape comes
+ * from resources/tokens/ledger.css, the one token file the app shares.
+ * Light mode only; system fonts only; no shadows, gradients or pill shapes.
+ * Filament's own styles sit in cascade layers, so these unlayered rules win.
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '../../../tokens/ledger.css';
+
+@source '../../../../app/Modules/Staff/**/*';
+
+@theme inline {
+    --font-sans: var(--ledger-font-sans);
+    --font-serif: var(--ledger-font-serif);
+    --font-mono: var(--ledger-font-mono);
+}
+
+/* Base ---------------------------------------------------------------------- */
+
+html.fi {
+    font-family: var(--ledger-font-sans);
+    color: var(--ledger-ink);
+}
+
+.fi-body {
+    background: var(--ledger-surface-paper);
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-body);
+    line-height: 1.45;
+    --topbar-height: 56px;
+}
+
+.fi *,
+.fi *::before,
+.fi *::after {
+    box-shadow: none !important;
+}
+
+h1,
+h2,
+h3,
+.fi-header-heading,
+.fi-simple-header-heading,
+.fi-modal-heading,
+.fi-section-header-heading {
+    font-family: var(--ledger-font-serif);
+    color: var(--ledger-ink);
+}
+
+.fi-header-heading,
+.fi-simple-header-heading {
+    font-size: var(--ledger-text-title-console);
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.fi-simple-header-subheading,
+.fi-header-subheading {
+    color: var(--ledger-ink-secondary);
+    font-size: var(--ledger-text-body);
+}
+
+/* The 3px focus ring with a 2px gap; white on the green bar. */
+.fi :focus-visible,
+.console-skip-link:focus-visible {
+    outline: var(--ledger-focus-width) solid var(--ledger-focus-ring) !important;
+    outline-offset: var(--ledger-focus-gap) !important;
+}
+
+.fi-topbar :focus-visible,
+.fi-btn.fi-color-primary:focus-visible,
+.console-button:focus-visible {
+    outline-color: var(--ledger-focus-ring-on-green) !important;
+    box-shadow: 0 0 0 calc(var(--ledger-focus-gap) + var(--ledger-focus-width)) var(--ledger-green) !important;
+}
+
+.fi-skip-link:focus,
+.fi-skip-link:focus-visible {
+    position: fixed;
+    inset-block-start: var(--ledger-space-2);
+    inset-inline-start: var(--ledger-space-2);
+    z-index: 100;
+    width: auto;
+    height: auto;
+    clip: auto;
+    margin: 0;
+    padding: var(--ledger-space-2) var(--ledger-space-4);
+    background: var(--ledger-surface-sheet);
+    color: var(--ledger-green);
+    border: 1px solid var(--ledger-green);
+    border-radius: var(--ledger-radius-sm);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Square-ish shapes: 2px on every control, card, label and field. */
+.fi-btn,
+.fi-icon-btn,
+.fi-input-wrp,
+.fi-select-input,
+.fi-section,
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-badge,
+.fi-fo-field-wrp,
+.fi-sidebar-item-btn,
+.fi-topbar-item-btn,
+.fi-dropdown-list-item,
+.fi-simple-main,
+.fi-otp-input-container input,
+.fi-fo-one-time-code-input,
+.fi-no-notification {
+    border-radius: var(--ledger-radius-sm) !important;
+}
+
+/* Green top bar ------------------------------------------------------------- */
+
+.fi-topbar {
+    background: var(--ledger-green);
+    color: var(--ledger-on-green);
+    border-bottom: 0;
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-topbar .fi-icon-btn,
+.fi-topbar .fi-icon-btn .fi-icon,
+.fi-topbar .fi-topbar-item-label {
+    color: var(--ledger-on-green);
+}
+
+.fi-topbar .fi-icon-btn:hover {
+    background: color-mix(in srgb, var(--ledger-on-green) 12%, transparent);
+}
+
+.fi-logo {
+    font-family: var(--ledger-font-serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: var(--ledger-text-title-screen);
+    color: var(--ledger-on-green);
+}
+
+.fi-sidebar-header .fi-logo {
+    color: var(--ledger-green);
+}
+
+.console-title {
+    margin-inline-start: var(--ledger-space-4);
+    padding-inline-start: var(--ledger-space-4);
+    border-inline-start: 1px solid var(--ledger-on-green-soft);
+    color: var(--ledger-on-green-soft);
+    font-size: var(--ledger-text-small);
+    font-weight: 600;
+}
+
+.console-identity {
+    display: flex;
+    align-items: center;
+    gap: var(--ledger-space-4);
+    color: var(--ledger-on-green);
+    font-size: var(--ledger-text-small);
+}
+
+.console-clock {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.console-person {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    text-align: end;
+}
+
+.console-person-name {
+    font-weight: 600;
+}
+
+.console-person-role {
+    color: var(--ledger-on-green-soft);
+}
+
+.fi-user-avatar {
+    border-radius: var(--ledger-radius-sm) !important;
+    background: var(--ledger-surface-aged);
+    color: var(--ledger-ink);
+}
+
+/* The 224px rail on the aged surface ---------------------------------------- */
+
+.fi-sidebar {
+    background: var(--ledger-surface-aged) !important;
+    border-inline-end: 1px solid var(--ledger-hairline);
+}
+
+.fi-sidebar-item-btn {
+    min-height: var(--ledger-target-console);
+}
+
+.fi-sidebar-item-label {
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-body);
+}
+
+.fi-sidebar-item-btn .fi-icon {
+    color: var(--ledger-ink-secondary);
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    background: var(--ledger-surface-sheet);
+    box-shadow: inset 4px 0 0 var(--ledger-green) !important;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active .fi-icon {
+    color: var(--ledger-green);
+    font-weight: 600;
+}
+
+/* Page and panels ----------------------------------------------------------- */
+
+.fi-main {
+    max-width: var(--ledger-content-max);
+}
+
+.console-panel {
+    background: var(--ledger-surface-paper);
+    border: 1px solid var(--ledger-control-edge);
+    border-top: 3px double var(--ledger-ink);
+    border-radius: var(--ledger-radius-sm);
+    padding: var(--ledger-space-4) var(--ledger-space-5);
+}
+
+.console-panel-heading {
+    font-family: var(--ledger-font-serif);
+    font-size: var(--ledger-text-heading);
+    font-weight: 700;
+    margin-block-end: var(--ledger-space-2);
+}
+
+/* Wide tables scroll inside their own box, never the page. */
+.fi-ta-content,
+.fi-ta-ctn,
+.console-table-scroll {
+    overflow-x: auto;
+}
+
+/* Controls ------------------------------------------------------------------ */
+
+.fi-btn {
+    min-height: var(--ledger-target-console);
+    font-size: var(--ledger-text-button-console);
+    font-weight: 600;
+}
+
+.fi-btn.fi-color-primary {
+    background: var(--ledger-green);
+    color: var(--ledger-on-green);
+    border: 1px solid var(--ledger-green);
+}
+
+.fi-input-wrp {
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-control-edge);
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-input-wrp:focus-within {
+    outline: var(--ledger-focus-width) solid var(--ledger-focus-ring);
+    outline-offset: var(--ledger-focus-gap);
+}
+
+.fi-input-wrp .fi-input:focus-visible {
+    outline: none !important;
+}
+
+.fi-input-wrp.fi-invalid {
+    outline: 2px solid var(--ledger-error);
+    border-color: var(--ledger-error);
+}
+
+.fi-input {
+    font-size: var(--ledger-text-input);
+    color: var(--ledger-ink);
+}
+
+.fi-fo-field-label-content {
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-small);
+    font-weight: 600;
+}
+
+.fi-fo-field-wrp-error-message,
+.fi-sc-text.fi-color-danger {
+    color: var(--ledger-error) !important;
+    font-size: var(--ledger-text-small);
+}
+
+.fi-link {
+    color: var(--ledger-green);
+    text-decoration: underline;
+}
+
+.fi-simple-main {
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-control-edge);
+    border-top: 3px solid var(--ledger-green);
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-modal-window {
+    border-top: 3px solid var(--ledger-green);
+}
+
+.fi-modal-close-overlay {
+    background: color-mix(in srgb, var(--ledger-scrim) 62%, transparent) !important;
+}
+
+/* Console banners, dialog and notices --------------------------------------- */
+
+.console-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ledger-space-3);
+    margin-block-end: var(--ledger-space-4);
+    padding: var(--ledger-space-3) var(--ledger-space-4);
+    background: var(--ledger-surface-aged);
+    border-inline-start: 4px solid var(--ledger-green);
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-small);
+}
+
+.console-banner[hidden] {
+    display: none;
+}
+
+.console-banner p {
+    flex: 1 1 20rem;
+    margin: 0;
+}
+
+.console-banner-needs {
+    background: var(--ledger-caution-tint);
+    border-inline-start-color: var(--ledger-brass);
+}
+
+.console-notice {
+    display: block;
+    padding: var(--ledger-space-3) var(--ledger-space-4);
+    background: var(--ledger-caution-tint);
+    border-inline-start: 4px solid var(--ledger-brass);
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-small);
+}
+
+.console-button,
+.console-button-secondary {
+    min-height: var(--ledger-target-console);
+    padding: 0 var(--ledger-space-4);
+    border: 1px solid var(--ledger-green);
+    border-radius: var(--ledger-radius-sm);
+    font-size: var(--ledger-text-button-console);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.console-button {
+    background: var(--ledger-green);
+    color: var(--ledger-on-green);
+}
+
+.console-button-secondary {
+    background: var(--ledger-surface-sheet);
+    color: var(--ledger-green);
+}
+
+.console-dialog {
+    width: min(28rem, calc(100vw - 2 * var(--ledger-screen-margin)));
+    padding: var(--ledger-space-5);
+    background: var(--ledger-surface-paper);
+    border: 0;
+    border-top: 3px solid var(--ledger-green);
+    color: var(--ledger-ink);
+}
+
+.console-dialog::backdrop {
+    background: color-mix(in srgb, var(--ledger-scrim) 62%, transparent);
+}
+
+.console-dialog-heading {
+    font-family: var(--ledger-font-serif);
+    font-size: var(--ledger-text-heading);
+    font-weight: 700;
+    margin-block-end: var(--ledger-space-3);
+}
+
+.console-label {
+    display: block;
+    margin-block: var(--ledger-space-4) var(--ledger-space-1);
+    font-size: var(--ledger-text-small);
+    font-weight: 600;
+}
+
+.console-input {
+    width: 100%;
+    height: var(--ledger-field-height);
+    padding: 0 var(--ledger-space-3);
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+    font-size: var(--ledger-text-input);
+    font-variant-numeric: tabular-nums;
+}
+
+.console-input[aria-invalid='true'] {
+    outline: 2px solid var(--ledger-error);
+}
+
+.console-field-error {
+    min-height: 1.4em;
+    margin-block: var(--ledger-space-1) var(--ledger-space-3);
+    color: var(--ledger-error);
+    font-size: var(--ledger-text-small);
+}
+
+.console-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ledger-space-3);
+}
+
+/* Narrow windows, 400% zoom and phones -------------------------------------- */
+
+.console-phone-notice {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .console-title {
+        display: none;
+    }
+
+    .console-identity {
+        gap: var(--ledger-space-2);
+    }
+
+    /* Side-by-side panes stack. */
+    .fi-sc-split,
+    .fi-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+@media (max-width: 599px) {
+    .console-phone-notice {
+        display: block;
+        padding: var(--ledger-space-3) var(--ledger-screen-margin);
+        background: var(--ledger-caution-tint);
+        border-block-end: 1px solid var(--ledger-brass);
+        color: var(--ledger-ink);
+        font-size: var(--ledger-text-small);
+    }
+
+    .console-person-role,
+    .console-clock {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fi *,
+    .fi *::before,
+    .fi *::after {
+        transition-duration: 0s !important;
+        animation-duration: 0s !important;
+    }
+}
+
+/* Off the green bar (the set-up page's simple layout), the identity reads in ink. */
+.fi-simple-layout .console-identity,
+.fi-simple-layout .console-person-name {
+    color: var(--ledger-ink);
+}
+
+.fi-simple-layout .console-person-role {
+    color: var(--ledger-ink-secondary);
+}
+
+/* Status labels: words in a plain outlined box, never colour alone. */
+.fi-badge {
+    background: var(--ledger-surface-sheet) !important;
+    border: 1px solid var(--ledger-control-edge);
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-badge .fi-badge-label,
+.fi-badge .fi-icon {
+    color: var(--ledger-ink) !important;
+}
+
+.fi-badge.fi-color-success .fi-badge-label {
+    color: var(--ledger-good) !important;
+}
+
+/* Helper text in ink secondary, which passes on every Ledger surface. */
+.fi-sc-text,
+.fi-fo-field-wrp-helper-text,
+.fi-sc-actions-label-ctn .fi-sc-text,
+.fi-section-header-description,
+.fi-modal-description {
+    color: var(--ledger-ink-secondary);
+}

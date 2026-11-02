@@ -1,0 +1,67 @@
+/*
+ * The Ledger tokens: the one source of colours, type, spacing and shapes for
+ * both the Integrator app (resources/app/app.css) and the staff console theme
+ * (resources/css/filament/console/theme.css). Values are copied from DESIGN.md;
+ * change them here and nowhere else.
+ *
+ * Light mode only. System font stacks only: no font file is bundled.
+ */
+:root {
+    /* Colours */
+    --ledger-surface-paper: #faf6ec;
+    --ledger-surface-sheet: #ffffff;
+    --ledger-surface-aged: #f0e9d6;
+    --ledger-ink: #1a1812;
+    --ledger-ink-secondary: #4a4434;
+    --ledger-green: #153d2e;
+    --ledger-brass: #6b4e0c;
+    --ledger-caution: #6e4400;
+    --ledger-caution-tint: #f6eacb;
+    --ledger-good: #1b5e3a;
+    --ledger-error: #8a1c14;
+    --ledger-error-tint: #f6e4de;
+    --ledger-control-edge: #7a7258;
+    --ledger-hairline: #d9cfb5;
+    --ledger-on-green: #ffffff;
+    --ledger-on-green-soft: #c9dccf;
+    --ledger-scrim: #1a1812;
+    --ledger-focus-ring: #153d2e;
+    --ledger-focus-ring-on-green: #ffffff;
+
+    /* Type: serif titles, sans body, monospace codes */
+    --ledger-font-serif: 'Palatino Linotype', Palatino, 'Book Antiqua', 'Noto Serif', 'Times New Roman', serif;
+    --ledger-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --ledger-font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    --ledger-text-title-console: 26px;
+    --ledger-text-title-screen: 21px;
+    --ledger-text-heading: 19px;
+    --ledger-text-heading-small: 16px;
+    --ledger-text-body: 15px;
+    --ledger-text-small: 13px;
+    --ledger-text-label: 12px; /* the smallest size anywhere */
+    --ledger-text-button-console: 14px;
+    --ledger-text-input: 16px;
+    --ledger-text-table-console: 13px;
+
+    /* Spacing: a 4px-based scale plus named sizes that must not drift */
+    --ledger-space-1: 4px;
+    --ledger-space-2: 8px;
+    --ledger-space-3: 12px;
+    --ledger-space-4: 16px;
+    --ledger-space-5: 24px;
+    --ledger-space-6: 32px;
+    --ledger-space-7: 48px;
+    --ledger-screen-margin: 16px;
+    --ledger-target-min: 44px;
+    --ledger-target-console: 40px;
+    --ledger-target-console-small: 34px;
+    --ledger-field-height: 48px;
+    --ledger-console-rail: 224px;
+    --ledger-content-max: 1100px;
+
+    /* Shapes: 2px on controls; no shadows, gradients or pills */
+    --ledger-radius-sm: 2px;
+    --ledger-radius-sheet: 14px;
+    --ledger-focus-width: 3px;
+    --ledger-focus-gap: 2px;
+}

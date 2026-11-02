@@ -2,8 +2,11 @@
 
 use App\Console\Commands\SeedTestState;
 use Database\Factories\ActionFactory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
+
+uses(RefreshDatabase::class);
 
 it('registers the seeding command in testing', function () {
     expect(Artisan::all())->toHaveKey('app:seed-test-state');
@@ -16,14 +19,14 @@ it('refuses an unknown scenario', function () {
 });
 
 it('does not register the seeding command in production', function () {
-    $result = Process::path(base_path())
+    $result = Process::path(base_path())->timeout(180)
         ->env(['APP_ENV' => 'production'])
         ->run([PHP_BINARY, 'artisan', 'app:seed-test-state', '--no-interaction']);
 
     expect($result->failed())->toBeTrue()
         ->and($result->output().$result->errorOutput())->toMatch('/no commands defined in the "app" namespace|"app:seed-test-state" is not defined/');
 
-    $list = Process::path(base_path())->env(['APP_ENV' => 'production'])->run([PHP_BINARY, 'artisan', 'list', '--raw']);
+    $list = Process::path(base_path())->timeout(180)->env(['APP_ENV' => 'production'])->run([PHP_BINARY, 'artisan', 'list', '--raw']);
 
     expect($list->successful())->toBeTrue()
         ->and($list->output())->not->toContain('app:seed-test-state');
