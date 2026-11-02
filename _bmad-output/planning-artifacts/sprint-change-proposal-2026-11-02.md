@@ -450,6 +450,8 @@ As in the table in Section 2. Also fix the cross-references: "Story 2.17" become
 | 5 | PO/Dev (`bmad-sprint-planning`) | **Rerun sprint planning** to regenerate `sprint-status.yaml` from the edited epics, **preserving every existing status** | Epic 1 statuses are unchanged; Epic 2 lists 21 `backlog` keys with the new numbers |
 | 6 | Founder | Before Story 2.9 ships: create the Supplier bank-detail key in the host secret store and the escrow store, and add it to the restore-drill runbook (Story 1.2) | The key exists in both stores and is drill-tested |
 
+**Progress (2 November 2026):** steps 1 to 3 are applied as direct edits to `prd.md`, `ARCHITECTURE-SPINE.md` (with a `.memlog.md` entry) and `EXPERIENCE.md`. The step-18 mockup refresh is not done. Steps 4 to 6 are still open.
+
 **Sequencing and constraints**
 
 - Do not interrupt Epic 1. Steps 1 to 5 change planning documents only.
