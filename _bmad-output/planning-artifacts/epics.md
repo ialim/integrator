@@ -78,6 +78,8 @@ FR-73: [P1] Users from Level 1 search by name, brand, model and SKU with typo to
 
 FR-74: [P1] Operations record each stock receipt (goods-in) with Supplier, date, quantity, batch or lot reference, landed cost (invoice, freight, duty and clearing in USD or NGN, with the rate used) and serial numbers for serialised Products. Every stock change (receipt, reservation, release, adjustment, quarantine) is a ledger entry with a reason and reference, and stock on hand equals the sum of ledger entries. Back-order lines carry "ordered from Supplier" and "received" markers; a line cannot be marked received without a goods-in record.
 
+FR-81: [P1] Each Supplier has an onboarding record: business details (legal name, trade name, CAC RC number, TIN, address, invoicing currency, payment terms), contacts (sales; returns and RMA), versioned private documents (signed agreement, CAC, TIN, SON or NCC certificates, authorised-distributor letters, other) with expiry dates, and bank details. An Admin-set checklist of required items (the three FR-14 terms always required) gates approval, with Admin able to approve with a written reason. Bank-detail changes need a Finance second approver, are shown masked, and every full read is audited. A document nearing expiry (30 days) or expired puts the Supplier under Needs attention and alerts Admin; nothing comes off sale.
+
 **Pricing, Platform Rate and loyalty**
 
 FR-19: [P1] Selling Price per unit = Supplier Cost × (1 + Platform Markup) × (1 − applicable discount) × (1 + VAT rate), converted to naira at the Platform Rate, never below the margin floor pre-VAT. Decimal arithmetic only; the unit price is computed at full precision and rounded half-up to the kobo once, a line total is unit × quantity, and an Order total is the sum of lines. Integrators see and pay naira only. The app may add displayed prices in whole kobo for display but never computes a price used for a Proposal or Order. The addendum's test vectors pass.
@@ -172,7 +174,7 @@ FR-51: [P2] The platform sends email and WhatsApp notifications through a matrix
 
 **Staff console, queues and audit**
 
-FR-52: [P1] Staff have Finance, Operations or Admin roles with capabilities per the PRD matrix; Support duties are a separate permission group held by Operations. Segregation of duties: no Staff member confirms a Payment or issues or pays a Credit Note for a Business Account they created, approved or vouched for; an investigator never decides a return. A second approver is needed for refunds and Credit Notes above an Admin-set amount (placeholder NGN 100,000), Platform Rate changes above 3%, VAT rate changes, Back-order Discounts above 10%, Active Supplier switches, bulk price changes and underpayment-tolerance changes. Everything needing a second person sits on one Approvals page; nobody approves their own request. Bank-detail changes need a Finance second approver, take effect after 24 hours, are emailed to Admin and Finance, and show Integrators a banner for 7 days. Acting as another role is flagged for the founder's weekly review.
+FR-52: [P1] Staff have Finance, Operations or Admin roles with capabilities per the PRD matrix; Support duties are a separate permission group held by Operations. Segregation of duties: no Staff member confirms a Payment or issues or pays a Credit Note for a Business Account they created, approved or vouched for; an investigator never decides a return. A second approver is needed for refunds and Credit Notes above an Admin-set amount (placeholder NGN 100,000), Platform Rate changes above 3%, VAT rate changes, Back-order Discounts above 10%, Active Supplier switches, Supplier bank-detail changes (a Finance approver), bulk price changes and underpayment-tolerance changes. Everything needing a second person sits on one Approvals page; nobody approves their own request. Bank-detail changes need a Finance second approver, take effect after 24 hours, are emailed to Admin and Finance, and show Integrators a banner for 7 days. Acting as another role is flagged for the founder's weekly review.
 
 FR-53: [P1] An append-only, hash-chained audit trail covers every state change to money, stock, access, identity data, pricing parameters, Cases and Return Requests, and every read of a NIN or bank detail (with a reason code). Entries hold identifiers and field differences, never a NIN or name. No application role can edit or delete entries. The founder's weekly review lists override and acting-as events and cannot be signed off until each is reviewed. An alert fires on unusual patterns.
 
@@ -270,6 +272,7 @@ From `ARCHITECTURE-SPINE.md` (decisions AD-1 to AD-26 are binding on every epic 
 - AD-24: `Staff` owns the single `work_items` table (queue, subject, owner, `due_at`, `escalate_at`, `closed_at`, `acting_for`).
 - AD-25: only `Orders` writes Order and Order Line status; Shipments have `kind` normal or replacement; `NetDeliveredGoodsQuery` is the only source of spend.
 - AD-26: every module holding personal data implements `ErasePersonalData` and `ExportPersonalData`, orchestrated by `Identity`.
+- AD-27: Supplier bank details are encrypted with a dedicated key (never `APP_KEY`), masked to the last four digits, read in full only through an audited reveal Action, and changed only through an AD-23 Request and Approve pair with a Finance approver.
 
 **Offline, client and files**
 
@@ -527,6 +530,7 @@ FR-77: Epic 10 - Tax invoices and credit-note documents
 FR-78: Epic 4 - Staff work queues
 FR-79: Epic 13 - Cases
 FR-80: Epic 15 - Dashboard and exports
+FR-81: Epic 2 - Supplier onboarding record
 
 ## Epic List
 
@@ -538,9 +542,9 @@ Admin, Finance and Operations sign in to the console with two steps and see only
 **Notes:** Carries the project scaffold, the 13-module layout, architecture tests, CI, the three environments, hourly offsite backups and founder alerts. Kernel parts built here: Action base, lock registry, transition helper, outbox, audit, UUIDv7 and Clock; the epic closes only when a real staff Action exercises each. Includes the spike on a least-privilege database role (AD-21). Console theme and design tokens land here, with the app shell (tokens, service worker, one screen) proven on a low-end Android, and the automated accessibility check running in CI from this epic.
 
 ### Epic 2: Operations builds the Catalogue and Finance sets the rate
-Operations loads Products, Suppliers, stock and goods-in, singly or by bulk upload; Admin sets markups and the margin floor; Finance sets and reconfirms the Platform Rate; every Selling Price is computed to the kobo; and any change that needs a second person waits on one Approvals page.
-**FRs covered:** FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-19, FR-20, FR-23, FR-74
-**Notes:** Console screens only, so the launch Catalogue can be loaded while the app is built. Kernel parts landing here: the Money type, the timer sweep (rate staleness), the upload pipeline (Product images), and the Approvals page with its first real two-person approvals (rate change, Active Supplier switch, bulk price file). "Acting as" another role and the founder's weekly review are built here, where the first overrides exist. Every Pricing formula and addendum test vector lands here, including repricing, the VAT split and the Integrator Margin, so the price snapshot shape is proven before anything is stored; delivery pricing waits for Epic 7. The snapshot carries tier and discount fields from day one. Product Range management is assumed to be Admin's (PRD §8.3 question 18).
+Operations loads Products, Suppliers (with their onboarding record and documents), stock and goods-in, singly or by bulk upload; Admin sets markups and the margin floor; Finance sets and reconfirms the Platform Rate; every Selling Price is computed to the kobo; and any change that needs a second person waits on one Approvals page.
+**FRs covered:** FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-19, FR-20, FR-23, FR-74, FR-81
+**Notes:** Console screens only, so the launch Catalogue can be loaded while the app is built. Kernel parts landing here: the Money type, the timer sweep (rate staleness), the upload pipeline (Product images), and the Approvals page with its first real two-person approvals (rate change, Active Supplier switch, bulk price file). "Acting as" another role and the founder's weekly review are built here, where the first overrides exist. Every Pricing formula and addendum test vector lands here, including repricing, the VAT split and the Integrator Margin, so the price snapshot shape is proven before anything is stored; delivery pricing waits for Epic 7. The snapshot carries tier and discount fields from day one. Product Range management is assumed to be Admin's (PRD §8.3 question 18). Supplier onboarding (FR-81) reuses the upload pipeline (Story 2.5), the Approvals page (Story 2.8) and the timer sweep (Story 2.19), so each of its stories (2.6, 2.9, 2.20) follows the story that delivers its kernel part.
 
 ### Epic 3: Sign up and browse the Catalogue
 A visitor signs up with an email or phone, accepts the Terms, logs in with a one-time code or passkey, and searches and browses the Catalogue and its stock status without prices, on a slow connection.
@@ -971,7 +975,7 @@ So that I can open it like any other app.
 
 ## Epic 2: Operations builds the Catalogue and Finance sets the rate
 
-Operations loads Products, Suppliers, stock and goods-in, singly or by bulk upload; Admin sets markups and the margin floor; Finance sets and reconfirms the Platform Rate; every Selling Price is computed to the kobo; and any change that needs a second person waits on one Approvals page.
+Operations loads Products, Suppliers (with their onboarding record and documents), stock and goods-in, singly or by bulk upload; Admin sets markups and the margin floor; Finance sets and reconfirms the Platform Rate; every Selling Price is computed to the kobo; and any change that needs a second person waits on one Approvals page.
 
 ### Story 2.1: Admin sets up Product Ranges and their markup
 
@@ -1010,26 +1014,34 @@ So that every Product has a markup to price from and no price can fall below a s
 
 *Assumption: Product Range management belongs to Admin and a range with Products cannot be retired (PRD §8.3 question 18).*
 
-### Story 2.2: Admin records and approves Suppliers
+### Story 2.2: Admin records Suppliers and approves them against an onboarding checklist
 
 As an Admin,
-I want to record each Supplier with its agreement terms and approve it,
-So that only Suppliers whose return and counterfeit terms are known can supply the Catalogue.
+I want each Supplier recorded with its business details, contacts and agreement terms, and approved only when its onboarding checklist is clear,
+So that only Suppliers we know, and can hold to their terms, supply the Catalogue.
 
-**Requirements:** FR-14
+**Requirements:** FR-14, FR-81
 
 **Acceptance Criteria:**
 
-**Given** an Admin on the Suppliers page
+**Given** an Operations or Admin account on the Suppliers page
 **When** they add a Supplier
-**Then** it is saved as not approved, with fields for its returns terms, its dead-on-arrival terms and window in days, and its counterfeit-chargeback terms, each shown as stated or missing.
+**Then** it is saved as not approved, with Business details (legal name, trade name, CAC RC number, TIN, address, the currency it invoices in, USD or NGN, and payment terms), Contacts (sales, and returns and RMA, each with a name, phone and email) and its returns terms, dead-on-arrival terms and window in days, and counterfeit-chargeback terms, each shown as stated or missing.
 
-**Given** a Supplier with any of the three terms missing
+**Given** a Supplier
+**When** anyone views it
+**Then** an "Onboarding checklist" shows each required item as Clear or Needs action in words, in the same pattern as "Before it can go live".
+
+**Given** an Admin on the Supplier onboarding settings
+**When** they mark checklist items required or optional
+**Then** the three agreement terms are always required and cannot be made optional, the change is audited, and it applies to approvals from then on without un-approving any Supplier already approved.
+
+**Given** a Supplier with any required item at Needs action
 **When** an Admin views it
-**Then** "Approve the supplier" is visible, dashed and off, with the reason beside it
-**And** "Approve with a reason…" is offered, which requires a written reason.
+**Then** "Approve the supplier" is visible, dashed and off, with the reason beside it naming the items
+**And** "Approve with a reason…" is offered, which requires a written reason that is stored and shown on the Supplier.
 
-**Given** a Supplier with all three terms recorded
+**Given** a Supplier whose required items are all Clear
 **When** an Admin approves it
 **Then** it becomes approved and the decision is audited with who and when.
 
@@ -1038,12 +1050,20 @@ So that only Suppliers whose return and counterfeit terms are known can supply t
 **Then** the shorter window is stored so it can shorten the window given to businesses (FR-59).
 
 **Given** the Suppliers list
-**When** an Admin views it
-**Then** each row shows the Supplier, whether it is approved, its Product count and which terms are stated or missing.
+**When** a staff member views it
+**Then** each row shows the Supplier, whether it is approved, its Product count and its checklist progress ("6 of 8 clear"), with filter chips for All, Needs attention, Approved and Not approved.
 
 **Given** a Finance or Operations account
 **When** it tries to approve a Supplier
 **Then** the server refuses.
+
+**Given** the Supplier contact names, phones and emails
+**When** they change
+**Then** they are registered as Catalogue personal-data columns, so the audit diff records "changed" and never the value (AD-21).
+
+**Given** a keyboard, screen-reader or 200% zoom user
+**When** they use the Supplier page
+**Then** each checklist item is announced with its status in words, the reason beside the off "Approve the supplier" button is reachable and read, and nothing is cut off or needs sideways scrolling.
 
 ### Story 2.3: Operations creates and edits a Product
 
@@ -1166,7 +1186,53 @@ So that Integrators can recognise what they are buying.
 **When** the application runs in staging or tests
 **Then** it is reached through an interface bound to a fake (AD-15).
 
-### Story 2.6: Finance sets and reconfirms the Platform Rate
+### Story 2.6: A Supplier's agreement and compliance documents
+
+As Operations,
+I want to attach a Supplier's signed agreement and compliance documents, with their expiry dates,
+So that Admin approves a Supplier against its papers, not a promise.
+
+**Requirements:** FR-81; AD-13, AD-14
+
+**Acceptance Criteria:**
+
+**Given** an Operations or Admin account on a Supplier
+**When** they add a document
+**Then** they choose its type (signed supplier agreement, CAC certificate, TIN certificate, SON or NCC certificate, authorised-distributor letter, or Other with a name) and upload a PDF, JPEG, PNG or HEIC through the staged upload pipeline from Story 2.5, and the document is usable only once the scan promotes it; a failed scan says so in words and keeps nothing.
+
+**Given** a Supplier document
+**When** anyone opens it
+**Then** it is served as private evidence through a short-lived signed URL and is never overwritten.
+
+**Given** a document of a type already on file
+**When** a new one is uploaded
+**Then** it becomes the current version and earlier versions stay listed as Replaced, with who and when.
+
+**Given** a document type of SON or NCC certificate or authorised-distributor letter
+**When** it is saved
+**Then** an expiry date is required; other types take an optional expiry date, and the signed agreement also records its signed date.
+
+**Given** a required document type on the onboarding checklist (Story 2.2)
+**When** the checklist is evaluated
+**Then** it is Clear only when a current, scanned, unexpired version exists.
+
+**Given** a staff member removing a document
+**When** they confirm
+**Then** a reason is required, the file is kept and marked Withdrawn, and the removal is audited.
+
+**Given** a Finance account
+**When** it views a Supplier
+**Then** it can open the documents but cannot add, replace or remove them.
+
+**Given** any Integrator-facing surface
+**When** the AD-13 visibility suite runs
+**Then** no Supplier document, contact or business detail is ever returned.
+
+**Given** a keyboard, screen-reader or 200% zoom user
+**When** they upload a document
+**Then** progress, scanning and the result are announced, and the document list reads type, version, status and expiry in words.
+
+### Story 2.7: Finance sets and reconfirms the Platform Rate
 
 As a Finance officer,
 I want to set the Platform Rate and reconfirm it each Business Day,
@@ -1192,7 +1258,7 @@ So that every naira price reflects what a dollar costs us today.
 
 **Given** a new rate that differs by more than 3% and no more than 10%
 **When** it is submitted in this story
-**Then** it is refused with a sentence saying a second person is needed (Story 2.7 adds the approval route).
+**Then** it is refused with a sentence saying a second person is needed (Story 2.8 adds the approval route).
 
 **Given** the rate in force
 **When** Finance presses "Reconfirm the rate"
@@ -1206,7 +1272,7 @@ So that every naira price reflects what a dollar costs us today.
 **When** it tries to set or reconfirm the rate
 **Then** the server refuses.
 
-### Story 2.7: A rate change above 3% needs a second person
+### Story 2.8: A rate change above 3% needs a second person
 
 As an Admin or Finance officer,
 I want every change that needs a second person to wait on one Approvals page,
@@ -1249,7 +1315,50 @@ So that no single person can move prices or money alone.
 **When** the rail renders
 **Then** "Waiting for a second person" shows a count.
 
-### Story 2.8: Selling Prices computed to the kobo
+### Story 2.9: Supplier bank details, with Finance's agreement
+
+As an Admin,
+I want a Supplier's bank details recorded only with a Finance member agreeing,
+So that nobody can quietly redirect what we pay a Supplier.
+
+**Requirements:** FR-81, FR-52, FR-53; AD-23, AD-27
+
+**Acceptance Criteria:**
+
+**Given** an Admin on a Supplier
+**When** they add or change a bank account (bank name, account name, account number as a 10-digit NUBAN for NGN, or account number, SWIFT or BIC and bank address for USD)
+**Then** the change is a request on the Approvals page that says what it will do and why two people are needed, and the Supplier shows "Bank details waiting for Finance".
+
+**Given** a pending Supplier bank-detail request
+**When** a Finance member who did not make the request approves it
+**Then** the new details take effect inside the approval, the change is audited, and an event is emitted with its facts so Admin and Finance are emailed (the email channel lands with Epic 11)
+**And** a decline needs a reason that goes back to the requester.
+
+**Given** the requester
+**When** they try to approve their own request
+**Then** Approve is off and the server refuses.
+
+**Given** Supplier bank details anywhere in the console
+**When** they are shown
+**Then** they are masked to the last four digits; "Show full details" is offered to Admin and Finance only, needs a reason code and is an audited read (FR-53); Operations sees only "Bank details on file".
+
+**Given** Supplier bank details
+**When** they are stored, logged, queued, exported or audited
+**Then** they are encrypted under the Supplier bank-detail key and never appear in logs, exception reports, queue or outbox payloads or exports, and audit diffs hold a keyed hash (AD-27).
+
+**Given** the onboarding checklist
+**When** "Bank details" is a required item
+**Then** it is Clear only once a bank account has been approved.
+
+**Given** any Integrator-facing surface
+**When** the AD-13 visibility suite runs
+**Then** no Supplier bank detail is ever returned.
+
+**Given** a keyboard, screen-reader or 200% zoom user
+**When** they use the bank details panel
+**Then** the masked value is announced as "ending in" plus four digits, and the request state is read in words.
+
+### Story 2.10: Selling Prices computed to the kobo
 
 As a Finance officer,
 I want every Selling Price computed by one formula with one rounding rule,
@@ -1297,7 +1406,7 @@ So that the price on a screen, a document and a ledger is always the same number
 **When** it multiplies, divides or applies a percentage to money
 **Then** an architecture test fails (AD-7).
 
-### Story 2.9: The remaining Pricing formulas, proven
+### Story 2.11: The remaining Pricing formulas, proven
 
 As the builder,
 I want every Pricing formula and the price snapshot proven against the addendum's test vectors before anything stores a price,
@@ -1354,7 +1463,7 @@ So that Proposals, Orders, invoices and Credit Notes never need their stored pri
 **When** a property test prices them
 **Then** unit price times quantity always equals the line, the lines always sum to the total, and no pre-VAT price falls below the margin floor.
 
-### Story 2.10: Admin changes a markup and sees what it will do
+### Story 2.12: Admin changes a markup and sees what it will do
 
 As an Admin,
 I want to see what a markup or floor change will do before I save it,
@@ -1384,7 +1493,7 @@ So that I never move hundreds of prices by accident.
 **When** an Admin views it
 **Then** rules are grouped (markups and the floor, VAT, tolerances, approval amounts, rate warnings) with a markup-by-range table.
 
-### Story 2.11: Stock quantities, thresholds and the ledger
+### Story 2.13: Stock quantities, thresholds and the ledger
 
 As an Operations officer,
 I want each Product's stock tracked through a ledger with a threshold,
@@ -1426,7 +1535,7 @@ So that what the Catalogue says is in stock matches the shelf.
 **When** Operations views it
 **Then** it gains the filter chips "At or below threshold" and "Out of stock", and each row shows available and on hand.
 
-### Story 2.12: Operations records goods-in
+### Story 2.14: Operations records goods-in
 
 As an Operations officer,
 I want to record each stock receipt with its cost and serial numbers,
@@ -1457,7 +1566,7 @@ So that stock, landed cost and the origin of every unit are known.
 **When** goods-in is recorded
 **Then** no serial numbers are asked for.
 
-### Story 2.13: Back-order terms and the discount rule
+### Story 2.15: Back-order terms and the discount rule
 
 As an Operations officer,
 I want to offer an Out of Stock Product on back-order with a discount and a Lead Time,
@@ -1495,7 +1604,7 @@ So that Integrators can still order it knowing when it will ship.
 **When** Operations views it
 **Then** it gains the filter chip "Back-order on".
 
-### Story 2.14: Admin switches the Active Supplier, or stops a Supplier
+### Story 2.16: Admin switches the Active Supplier, or stops a Supplier
 
 As an Admin,
 I want to change which Supplier a Product is priced from, with a second person agreeing,
@@ -1530,7 +1639,7 @@ So that a cost change is deliberate and its effect is seen first.
 **When** it takes effect
 **Then** Products with a replacement switch to it, the rest come off sale, and each change is audited.
 
-### Story 2.15: Bulk upload with a dry run
+### Story 2.17: Bulk upload with a dry run
 
 As an Operations officer,
 I want to create and update many Products from a spreadsheet and see what it will do first,
@@ -1565,7 +1674,7 @@ So that the launch Catalogue can be loaded in one sitting without surprises.
 **When** it is uploaded
 **Then** it imports in a single upload.
 
-### Story 2.16: A bulk price file waits for Admin and can be rolled back
+### Story 2.18: A bulk price file waits for Admin and can be rolled back
 
 As an Admin,
 I want a file that moves many prices to wait for my approval and be reversible,
@@ -1595,7 +1704,7 @@ So that one bad spreadsheet cannot reprice the Catalogue.
 **When** the Admin declines
 **Then** a reason is required and is shown to the uploader.
 
-### Story 2.17: The rate goes stale, and Finance can pause orders
+### Story 2.19: The rate goes stale, and Finance can pause orders
 
 As a Finance officer,
 I want warnings as the Platform Rate ages and a way to pause new orders,
@@ -1648,7 +1757,41 @@ So that nobody orders at a rate we can no longer honour.
 
 *Note: nothing creates Orders yet. Epic 7 reads this Query and shows the single "Prices are being updated" message.*
 
-### Story 2.18: Acting as another role, and the founder's weekly review
+### Story 2.20: Supplier documents nearing expiry
+
+As an Admin,
+I want to be told before a Supplier's document expires,
+So that papers are renewed before they lapse, without taking goods off sale.
+
+**Requirements:** FR-81; AD-5, AD-24
+
+**Acceptance Criteria:**
+
+**Given** a Supplier document with an expiry date
+**When** it is saved
+**Then** it stores `expires_at` and an `expiry_warning_due_at` 30 days earlier, with an `expiry_warning_sent_at` column, and the sweep drives both.
+
+**Given** a document whose warning is due
+**When** the sweep runs
+**Then** the Supplier appears under Needs attention with "[Document] expires on [date]", and one work item opens in the Admin queue, once.
+
+**Given** a document whose expiry passes
+**When** the sweep runs
+**Then** it shows Expired, its checklist item shows Needs action, the Supplier stays approved and its Products stay on sale, and nothing else changes.
+
+**Given** a current version that replaces an expiring or expired document
+**When** it is promoted
+**Then** the work item closes and the Needs attention flag clears.
+
+**Given** a changed expiry date
+**When** it is saved
+**Then** both deadlines are recomputed, and the warning Action re-reads its deadline under the Supplier's lock before acting.
+
+**Given** a keyboard, screen-reader or 200% zoom user
+**When** they open the Needs attention chip
+**Then** each expiring or expired document is read with its date and status in words.
+
+### Story 2.21: Acting as another role, and the founder's weekly review
 
 As the founder,
 I want every use of another role's power and every override listed for my review each week,
@@ -2248,7 +2391,7 @@ So that the promises we make to businesses and to ourselves are honest about whe
 **When** it is shown
 **Then** it shows the time the team is open until.
 
-**Given** the Platform Rate page from Story 2.17
+**Given** the Platform Rate page from Story 2.19
 **When** it works out whether the stop time falls before the team opens
 **Then** it honours closed days.
 
