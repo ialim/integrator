@@ -66,7 +66,7 @@ FR-13: [P1] Admin sets a default Platform Markup per Product Range (initially 25
 
 FR-14: [P1] A Product holds Supplier Costs from several Suppliers with exactly one Active Supplier. A Supplier must be approved by Admin, and "Approve" stays off until its returns, dead-on-arrival and counterfeit-chargeback terms are recorded (or Admin approves with a written reason). Admin switches the Active Supplier (second approver, with a preview of affected Carts and Projects); a switch to a Supplier with no cost or a cost of zero or less is refused. Stopping a Supplier takes its Products off sale after a preview, with a replacement named per Product.
 
-FR-15: [P1] Operations bulk-uploads Products from a downloadable spreadsheet template, matched on SKU. A dry run shows creates, updates, price changes and failed rows with row number and reason. Valid rows apply and failed rows are reported; a repeated SKU is a failed row. Admin-only columns are ignored for Operations with a note per row. A file changing prices on more than 20 Products, or a Supplier Cost by more than 15%, waits for Admin approval as a whole file, with one-click rollback. A 500+ row launch file imports in one upload.
+FR-15: [P1] Operations bulk-uploads Products from a downloadable spreadsheet template, matched on SKU. A dry run shows creates, updates, price changes and failed rows with row number and reason. Valid rows apply and failed rows are reported; a repeated SKU is a failed row. Admin-only columns are ignored for Operations with a note per row. A file changing prices on more than 20 Products, or a Supplier Cost by more than 15%, waits for Admin approval as a whole file, with one-click rollback. A 500+ row launch file imports in one upload. A file can be scoped to one Supplier from its page: no Supplier column, every cost is that Supplier's, it never changes an Active Supplier, and it can be loaded before approval, with new Products kept as drafts.
 
 FR-16: [P1] Each Product has on-hand and reserved quantities; available = on-hand − reserved. A Product is In Stock when available is above its Stock Threshold, otherwise Out of Stock. Operations set thresholds, cannot set on-hand below reserved without an Admin override, and adjustments above an Admin-set size need Admin sign-off. Releasing safety stock to a Back-order Item is a ledger line with a reason.
 
@@ -78,7 +78,7 @@ FR-73: [P1] Users from Level 1 search by name, brand, model and SKU with typo to
 
 FR-74: [P1] Operations record each stock receipt (goods-in) with Supplier, date, quantity, batch or lot reference, landed cost (invoice, freight, duty and clearing in USD or NGN, with the rate used) and serial numbers for serialised Products. Every stock change (receipt, reservation, release, adjustment, quarantine) is a ledger entry with a reason and reference, and stock on hand equals the sum of ledger entries. Back-order lines carry "ordered from Supplier" and "received" markers; a line cannot be marked received without a goods-in record.
 
-FR-81: [P1] Each Supplier has an onboarding record: business details (legal name, trade name, CAC RC number, TIN, address, invoicing currency, payment terms), contacts (sales; returns and RMA), versioned private documents (signed agreement, CAC, TIN, SON or NCC certificates, authorised-distributor letters, other) with expiry dates, and bank details. An Admin-set checklist of required items (the three FR-14 terms always required) gates approval, with Admin able to approve with a written reason. Bank-detail changes need a Finance second approver, are shown masked, and every full read is audited. A document nearing expiry (30 days) or expired puts the Supplier under Needs attention and alerts Admin; nothing comes off sale.
+FR-81: [P1] Each Supplier has an onboarding record: business details (legal name, trade name, CAC RC number, TIN, address, invoicing currency, payment terms), contacts (sales; returns and RMA), versioned private documents (signed agreement, CAC, TIN, SON or NCC certificates, authorised-distributor letters, other) with expiry dates, and bank details. An Admin-set checklist of required items (the three FR-14 terms always required) gates approval, with Admin able to approve with a written reason. Bank-detail changes need a Finance second approver, are shown masked, and every full read is audited. A document nearing expiry (30 days) or expired puts the Supplier under Needs attention and alerts Admin; nothing comes off sale. The Supplier's product list is loaded from its page with a Supplier-scoped bulk upload (FR-15).
 
 **Pricing, Platform Rate and loyalty**
 
@@ -1639,13 +1639,13 @@ So that a cost change is deliberate and its effect is seen first.
 **When** it takes effect
 **Then** Products with a replacement switch to it, the rest come off sale, and each change is audited.
 
-### Story 2.17: Bulk upload with a dry run
+### Story 2.17: Bulk upload with a dry run, and a Supplier's product list
 
 As an Operations officer,
-I want to create and update many Products from a spreadsheet and see what it will do first,
-So that the launch Catalogue can be loaded in one sitting without surprises.
+I want to create and update many Products from a spreadsheet, including one Supplier's whole product list, and see what it will do first,
+So that the launch Catalogue, and each newly onboarded Supplier's range, can be loaded in one sitting without surprises.
 
-**Requirements:** FR-15; edge-case rows 15, 16
+**Requirements:** FR-15, FR-81; edge-case rows 15, 16
 
 **Acceptance Criteria:**
 
@@ -1673,6 +1673,35 @@ So that the launch Catalogue can be loaded in one sitting without surprises.
 **Given** a launch file of 500 or more rows
 **When** it is uploaded
 **Then** it imports in a single upload.
+
+**Given** a Supplier's page (Story 2.2)
+**When** Operations or Admin chooses "Upload this supplier's products"
+**Then** the template has no Supplier column, and every Supplier Cost in the file is recorded against that Supplier, dated, with the file named on the Supplier's page.
+
+**Given** a Supplier-scoped file
+**When** a row's SKU matches an existing Product
+**Then** that Supplier's cost on the Product is added or updated and the Product's Active Supplier never changes (switching stays with Story 2.16)
+**And** when the SKU is new, the Product is created as a draft carrying that Supplier's cost.
+
+**Given** a Supplier that is not yet approved
+**When** its file is applied
+**Then** its rows apply as drafts and costs, the dry run says that none of them can go live until the Supplier is approved, and no Product becomes active (Story 2.4).
+
+**Given** an approved Supplier with draft Products from its files that have no Active Supplier
+**When** an Admin chooses "Make this the Active Supplier for its [n] new drafts"
+**Then** it is set as their first Active Supplier where the cost is above zero, the rest are listed with the reason, and each change is audited.
+
+**Given** a stopped Supplier
+**When** anyone tries to upload a file for it
+**Then** it is refused with the reason.
+
+**Given** a Supplier-scoped file over the price-change thresholds
+**When** it is applied
+**Then** it waits for Admin as a whole file, as in Story 2.18.
+
+**Given** a keyboard, screen-reader or 200% zoom user
+**When** they run a dry run
+**Then** the report's counts and each failed row's number and reason are read in words, and the table needs no sideways scrolling to read a row.
 
 ### Story 2.18: A bulk price file waits for Admin and can be rolled back
 
