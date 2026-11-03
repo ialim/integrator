@@ -450,7 +450,7 @@ As in the table in Section 2. Also fix the cross-references: "Story 2.17" become
 | 5 | PO/Dev (`bmad-sprint-planning`) | **Rerun sprint planning** to regenerate `sprint-status.yaml` from the edited epics, **preserving every existing status** | Epic 1 statuses are unchanged; Epic 2 lists 21 `backlog` keys with the new numbers |
 | 6 | Founder | Before Story 2.9 ships: create the Supplier bank-detail key in the host secret store and the escrow store, and add it to the restore-drill runbook (Story 1.2) | The key exists in both stores and is drill-tested |
 
-**Progress (2 November 2026):** steps 1 to 3 are applied as direct edits to `prd.md`, `ARCHITECTURE-SPINE.md` (with a `.memlog.md` entry) and `EXPERIENCE.md`. The step-18 mockup refresh is not done. Step 4 is applied to `epics.md`: Epic 2 now has 21 stories, 175 in total. In the Epic 2 notes, the kernel stories are named by their new numbers (2.5, 2.8 and 2.19). Steps 5 and 6 are still open.
+**Progress (2 November 2026):** steps 1 to 3 are applied as direct edits to `prd.md`, `ARCHITECTURE-SPINE.md` (with a `.memlog.md` entry) and `EXPERIENCE.md`. The step-18 mockup was refreshed on 3 November 2026: frame 3 shows the list and the checklist, the new frame 4 shows one Supplier's record, and the Suppliers state cards are updated. Step 4 is applied to `epics.md`: Epic 2 now has 21 stories, 175 in total. In the Epic 2 notes, the kernel stories are named by their new numbers (2.5, 2.8 and 2.19). Steps 5 and 6 are still open.
 
 **Sequencing and constraints**
 

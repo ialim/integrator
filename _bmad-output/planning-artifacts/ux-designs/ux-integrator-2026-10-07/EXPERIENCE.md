@@ -813,7 +813,7 @@ Wireframes in the Ledger look, kept in `mockups/`. Each illustrates the section 
 | [console/flow-uj6-step15-console-admin-people.html](mockups/console/flow-uj6-step15-console-admin-people.html) | Admin Today, Level 3 review, NIN review, a business account and holding it, deciding a return |
 | [console/flow-uj6-step16-console-admin-settings.html](mockups/console/flow-uj6-step16-console-admin-settings.html) | Approvals, Pricing and rules, Staff, the audit trail, the weekly review, the dashboard |
 | [console/flow-uj6-step17-console-catalogue-stock.html](mockups/console/flow-uj6-step17-console-catalogue-stock.html) | Products and stock, one product, goods in and the ledger, bulk upload |
-| [console/flow-uj6-step18-console-content-suppliers-zones.html](mockups/console/flow-uj6-step18-console-content-suppliers-zones.html) | Documentation, the guide editor, Suppliers, Stores and delivery zones |
+| [console/flow-uj6-step18-console-content-suppliers-zones.html](mockups/console/flow-uj6-step18-console-content-suppliers-zones.html) | Documentation, the guide editor, Suppliers and one Supplier's onboarding record (refreshed 3 Nov 2026), Stores and delivery zones |
 | [console/flow-uj6-step26a-console-finance-rate-credit.html](mockups/console/flow-uj6-step26a-console-finance-rate-credit.html) | The Platform Rate, credit note requests and reviews, credit notes and refunds |
 | [console/flow-uj6-step26b-console-admin-ops-gaps.html](mockups/console/flow-uj6-step26b-console-admin-ops-gaps.html) | Holds and blocklist, publishing Terms, creating businesses, delivery price requests |
 
