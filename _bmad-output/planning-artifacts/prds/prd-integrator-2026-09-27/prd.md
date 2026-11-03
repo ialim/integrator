@@ -2,7 +2,7 @@
 title: "PRD: integrator"
 status: final
 created: 2026-09-27
-updated: 2026-10-09
+updated: 2026-11-02
 ---
 
 # PRD: integrator
@@ -17,6 +17,8 @@ Every FR carries a status and a build priority. **Confirmed** means the founder 
 **Status at this revision (7 October 2026).** Every FR is Confirmed or Default, so all can go to epics now, though FR-43, FR-59, FR-61, FR-63, FR-66, and FR-77 are marked for counsel or accountant review. All 15 founder decisions in §8.1 are Confirmed. Other open items are in §8.2 and §8.3. Build order is in §6.1.
 
 **Update (9 October 2026).** The settled positions from the UX design (`prd-change-requests.md` in the UX folder) and the architecture spine's product-facing decisions are folded into 41 FRs, each marked "From UX design and architecture". FR-27 and FR-60 change existing text. The UX's still-open items are §8.3 questions 6 to 18.
+
+**Update (2 November 2026).** The approved sprint change proposal (`sprint-change-proposal-2026-11-02.md`) adds FR-81, the staff-kept Supplier onboarding record, with matching rows in the FR-52 role matrix, the second-approver list, and the FR-53 audited events. Suppliers still do not log in (§5.3).
 
 ## 1. Vision
 
@@ -398,10 +400,22 @@ A Product can hold Supplier Costs from several Suppliers, with exactly one Activ
 
 **From UX design and architecture (9 October 2026).** "Approve" on a Supplier stays off until its returns, dead-on-arrival, and counterfeit-chargeback terms are recorded; Admin can instead approve with a written reason. The shorter of the Supplier's and the 30-day dead-on-arrival window applies. Stopping a Supplier takes its Products off sale after a preview, with a replacement named per Product.
 
+**From the sprint change proposal (2 November 2026).** The Supplier's onboarding record and checklist are defined in FR-81.
+
 **Consequences (testable):**
 - Wholesale Price always derives from the Active Supplier's cost.
 - A switch to a Supplier with no Supplier Cost, or a cost of zero or less, is refused, and the Active Supplier cannot be removed without a replacement.
 - Switching recalculates the Wholesale Price, is audited, and shows how many open Carts and Projects it affects.
+
+#### FR-81: Supplier onboarding record
+*Status: Confirmed (sprint change proposal, 2 November 2026). Priority 1.*
+Each Supplier has an onboarding record kept by Staff (Suppliers do not log in): business details (legal name, trade name, CAC RC number, TIN, address, invoicing currency, payment terms), contacts (sales; returns and RMA), documents (signed agreement, CAC certificate, TIN certificate, SON or NCC certificates, authorised-distributor letters, other), each versioned, private, and carrying an expiry date where one applies, and bank details. Admin sets which checklist items are required; the three FR-14 agreement terms are always required. "Approve" stays off until every required item is clear, and Admin can instead approve with a written reason. Supplier bank-detail changes need a Finance second approver, are shown masked, and every full read is audited. A document within 30 days of expiry, or expired, puts the Supplier under Needs attention and alerts Admin; the Supplier stays approved and nothing comes off sale. Realizes UJ-6.
+
+**Consequences (testable):**
+- A Supplier with a required checklist item not clear cannot be approved without a written reason.
+- No Supplier document, contact or bank detail reaches any Integrator surface.
+- A Supplier bank-detail change takes effect only on a Finance member's approval, never the requester's.
+- An expired document never changes a Supplier's approval or a Product's sellability.
 
 #### FR-15: Bulk upload of Products
 *Status: Confirmed, with Default guards. Priority 1.*
@@ -941,13 +955,16 @@ Amounts go only to Owners and Managers, and Technician messages carry none. Time
 | Mark a Product or batch as a suspected counterfeit | No | Yes | Yes |
 | Edit Platform Markups, the margin floor, the VAT rate, return windows, and the NGN 5 tolerance | No | No | Yes |
 | Switch Active Suppliers; approve Suppliers | No | No | Yes |
+| Record Supplier details, contacts and documents (Finance can view) | No | Yes | Yes |
+| Edit Supplier bank details (a second approver from Finance) | No | No | Yes |
+| Reveal full Supplier bank details (audited) | Yes | No | Yes |
 | Edit the platform's bank details (a second approver from Finance; effective after 24 hours; emailed to Admin and Finance) | No | No | Yes |
 | Manual NIN verification, Level 3 approval, vouching rights, direct account creation, Holds and revocations, create and deactivate staff accounts | No | No | Yes |
 
 Segregation of duties:
 - No Staff member confirms a Payment, or issues or pays a Credit Note, for a Business Account they created, approved, or vouched for.
 - Whoever investigated a return does not decide it (Admin decides when Operations investigated).
-- Refunds and Credit Notes above a set amount (placeholder NGN 100,000, an Admin setting), Platform Rate changes above 3%, VAT rate changes, Back-order Discounts above 10%, Active Supplier switches, bulk price changes, and any change to the underpayment tolerance need a second approver.
+- Refunds and Credit Notes above a set amount (placeholder NGN 100,000, an Admin setting), Platform Rate changes above 3%, VAT rate changes, Back-order Discounts above 10%, Active Supplier switches, Supplier bank-detail changes (a Finance approver), bulk price changes, and any change to the underpayment tolerance need a second approver.
 - Stock adjustments above a set size need Admin sign-off.
 - Any use of Admin powers "acting as" another role is flagged for the founder's weekly review.
 
@@ -966,7 +983,7 @@ The platform records an append-only audit trail with hash chaining and credentia
 - Payment confirmations and reversals.
 - Credit Notes.
 - Rate and markup changes.
-- Active Supplier changes.
+- Active Supplier changes and Supplier approvals.
 - Role and access changes.
 - Level 3 decisions.
 - Order approvals and cancellations.
@@ -974,7 +991,7 @@ The platform records an append-only audit trail with hash chaining and credentia
 - Serial entries and corrections.
 - Shipment status changes.
 - VAT rate and window changes.
-- Bank-detail changes.
+- Bank-detail changes, the platform's and Suppliers'.
 - Issue Codes.
 - Return Request decisions.
 
@@ -1191,7 +1208,7 @@ The founder has a dashboard covering SM-1 to SM-9 and SM-C1 to SM-C5, with the d
 
 ### 5.3 Non-Goals (v1)
 
-- Not an open marketplace: Suppliers do not onboard themselves or log in, and v1 has no purchase-order, inbound-receiving, or supplier-chargeback workflow beyond the goods-in record (FR-74).
+- Not an open marketplace: Suppliers do not onboard themselves or log in, and v1 has no purchase-order, inbound-receiving, or supplier-chargeback workflow beyond the goods-in record (FR-74). Supplier bank details are reference records; v1 pays no Supplier through the platform.
 - Not a consumer product: no end-client accounts, no B2C, and no hiring of an integrator through the platform.
 - Not a payments company: no top-up wallet, no payment gateway, and no financing or trade credit. The only balance held is a Credit Note. Client-to-integrator payment is off-platform.
 - No on-site room-measurement tooling (AR or otherwise); field use means working offline and reaching Documentation.
@@ -1206,7 +1223,7 @@ The founder has a dashboard covering SM-1 to SM-9 and SM-C1 to SM-C5, with the d
 
 **Priority 1: first-Order critical**
 - Three-level access with NIN verification, Level 3 by vouching with staff approval, Business Accounts with Owner, Manager, and Technician roles, authentication and recovery, terms acceptance, and holds (FR-1 to FR-11, FR-69 to FR-72)
-- A Catalogue of IT, AV, security, and home-automation Products for residential and light commercial jobs, with USD pricing, a Platform Rate, per-Product Range markup, a margin floor, multiple Suppliers, bulk upload, search, stock quantities, and the goods-in record (FR-12 to FR-18, FR-73, FR-74)
+- A Catalogue of IT, AV, security, and home-automation Products for residential and light commercial jobs, with USD pricing, a Platform Rate, per-Product Range markup, a margin floor, multiple Suppliers with an onboarding record, bulk upload, search, stock quantities, and the goods-in record (FR-12 to FR-18, FR-73, FR-74, FR-81)
 - Pricing, VAT, rounding, and the Platform Rate (FR-19, FR-20, FR-23, FR-24)
 - Project Designer by Room with a Parts List, Proposals as PDFs with Integrator Margin (FR-25 to FR-27, FR-29 to FR-32)
 - Cart and Orders, back-order with opt-in, pick-up at Stores (one at launch) and courier delivery with Zone Rates, the Price Lock, cancellation, and amendment (FR-33 to FR-39, FR-57, FR-75)

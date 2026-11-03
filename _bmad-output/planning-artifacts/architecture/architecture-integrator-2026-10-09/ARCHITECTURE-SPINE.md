@@ -7,8 +7,8 @@ paradigm: 'modular monolith with a single write path (Action classes per module)
 scope: 'integrator v1: the Laravel backend and JSON API, the Filament staff console, and the installable offline-capable Integrator app (React PWA), Nigeria launch'
 status: final
 created: '2026-10-09'
-updated: '2026-10-09'
-binds: ['FR-1..FR-80', 'NFR-1..NFR-10']
+updated: '2026-11-02'
+binds: ['FR-1..FR-81', 'NFR-1..NFR-10']
 sources:
   - _bmad-output/planning-artifacts/prds/prd-integrator-2026-09-27/prd.md
   - _bmad-output/planning-artifacts/prds/prd-integrator-2026-09-27/addendum.md
@@ -27,7 +27,7 @@ companions: []
 | --- | --- | --- |
 | `Shared` (kernel, no domain tables) | Money type, Clock (UTC store, WAT display), Business Hours arithmetic, UUIDv7, Action base, lock registry, transition-table helper, idempotency store, outbox, field-visibility registry, `PdfRenderer` contract | NFR-4, NFR-9, NFR-10 |
 | `Identity` | Users, Business Accounts, roles, Access Levels, NIN records, Vouch Codes, Level 3 requests, Terms acceptances, Holds and blocklist, sessions, step-up grants, personal-data erasure and export orchestration | FR-1–11, FR-69–72 |
-| `Catalogue` | Products, Product Ranges, Suppliers and the Active Supplier, sellability flags (quarantine, suspected), stock quantities, reservations, goods-in, batches, serial units, stock ledger, back-order config, catalogue media | FR-12–18, FR-73, FR-74 |
+| `Catalogue` | Products, Product Ranges, Suppliers, their onboarding records, documents and bank details, and the Active Supplier, sellability flags (quarantine, suspected), stock quantities, reservations, goods-in, batches, serial units, stock ledger, back-order config, catalogue media | FR-12–18, FR-73, FR-74, FR-81 |
 | `Pricing` | Platform Rate (versioned), Platform Markup, margin floor, VAT, Loyalty Tiers and history, quotes and Order Quotes, every price, VAT, margin, delivery, credit and fee formula, the NGN 5 tolerance | FR-19–24, FR-35 |
 | `Projects` | Projects and their revision, Rooms, Project Items, Proposals and their PDFs, sync operations, tombstones and conflicts | FR-25–32 |
 | `Orders` | Carts, Orders and Order Lines and all their statuses (including Approved, Completed, line credits, back-order markers), Price Lock, cancellation and amendment, Payments, Receipts, bank-statement lines and allocations, platform bank details | FR-33–42, FR-57, FR-75 |
@@ -105,7 +105,7 @@ flowchart TD
 
 ### AD-5 — Timers are deadline columns plus a sweep [ADOPTED]
 
-- **Binds:** FR-20 staleness, FR-32, FR-38, FR-41, FR-43 expiry and reminders, FR-45 Uncollected, FR-21 monthly tiers, FR-68 Issue Code, FR-51 fallback and quiet hours, FR-78 escalation, NFR-3 30-day NIN deletion, NFR-9
+- **Binds:** FR-20 staleness, FR-32, FR-38, FR-41, FR-43 expiry and reminders, FR-45 Uncollected, FR-21 monthly tiers, FR-68 Issue Code, FR-51 fallback and quiet hours, FR-78 escalation, NFR-3 30-day NIN deletion, NFR-9, FR-81 Supplier document expiry and warning
 - **Prevents:** lost expiries from dropped delayed jobs; a timer that fires after the user already acted; each epic inventing its own reminder flags; clients computing deadlines differently from the server
 - **Rule:** Every business deadline is a UTC timestamp column on its owning entity. A sweep runs every minute on one server (`onOneServer`, using the shared cache lock), finds due rows and calls the same Actions a person would. Each timer Action re-reads its deadline under the root lock and refuses unless the deadline has passed by database transaction time. A reminder is a `*_due_at` and `*_sent_at` column pair (for example `pickup_reminder_due_at` and `pickup_reminder_sent_at`) set and consumed by a dedicated reminder Action such as `SendPickupReminder`. A pausable clock stores `paused_at` and `remaining_seconds`. Business-Hours deadlines are computed by `Shared` over `Staff`'s holiday calendar, and a calendar change recomputes every open Business-Hours deadline. No per-entity delayed queue jobs; queue backoff is allowed only for provider transport retries. The API sends every deadline as a server-computed UTC `*_at` and every response carries server time, and the PWA never does Business-Hours arithmetic. A missed sweep heartbeat or failed run alerts the founder.
 
@@ -168,11 +168,11 @@ flowchart TD
 
 ### AD-14 — Files: evidence is private and immutable, media is cacheable, uploads are staged [ADOPTED]
 
-- **Binds:** Receipts, Proposals, documents, Documentation, Product images, return photos (FR-31, FR-38, FR-40, FR-50, FR-55)
+- **Binds:** Receipts, Proposals, documents, Documentation, Product images, return photos, Supplier documents (FR-31, FR-38, FR-40, FR-50, FR-55, FR-81)
 - **Prevents:** the Price Lock depending on which upload path an epic built; unscanned files in use; uncacheable media on slow connections; documents that change after issue
 - **Rule:**
   - **Uploads.** Every upload starts with an upload-intent `POST` that stamps `upload_started_at` (the time FR-38 judges) and takes the idempotency key, then returns presigned multipart URLs for resumable upload, and finishes with a completion call. Files sit under a quarantine prefix until a queued step scans for malware, strips EXIF, sniffs type and converts HEIC, then promotes them.
-  - **Evidence and private documents** (Receipts, invoices, credit-note and delivery documents, return photos, Proposal PDFs) are private and served through short-lived signed URLs. They are never overwritten, except that regenerating a Proposal hard-replaces its PDF (FR-31) and Proposal PDFs are excluded from object versioning.
+  - **Evidence and private documents** (Receipts, invoices, credit-note and delivery documents, return photos, Proposal PDFs, Supplier documents, which are versioned so replacing one keeps earlier versions) are private and served through short-lived signed URLs. They are never overwritten, except that regenerating a Proposal hard-replaces its PDF (FR-31) and Proposal PDFs are excluded from object versioning.
   - **Catalogue media and Documentation** use immutable content-hashed keys behind a stable authenticated app route, cacheable long-term by the service worker. Images get fixed derivatives at upload (320, 640 and 1280 px, WebP).
   - **Documents** are rendered on the queue, through `Shared`'s `PdfRenderer` contract, only from a snapshot row written in the issuing transaction. The Parts-list PDF needs a connection in v1.
 
@@ -247,6 +247,12 @@ flowchart TD
 - **Binds:** every module holding personal data (FR-72, NFR-3, edge row 8)
 - **Prevents:** account closure or a data-subject request missing data held in another module
 - **Rule:** Each module that holds personal data implements `ErasePersonalData(business_account)` and `ExportPersonalData(business_account)` Actions, registered with `Identity`, which orchestrates them. Erasure respects retention holds (NFR-8) and pseudonymises where records must be kept.
+
+### AD-27 — Supplier bank details are sealed, masked and revealed on purpose [ADOPTED]
+
+- **Binds:** Catalogue (FR-81, FR-52, FR-53), backups (AD-20)
+- **Prevents:** a Supplier's account number readable with the app key, leaking into logs or exports, or changed by one person
+- **Rule:** Supplier bank details are encrypted with a dedicated key (never `APP_KEY`) held in the host's secret store and escrowed with the AD-16 keys, and are tested in the quarterly restore drill. They are shown masked to the last four digits; the full value is read only through an audited reveal Action with a reason code, for Admin and Finance. Changes are an AD-23 Request and Approve pair whose approver must hold the Finance role. They are excluded from logs, exception reports, queue and outbox payloads, analytics and exports, and audit diffs record a keyed hash. Platform bank details (Orders) are not covered: Integrators must see them.
 
 ## Consistency Conventions
 
@@ -344,6 +350,8 @@ erDiagram
   PRODUCT ||--o{ ORDER_LINE : "sold as"
   PRODUCT ||--o{ PROJECT_ITEM : "chosen as"
   SUPPLIER ||--o{ PRODUCT : supplies
+  SUPPLIER ||--o{ SUPPLIER_DOCUMENT : "evidenced by"
+  SUPPLIER ||--o{ SUPPLIER_BANK_ACCOUNT : "paid to"
 ```
 
 ```text
@@ -366,7 +374,7 @@ tests/
 | Capability / Area | Lives in | Governed by |
 | --- | --- | --- |
 | Accounts, levels, vouching, NIN, closure (FR-1–11, 69–72) | Identity | AD-4, AD-13, AD-15, AD-16, AD-18, AD-26 |
-| Catalogue, Suppliers, stock, goods-in (FR-12–18, 73, 74) | Catalogue | AD-8, AD-12, AD-14, AD-17, AD-23 |
+| Catalogue, Suppliers and onboarding, stock, goods-in (FR-12–18, 73, 74, 81) | Catalogue | AD-5, AD-8, AD-12, AD-14, AD-17, AD-23, AD-27 |
 | Pricing, Platform Rate, tiers (FR-19–24) | Pricing | AD-5, AD-6, AD-7, AD-23, AD-25 |
 | Project Designer, offline design (FR-25–28) | Projects + PWA | AD-11, AD-12, AD-19, AD-22 |
 | Proposals and PDFs (FR-29–32) | Projects | AD-7, AD-14, AD-22 |
@@ -389,6 +397,7 @@ tests/
 | 1 | Whether Laravel Cloud Serverless Postgres allows a least-privilege application role; spike before the Staff epic | AD-21 | Builder |
 | 2 | Serial numbers on the tax invoice or on a delivery note; the reversal and re-invoice flow; VAT on delivery and on Credit Notes | AD-9 field set, the CreditNotes epic | Accountant |
 | 3 | NDPA transfer basis for London compute and database and for Cloudflare R2 object storage (location to confirm with Laravel Cloud) | AD-20 | Counsel |
+| 4 | Retention and erasure of Supplier contact personal data under NDPA: AD-26 is keyed by Business Account and does not cover Supplier contacts. Does not block the build | AD-26, AD-27 | Counsel |
 
 ## Deferred
 
