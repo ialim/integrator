@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-25-2026 12:00
-last_updated: 11-02-2026 22:30
+last_updated: 11-03-2026 09:00
 project: integrator
 project_key: NOKEY
 tracking_system: file-system
@@ -47,23 +47,26 @@ development_status:
 
   epic-2: backlog
   2-1-admin-sets-up-product-ranges-and-their-markup: backlog
-  2-2-admin-records-and-approves-suppliers: backlog
+  2-2-admin-records-suppliers-and-approves-them-against-an-onboard: backlog
   2-3-operations-creates-and-edits-a-product: backlog
   2-4-a-product-goes-live-and-leaves: backlog
   2-5-product-images: backlog
-  2-6-finance-sets-and-reconfirms-the-platform-rate: backlog
-  2-7-a-rate-change-above-3-needs-a-second-person: backlog
-  2-8-selling-prices-computed-to-the-kobo: backlog
-  2-9-the-remaining-pricing-formulas-proven: backlog
-  2-10-admin-changes-a-markup-and-sees-what-it-will-do: backlog
-  2-11-stock-quantities-thresholds-and-the-ledger: backlog
-  2-12-operations-records-goods-in: backlog
-  2-13-back-order-terms-and-the-discount-rule: backlog
-  2-14-admin-switches-the-active-supplier-or-stops-a-supplier: backlog
-  2-15-bulk-upload-with-a-dry-run: backlog
-  2-16-a-bulk-price-file-waits-for-admin-and-can-be-rolled-back: backlog
-  2-17-the-rate-goes-stale-and-finance-can-pause-orders: backlog
-  2-18-acting-as-another-role-and-the-founder-s-weekly-review: backlog
+  2-6-a-supplier-s-agreement-and-compliance-documents: backlog
+  2-7-finance-sets-and-reconfirms-the-platform-rate: backlog
+  2-8-a-rate-change-above-3-needs-a-second-person: backlog
+  2-9-supplier-bank-details-with-finance-s-agreement: backlog
+  2-10-selling-prices-computed-to-the-kobo: backlog
+  2-11-the-remaining-pricing-formulas-proven: backlog
+  2-12-admin-changes-a-markup-and-sees-what-it-will-do: backlog
+  2-13-stock-quantities-thresholds-and-the-ledger: backlog
+  2-14-operations-records-goods-in: backlog
+  2-15-back-order-terms-and-the-discount-rule: backlog
+  2-16-admin-switches-the-active-supplier-or-stops-a-supplier: backlog
+  2-17-bulk-upload-with-a-dry-run: backlog
+  2-18-a-bulk-price-file-waits-for-admin-and-can-be-rolled-back: backlog
+  2-19-the-rate-goes-stale-and-finance-can-pause-orders: backlog
+  2-20-supplier-documents-nearing-expiry: backlog
+  2-21-acting-as-another-role-and-the-founder-s-weekly-review: backlog
   epic-2-retrospective: optional
 
   epic-3: backlog
