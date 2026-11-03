@@ -8,14 +8,15 @@
 <style>
 /*
   STEP 18 WIREFRAMES: the staff console: documentation and the guide editor, suppliers, stores and delivery zones.
-  Bola in Operations adds the guides technicians need. Kunle in Admin approves a supplier. Operations sets where and how
+  Bola in Operations adds the guides technicians need. Kunle in Admin onboards and approves a supplier. Operations sets where and how
   goods are delivered.
   Direction A (Ledger) look, light only. Layout proposal for the owner's reaction; assumptions until confirmed.
   Tokens: paper #FAF6EC, sheet #FFFFFF, aged #F0E9D6, desk #E7DFCB, ink #1A1812, secondary #4A4434,
   green #153D2E, brass #6B4E0C, ok #1B5E3A, caution #6E4400, caution tint #F6EACB, error #8A1C14,
   error tint #F6E4DE, control #7A7258, hairline #D9CFB5, bezel #2B281F.
   Colour rule from the owner: in-progress states are neutral outlined labels; tint only action-needed or error.
-  Facts: PRD FR-14, FR-37, FR-47 to FR-50, FR-52, FR-56, FR-59, SM-7. Rates, estimates and addresses are placeholders.
+  Refreshed 3 Nov 2026 for the Supplier onboarding change (sprint-change-proposal-2026-11-02.md): frames 3 and 4 and the Suppliers states.
+  Facts: PRD FR-14, FR-15, FR-81, FR-37, FR-47 to FR-50, FR-52, FR-56, FR-59, SM-7. Rates, estimates and addresses are placeholders.
   Frames are 1240 px wide, for a desktop browser. Now is Mon 12 Oct 2026, mid-afternoon, inside Business Hours.
 */
 :root{color-scheme:light;
@@ -170,7 +171,7 @@ button{font:inherit;color:inherit;margin:0}
 <main class="page">
   <p class="kicker">Step 18 of the walk-through</p>
   <h1 class="top">The staff console: documentation, suppliers, stores and delivery zones</h1>
-  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell. This step finishes the console: the guides a technician reads on site and how they are written, the suppliers behind the catalogue and who approves them, and where and for how much goods are delivered. Four desktop frames, then a sheet of states. Rates, estimates, addresses and supplier names are placeholders. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
+  <p class="lede">Proposal for your reaction, in the Direction A look. Same console shell. This step finishes the console: the guides a technician reads on site and how they are written, the suppliers behind the catalogue and who approves them, and where and for how much goods are delivered. Five desktop frames, then a sheet of states. Frames 3 and 4 and the supplier states were refreshed on 3 Nov 2026 for Supplier onboarding. Rates, estimates, addresses and supplier names are placeholders. Wording is placeholder where it is not quoted from the PRD. Nothing here is decided until you confirm it.</p>
 
   <figure class="fig">
     <figcaption>1. Documentation<span>The job is closing the gap: which products people order that still have nothing to read. The list starts with the ones ordered most, because the success measure counts products ordered in the last 90 days. Suppliers do not log in, so Operations adds what they send.</span></figcaption>
@@ -292,7 +293,7 @@ button{font:inherit;color:inherit;margin:0}
   </figure>
 
   <figure class="fig">
-    <figcaption>3. Suppliers, as Admin sees them<span>Who the goods come from, whether they are approved, and whether their agreement says what happens with returns, dead-on-arrival units and counterfeits. Only Admin approves a supplier or switches the one a product is bought from.</span></figcaption>
+    <figcaption>3. Suppliers, as Admin sees them<span>Who the goods come from, whether they are approved, and how far each one's onboarding checklist has got. "Approve the supplier" stays off until every required item is clear. Only Admin approves a supplier or switches the one a product is bought from. Refreshed 3 Nov 2026 for Supplier onboarding (FR-81).</span></figcaption>
     <div class="deskwrap"><div class="browser">
       <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Suppliers · Staff console</span></div>
       <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:30 pm · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
@@ -318,37 +319,142 @@ button{font:inherit;color:inherit;margin:0}
           <span class="a on">Suppliers</span>
         </nav>
         <div class="main">
-          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px"><div><h1>Suppliers</h1><p class="sub">7 approved, 1 waiting for you · 512 active products</p></div><span class="b o">Propose a supplier…</span></div>
-          <div class="md" style="grid-template-columns:minmax(0,1fr) 340px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px"><div><h1>Suppliers</h1><p class="sub">7 approved, 1 waiting for you · 512 active products · 3 need attention</p></div><div class="actions" style="margin:0"><span class="b o">Onboarding settings…</span><span class="b o">Add a supplier…</span></div></div>
+          <div class="filters" style="margin-top:4px"><span class="fchip on">All · 8</span><span class="fchip hot">Needs attention · 3</span><span class="fchip">Approved · 7</span><span class="fchip">Not approved · 1</span></div>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 360px">
             <div style="padding-right:20px;min-width:0">
               <table class="tbl">
                 <caption style="position:absolute;left:-9999px">Suppliers</caption>
-                <thead><tr><th scope="col">Supplier</th><th scope="col">Status</th><th scope="col" class="num">Products</th><th scope="col">Agreement terms</th><th scope="col">Costs updated</th></tr></thead>
+                <thead><tr><th scope="col">Supplier</th><th scope="col">Status</th><th scope="col" class="num">Products</th><th scope="col">Checklist</th><th scope="col">Papers</th></tr></thead>
                 <tbody>
-                  <tr><td>Northgate Distribution</td><td><span class="chip">Approved</span></td><td class="num">142</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">12 Oct</td></tr>
-                  <tr><td>Zenith Access</td><td><span class="chip">Approved</span></td><td class="num">96</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">6 Oct</td></tr>
-                  <tr class="attn"><td>Sentinel Imports</td><td><span class="chip">Approved</span></td><td class="num">88</td><td><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Counterfeit missing</span></td><td class="nw">28 Sep</td></tr>
-                  <tr><td>Delta Mounts</td><td><span class="chip">Approved</span></td><td class="num">88</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">1 Oct</td></tr>
-                  <tr><td>Kable Co</td><td><span class="chip">Approved</span></td><td class="num">46</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">2 Oct</td></tr>
-                  <tr><td>Apex Power</td><td><span class="chip">Approved</span></td><td class="num">31</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">30 Sep</td></tr>
-                  <tr><td>Meridian Supply</td><td><span class="chip">Approved</span></td><td class="num">21</td><td><span class="okmark"><svg class="i"><use href="#i-check"/></svg>All three</span></td><td class="nw">9 Oct</td></tr>
-                  <tr class="sel" aria-current="true"><td>Brightwave Wholesale</td><td><span class="chip warn">Waiting for you</span></td><td class="num">0</td><td><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Counterfeit missing</span></td><td class="nw">—</td></tr>
+                  <tr><td>Northgate Distribution</td><td><span class="chip">Approved</span></td><td class="num">142</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td>All current</td></tr>
+                  <tr class="attn"><td>Zenith Access</td><td><span class="chip">Approved</span></td><td class="num">96</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td><span class="chip warn">SON certificate expires 4 Nov</span></td></tr>
+                  <tr class="attn"><td>Sentinel Imports<small>Approved with a reason</small></td><td><span class="chip">Approved</span></td><td class="num">88</td><td class="nw"><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>7 of 9 clear</span></td><td><span class="chip warn">Distributor letter expired 30 Sep</span></td></tr>
+                  <tr><td>Delta Mounts</td><td><span class="chip">Approved</span></td><td class="num">88</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td>All current</td></tr>
+                  <tr><td>Kable Co</td><td><span class="chip">Approved</span></td><td class="num">46</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td>All current</td></tr>
+                  <tr><td>Apex Power</td><td><span class="chip">Approved</span></td><td class="num">31</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td>All current</td></tr>
+                  <tr><td>Meridian Supply</td><td><span class="chip">Approved</span></td><td class="num">21</td><td class="nw"><span class="okmark"><svg class="i"><use href="#i-check"/></svg>9 of 9 clear</span></td><td>All current</td></tr>
+                  <tr class="sel" aria-current="true"><td>Brightwave Wholesale</td><td><span class="chip warn">Waiting for you</span></td><td class="num">0<small>214 drafts</small></td><td class="nw"><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>7 of 9 clear</span></td><td>All current</td></tr>
                 </tbody>
               </table>
+              <p class="after" style="margin-top:12px">Papers warn 30 days before they expire and again when they do. An expired paper never takes a supplier's approval away or a product off sale; it shows here, and Admin gets a task.</p>
             </div>
             <aside class="detail" aria-labelledby="sp">
               <h2 class="dh" id="sp" style="font-size:18px">Brightwave Wholesale</h2>
-              <p class="meta">Proposed by Bola A. on 9 Oct · agreement attached (PDF)</p>
+              <p class="meta">Added by Bola A. on 9 Oct · 7 of 9 required items clear</p>
+              <h3 style="margin:4px 0 4px;font:700 14px var(--serif)">Onboarding checklist</h3>
+              <dl class="cmp">
+                <div><dt>Business details</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear</span></dd></div>
+                <div><dt>Contacts: sales, returns and RMA</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear</span></dd></div>
+                <div><dt>Returns terms</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear · 30 days</span></dd></div>
+                <div><dt>Dead-on-arrival terms</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear · 14 days</span></dd></div>
+                <div><dt>Counterfeit chargeback</dt><dd><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Needs action: not stated</span></dd></div>
+                <div><dt>Signed agreement</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear · signed 8 Oct</span></dd></div>
+                <div><dt>CAC certificate</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear</span></dd></div>
+                <div><dt>TIN certificate</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>Clear</span></dd></div>
+                <div><dt>Bank details</dt><dd><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Needs action: waiting for Finance</span></dd></div>
+              </dl>
+              <div class="actions" style="flex-direction:column;align-items:stretch"><button class="b" disabled aria-describedby="sp-why">Approve the supplier</button><span class="b o">Approve with a reason…</span><span class="b o">Ask Operations for the missing term</span></div>
+              <p class="after need" id="sp-why">Off because 2 required items need action: the counterfeit-chargeback term, and bank details waiting for Finance. A shorter dead-on-arrival window here shortens the window we give businesses for these products.</p>
+              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Its products</h3>
+              <dl class="cmp">
+                <div><dt>brightwave-price-list-oct.xlsx</dt><dd>214 drafts · 10 Oct, Bola A.</dd></div>
+                <div><dt>On sale</dt><dd>None until it is approved</dd></div>
+              </dl>
+              <div class="actions"><span class="b o sm">Upload this supplier's products…</span></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </figure>
+
+  <figure class="fig">
+    <figcaption>4. One supplier's record<span>Everything we hold about a supplier, kept by staff because suppliers never sign in. Papers are private and versioned, bank details are masked, and the product list loads from here. This is Sentinel Imports, approved with a reason, with one paper expired. New in this refresh (FR-81, FR-15).</span></figcaption>
+    <div class="deskwrap"><div class="browser">
+      <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Sentinel Imports · Suppliers · Staff console</span></div>
+      <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:35 pm · open until 6:00 pm</span><span class="me"><span class="role">Admin</span>Kunle O.</span></header>
+      <div class="shell">
+        <nav class="nav" aria-label="Staff console">
+          <h2>Queues</h2>
+          <span class="a">Today</span>
+          <span class="a">Level 3 requests<span class="n">2</span></span>
+          <span class="a">NIN reviews<span class="n">1</span></span>
+          <span class="a">Return decisions<span class="n">1</span></span>
+          <span class="a">Approvals<span class="n hot">3</span></span>
+          <span class="a">Escalated<span class="n hot">1</span></span>
+          <h2>People</h2>
+          <span class="a">Business accounts</span>
+          <span class="a">Holds and blocklist<span class="n">2</span></span>
+          <span class="a">Staff</span>
+          <h2>Rules</h2>
+          <span class="a">Pricing and rules</span>
+          <span class="a">Terms and policies</span>
+          <span class="a">Business Hours</span>
+          <h2>Catalogue</h2>
+          <span class="a">Products and stock</span>
+          <span class="a on">Suppliers</span>
+        </nav>
+        <div class="main">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px"><div><h1>Sentinel Imports</h1><p class="sub">Approved with a reason by Kunle O. on 28 Sep: "Counterfeit term agreed by phone; the written term is promised by 31 Oct." · 88 active products</p></div><span class="b o">Edit details…</span></div>
+          <div class="md" style="grid-template-columns:minmax(0,1fr) 360px">
+            <div style="padding-right:20px;min-width:0">
+              <h3 style="margin:4px 0 4px;font:700 15px var(--serif)">Business details</h3>
+              <dl class="cmp">
+                <div><dt>Legal name</dt><dd>Sentinel Imports Nigeria Ltd</dd></div>
+                <div><dt>CAC RC number · TIN</dt><dd>RC 1234567 · 12345678-0001</dd></div>
+                <div><dt>Address</dt><dd>22 Warehouse Road, Apapa, Lagos</dd></div>
+                <div><dt>Invoices in · payment terms</dt><dd>USD · 30 days from invoice</dd></div>
+              </dl>
+              <h3 style="margin:14px 0 4px;font:700 15px var(--serif)">Contacts</h3>
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Contacts</caption>
+                <thead><tr><th scope="col">For</th><th scope="col">Name</th><th scope="col">Phone</th><th scope="col">Email</th></tr></thead>
+                <tbody>
+                  <tr><td>Sales</td><td>Ada E.</td><td class="nw">0803 000 0000</td><td>sales@sentinel.example</td></tr>
+                  <tr><td>Returns and RMA</td><td>Musa B.</td><td class="nw">0805 000 0000</td><td>rma@sentinel.example</td></tr>
+                </tbody>
+              </table>
+              <h3 style="margin:14px 0 4px;font:700 15px var(--serif)">Agreement terms</h3>
               <dl class="cmp">
                 <div><dt>Returns</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>30 days</span></dd></div>
-                <div><dt>Dead on arrival</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>14 days</span></dd></div>
+                <div><dt>Dead on arrival</dt><dd><span class="okmark"><svg class="i"><use href="#i-check"/></svg>30 days</span></dd></div>
                 <div><dt>Counterfeit chargeback</dt><dd><span class="okmark need"><svg class="i"><use href="#i-alert"/></svg>Not stated</span></dd></div>
               </dl>
-              <div class="actions" style="flex-direction:column;align-items:stretch"><span class="b" aria-disabled="true">Approve the supplier</span><span class="b o">Approve with a reason…</span><span class="b o">Ask Operations for the missing term</span></div>
-              <p class="after need">Its products cannot go on sale until all three terms are written down. A shorter dead-on-arrival window here shortens the window we give businesses for those products.</p>
-              <h3 style="margin:14px 0 4px;font:700 14px var(--serif)">Switching who a product is bought from</h3>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:14px 0 4px"><h3 style="font:700 15px var(--serif)">Papers</h3><span class="b o sm">Add a paper…</span></div>
+              <table class="tbl">
+                <caption style="position:absolute;left:-9999px">Papers</caption>
+                <thead><tr><th scope="col">Paper</th><th scope="col">Version</th><th scope="col">Expires</th><th scope="col">Status</th><th scope="col"><span style="position:absolute;left:-9999px">Actions</span></th></tr></thead>
+                <tbody>
+                  <tr><td>Signed supplier agreement<small>Signed 14 Sep · PDF</small></td><td>2<small>1 Replaced, 14 Sep</small></td><td class="nw">No end date</td><td><span class="chip">Current</span></td><td class="nw"><span class="b o sm">Open</span></td></tr>
+                  <tr><td>CAC certificate</td><td>1</td><td class="nw">—</td><td><span class="chip">Current</span></td><td class="nw"><span class="b o sm">Open</span></td></tr>
+                  <tr><td>TIN certificate</td><td>1</td><td class="nw">—</td><td><span class="chip">Current</span></td><td class="nw"><span class="b o sm">Open</span></td></tr>
+                  <tr><td>SON certificate</td><td>1</td><td class="nw">18 Jun 2027</td><td><span class="chip">Current</span></td><td class="nw"><span class="b o sm">Open</span></td></tr>
+                  <tr class="attn"><td>Authorised-distributor letter<small>From the camera brand</small></td><td>1</td><td class="nw">30 Sep 2026</td><td><span class="chip warn">Expired</span></td><td class="nw"><span class="b sm">Upload a new version…</span></td></tr>
+                </tbody>
+              </table>
+              <p class="after need">The distributor letter expired on 30 Sep, so its checklist item needs action and Admin has a task. Sentinel stays approved and its 88 products stay on sale. A new version closes the task.</p>
+            </div>
+            <aside class="detail" aria-labelledby="sb">
+              <h2 class="dh" id="sb" style="font-size:18px">Bank details</h2>
+              <p class="meta">Approved by Ngozi I. in Finance on 27 Sep</p>
               <dl class="cmp">
-                <div><dt>4MP PoE dome camera</dt><dd>Northgate → Meridian</dd></div>
+                <div><dt>Bank</dt><dd>Placeholder Bank</dd></div>
+                <div><dt>Account name</dt><dd>Sentinel Imports Nigeria Ltd</dd></div>
+                <div><dt>USD account</dt><dd><span aria-label="ending in 4 4 1 7">•••• 4417</span></dd></div>
+              </dl>
+              <div class="actions"><span class="b o sm">Show full details…</span><span class="b o sm">Change bank details…</span></div>
+              <p class="after">Showing them needs a reason and is recorded. A change waits on Approvals until someone in Finance agrees, then takes effect at once, and Admin and Finance are emailed. Operations sees only "Bank details on file".</p>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">Its products</h3>
+              <dl class="cmp">
+                <div><dt>On sale · drafts</dt><dd>88 · 6</dd></div>
+                <div><dt>sentinel-update-oct.xlsx</dt><dd>6 new drafts, 41 costs · 6 Oct</dd></div>
+              </dl>
+              <div class="actions" style="flex-direction:column;align-items:stretch"><span class="b o" style="white-space:normal;text-align:center">Upload this supplier's products…</span><span class="b o" style="white-space:normal;text-align:center">Make this the Active Supplier for its 6 new drafts…</span></div>
+              <p class="after">A supplier's file has no supplier column: every cost in it is Sentinel's. It never changes which supplier a product is bought from. Large price moves wait for Admin, as with any bulk file.</p>
+              <h3 style="margin:16px 0 4px;font:700 14px var(--serif)">Switching who a product is bought from</h3>
+              <dl class="cmp">
+                <div><dt>4MP PoE dome camera</dt><dd>Northgate → Sentinel</dd></div>
                 <div><dt>Cost</dt><dd>USD 37.21 → 36.00</dd></div>
                 <div><dt>Base-tier price</dt><dd>₦68,400.00 → ₦66,175.76</dd></div>
                 <div><dt>Touches</dt><dd>4 carts · 9 projects</dd></div>
@@ -362,7 +468,7 @@ button{font:inherit;color:inherit;margin:0}
   </figure>
 
   <figure class="fig">
-    <figcaption>4. Stores and delivery zones<span>Where people can collect, and where we deliver and for how much. A zone with no rate is "coming soon", which is how the launch service area is set. Changing a rate never changes an order already made.</span></figcaption>
+    <figcaption>5. Stores and delivery zones<span>Where people can collect, and where we deliver and for how much. A zone with no rate is "coming soon", which is how the launch service area is set. Changing a rate never changes an order already made.</span></figcaption>
     <div class="deskwrap"><div class="browser">
       <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="tabname">Stores and zones · Staff console</span></div>
       <header class="topbar"><span class="brand">integrator</span><span class="area">Staff console</span><span class="time">Mon 12 Oct · 3:40 pm · open until 6:00 pm</span><span class="me"><span class="role">Operations</span>Bola A.</span></header>
@@ -443,10 +549,17 @@ button{font:inherit;color:inherit;margin:0}
 
     <h3 class="grp">Suppliers</h3>
     <div class="grid">
-      <div class="sc need"><p class="lab">Missing terms</p><h4>Sentinel Imports has no counterfeit-chargeback term</h4><p>Shown on the list in brass. Its products stay on sale, and Admin is asked to get the term written down. A new product from it cannot go on sale until it is.</p></div>
+      <div class="sc need"><p class="lab">Approved with a reason</p><h4>Sentinel Imports has no counterfeit-chargeback term</h4><p>Admin approved it anyway with a written reason, which is shown on the supplier and recorded. The checklist still says Needs action until the term is written down. Its products stay on sale.</p></div>
+      <div class="sc need"><p class="lab">A paper nearing expiry</p><h4>Zenith Access's SON certificate expires on 4 Nov</h4><p>30 days ahead, the supplier moves to Needs attention and Admin gets one task. Nothing else changes.</p></div>
+      <div class="sc need"><p class="lab">An expired paper</p><h4>Sentinel's distributor letter expired on 30 Sep</h4><p>Its checklist item needs action. The supplier stays approved and its products stay on sale. A new version closes the task.</p></div>
+      <div class="sc need"><p class="lab">Bank details waiting</p><h4>Brightwave's bank details are waiting for Finance</h4><p>Admin enters them, and someone in Finance who did not ask approves them on the Approvals page. They take effect on approval, with no 24-hour wait, because no business pays into them. Admin and Finance are emailed.</p></div>
+      <div class="sc"><p class="lab">Who sees bank details</p><h4>Masked as "•••• 4417" everywhere</h4><p>Show full details is for Admin and Finance only, needs a reason, and is recorded. Operations sees "Bank details on file". A business never sees anything about a supplier.</p></div>
+      <div class="sc"><p class="lab">A supplier's product list</p><h4>"Upload this supplier's products"</h4><p>The bulk upload with its dry run, scoped to one supplier: no supplier column, and it never changes who a product is bought from. Before approval, new products stay drafts; afterwards, "Make this the Active Supplier for its new drafts" does them in one go.</p></div>
+      <div class="sc err"><p class="lab">A paper that cannot be used</p><h4>"We could not check this file"</h4><p>Said in one line when the scan fails. Nothing is kept, and the previous version stays current.</p></div>
       <div class="sc err"><p class="lab">A bad switch</p><h4>A supplier with no cost, or a cost of zero, is refused</h4><p>The Active Supplier cannot be removed without a replacement. The preview names the products affected.</p></div>
-      <div class="sc"><p class="lab">Who can do what</p><h4>Operations proposes and enters costs, Admin approves and switches</h4><p>Operations sees the Approve and Switch buttons with a lock and "Admin only". A switch needs a second approver and appears in Approvals.</p></div>
-      <div class="sc need"><p class="lab">Stopping a supplier</p><h4>Not in the PRD: what happens to its products</h4><p>Proposed: suspending a supplier takes its products off sale after a preview of what that touches, and a replacement supplier can be named per product. Needs your say.</p></div>
+      <div class="sc"><p class="lab">Who can do what</p><h4>Operations records, Admin approves</h4><p>Operations and Admin add suppliers, contacts, papers and product lists. Only Admin approves, switches, sets the required checklist and edits bank details. Finance can open papers and approves bank details. Operations sees the Approve and Switch buttons with a lock and "Admin only".</p></div>
+      <div class="sc"><p class="lab">What is required</p><h4>Admin chooses the checklist in Onboarding settings</h4><p>The three agreement terms are always required. A change applies to approvals from then on and never un-approves a supplier.</p></div>
+      <div class="sc"><p class="lab">Stopping a supplier</p><h4>Its products come off sale after a preview</h4><p>Decided on 9 Oct: a replacement supplier can be named per product, and the rest come off sale.</p></div>
     </div>
 
     <h3 class="grp">Stores and delivery zones</h3>
