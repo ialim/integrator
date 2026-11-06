@@ -111,6 +111,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The console theme imports Filament's CSS from vendor/, so the build needs Composer's packages.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
       - uses: actions/setup-node@v4
         with:
           node-version: 24
