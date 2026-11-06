@@ -62,7 +62,7 @@ development_status:
   2-14-operations-records-goods-in: backlog
   2-15-back-order-terms-and-the-discount-rule: backlog
   2-16-admin-switches-the-active-supplier-or-stops-a-supplier: backlog
-  2-17-bulk-upload-with-a-dry-run: backlog
+  2-17-bulk-upload-with-a-dry-run-and-a-supplier-s-product-list: backlog
   2-18-a-bulk-price-file-waits-for-admin-and-can-be-rolled-back: backlog
   2-19-the-rate-goes-stale-and-finance-can-pause-orders: backlog
   2-20-supplier-documents-nearing-expiry: backlog

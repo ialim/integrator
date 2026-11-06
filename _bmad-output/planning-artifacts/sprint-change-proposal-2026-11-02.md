@@ -450,7 +450,7 @@ As in the table in Section 2. Also fix the cross-references: "Story 2.17" become
 | 5 | PO/Dev (`bmad-sprint-planning`) | **Rerun sprint planning** to regenerate `sprint-status.yaml` from the edited epics, **preserving every existing status** | Epic 1 statuses are unchanged; Epic 2 lists 21 `backlog` keys with the new numbers |
 | 6 | Founder | Before Story 2.9 ships: create the Supplier bank-detail key in the host secret store and the escrow store, and add it to the restore-drill runbook (Story 1.2) | The key exists in both stores and is drill-tested |
 
-**Progress (2 November 2026):** steps 1 to 3 are applied as direct edits to `prd.md`, `ARCHITECTURE-SPINE.md` (with a `.memlog.md` entry) and `EXPERIENCE.md`. The step-18 mockup refresh is not done. Step 4 is applied to `epics.md`: Epic 2 now has 21 stories, 175 in total. In the Epic 2 notes, the kernel stories are named by their new numbers (2.5, 2.8 and 2.19). Steps 5 and 6 are still open.
+**Progress (2 November 2026):** steps 1 to 3 are applied as direct edits to `prd.md`, `ARCHITECTURE-SPINE.md` (with a `.memlog.md` entry) and `EXPERIENCE.md`. The step-18 mockup was refreshed on 3 November 2026: frame 3 shows the list and the checklist, the new frame 4 shows one Supplier's record, and the Suppliers state cards are updated. Step 4 is applied to `epics.md`: Epic 2 now has 21 stories, 175 in total. In the Epic 2 notes, the kernel stories are named by their new numbers (2.5, 2.8 and 2.19). Steps 5 and 6 are still open.
 
 **Sequencing and constraints**
 
@@ -467,3 +467,25 @@ As in the table in Section 2. Also fix the cross-references: "Story 2.17" become
 ## 6. Approval
 
 Approved by ialim on 2 November 2026: proposals P1 to P7 in incremental review, with no amendments.
+
+## 7. Amendment, 3 November 2026: loading a Supplier's product list
+
+**Trigger.** The owner asked whether onboarding includes the Supplier's products. It did not. Products were linked only through Supplier Costs entered per Product (Story 2.3) or in a general bulk file (Story 2.17). The owner asked to add a Supplier-scoped product upload.
+
+**Change (applied, no renumbering).**
+
+- **Story 2.17** is retitled "Bulk upload with a dry run, and a Supplier's product list" (requirements now FR-15 and FR-81) and gains these criteria:
+  - "Upload this supplier's products" is opened from the Supplier's page. The template has no Supplier column, and every cost in the file is that Supplier's.
+  - An existing SKU gets that Supplier's cost added or updated, and its Active Supplier never changes. A new SKU becomes a draft Product.
+  - A file for a Supplier that is not yet approved applies as drafts and costs, and none of them can go live until approval.
+  - Once the Supplier is approved, Admin can use "Make this the Active Supplier for its [n] new drafts" in one audited action.
+  - A stopped Supplier's file is refused.
+  - The price-change thresholds still send a large file to Admin (Story 2.18).
+  - An accessibility criterion is added.
+- **PRD:** FR-15 gains the Supplier-scoped file, and FR-81 points to it.
+- **`epics.md` inventory:** the FR-15 and FR-81 lines are updated the same way.
+- **`EXPERIENCE.md`:** the Bulk upload and Suppliers rows describe the scoped upload and the "Make this the Active Supplier" action.
+
+**Sprint status impact.** Story 2.17's key slug changes with its title. That is picked up by the pending `bmad-sprint-planning` rerun (step 5).
+
+Approved by ialim on 3 November 2026.
