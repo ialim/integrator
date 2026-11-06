@@ -18,6 +18,16 @@ test.describe.configure({ mode: 'serial' });
 let secret = '';
 
 async function expectNoViolations(page: Page, where: string): Promise<void> {
+    // Filament fades dialogs in and out; axe reads a half-faded colour as low contrast.
+    // Endless animations (a loading spinner) never finish, so they are not waited for.
+    await page.waitForFunction(() =>
+        document
+            .getAnimations()
+            .every(
+                (animation) =>
+                    animation.playState !== 'running' || animation.effect?.getTiming().iterations === Infinity,
+            ),
+    );
     const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
     const summary = results.violations.map(
         (violation) =>
