@@ -2,14 +2,18 @@
 
 namespace App\Modules\Staff\Filament\Pages;
 
+use App\Modules\Staff\Http\StaffSessionRecords;
+use App\Modules\Staff\Models\StaffMember;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
@@ -74,9 +78,30 @@ final class SignIn extends Login
     public function authenticate(): ?LoginResponse
     {
         $step = $this->step();
+        /** @var Session $session */
+        $session = app('session.store');
+        $before = $session->getId();
 
         try {
-            return parent::authenticate();
+            $response = parent::authenticate();
+            $member = Filament::auth()->user();
+
+            if ($response === null || ! $member instanceof StaffMember) {
+                return $response;
+            }
+
+            // Filament changes the session id but keeps the old stored session; destroy it, as regenerate(true) would.
+            if ($before !== $session->getId()) {
+                $session->getHandler()->destroy($before);
+            }
+
+            // Recorded now, under the member's lock: a deactivation landing meanwhile refuses the sign-in.
+            if (! app(StaffSessionRecords::class)->record($session, $member->id)) {
+                Filament::auth()->logout();
+                $this->throwFailureValidationException();
+            }
+
+            return $response;
         } catch (ValidationException $e) {
             // Never the email or password: only the step and, at step two, the member's id.
             Log::notice('staff.sign_in_failed', ['step' => $step, 'staff_id' => $step === 'second' ? $this->memberId() : null]);

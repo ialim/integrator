@@ -99,6 +99,8 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             // Times are bound without an offset; a UTC session keeps timestamptz values exact.
             'timezone' => 'UTC',
+            // Bound values (names, emails, hashes) never appear in a database error's message.
+            'mask_bindings_in_exception_messages' => true,
         ],
 
         'sqlsrv' => [

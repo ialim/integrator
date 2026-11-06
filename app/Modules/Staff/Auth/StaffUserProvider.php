@@ -21,11 +21,17 @@ final class StaffUserProvider extends EloquentUserProvider
      */
     public function retrieveByCredentials(#[SensitiveParameter] array $credentials): ?Authenticatable
     {
-        if (isset($credentials['email']) && is_string($credentials['email'])) {
-            $credentials['email'] = Str::lower(trim($credentials['email']));
+        if (! isset($credentials['email']) || ! is_string($credentials['email'])) {
+            return parent::retrieveByCredentials($credentials);
         }
 
-        return parent::retrieveByCredentials($credentials);
+        // An address can belong to one current account and to deactivated ones
+        // kept for the audit trail: the current account is the one signing in.
+        return StaffMember::query()
+            ->where('email', Str::lower(trim($credentials['email'])))
+            ->orderByRaw("CASE status WHEN 'deactivated' THEN 1 ELSE 0 END")
+            ->orderByDesc('id')
+            ->first();
     }
 
     /**

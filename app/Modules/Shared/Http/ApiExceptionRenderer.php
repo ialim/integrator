@@ -2,6 +2,8 @@
 
 namespace App\Modules\Shared\Http;
 
+use App\Modules\Shared\StatusTables\TransitionRefused;
+use App\Modules\Shared\Support\Iso8601;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -57,6 +59,21 @@ final class ApiExceptionRenderer
 
         if ($e instanceof ValidationException) {
             return ApiResponse::error($e->getMessage(), 'validation_failed', $e->status, $e->errors());
+        }
+
+        // A lost race or a refused move: 409 with the current state and who last changed it.
+        if ($e instanceof TransitionRefused) {
+            $response = ApiResponse::error($e->reason ?? self::MESSAGES[409], 'transition_refused', 409);
+            $body = (array) $response->getData(true);
+            $body['current'] = [
+                'subject_type' => $e->subjectType,
+                'subject_id' => $e->subjectId,
+                'state' => $e->current instanceof \BackedEnum ? $e->current->value : $e->current->label(),
+                'last_changed_at' => $e->lastChange !== null ? Iso8601::format($e->lastChange->occurredAt) : null,
+                'last_changed_by' => $e->lastChange !== null ? ['type' => $e->lastChange->actorType, 'id' => $e->lastChange->actorId] : null,
+            ];
+
+            return $response->setData($body);
         }
 
         $status = match (true) {

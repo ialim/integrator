@@ -111,6 +111,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The console theme imports Filament's CSS from vendor/, so the build needs Composer's packages.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -171,12 +178,12 @@ jobs:
       - run: npm ci
       - name: Build the app and console assets
         run: npm run build
-      - name: Prepare a fresh database with only the founder's Admin
+      - name: Prepare a fresh database with the founder's Admin and one invited staff member
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
-          php artisan app:seed-test-state first-admin
+          php artisan app:seed-test-state first-admin invited-staff
       - name: Start the app
         run: |
           # Laravel's router script serves from the current directory, so start it in public/.
@@ -188,7 +195,7 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8000/console/login
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
-      - name: Sign-in, second-step, set-up and Today pages have no axe-core violations
+      - name: Sign-in, second-step, set-up, Today, Staff and invitation pages have no axe-core violations
         run: npm run test:a11y
       - name: Keep the report and server log on failure
         if: failure()

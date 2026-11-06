@@ -512,3 +512,147 @@ h3,
 .fi-modal-description {
     color: var(--ledger-ink-secondary);
 }
+
+/* Console tables: fixed header, caption, keyboard rows (the Staff page) ---- */
+
+.console-notice-region:empty {
+    display: none;
+}
+
+.console-notice-refused {
+    background: var(--ledger-error-tint);
+    border-inline-start-color: var(--ledger-error);
+}
+
+.console-table-tools {
+    max-width: 28rem;
+}
+
+.console-table-scroll {
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-hairline);
+    border-radius: var(--ledger-radius-sm);
+}
+
+.console-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--ledger-text-table-console);
+}
+
+.console-table caption {
+    padding: var(--ledger-space-3) var(--ledger-space-4);
+    text-align: start;
+    color: var(--ledger-ink);
+    font-weight: 600;
+}
+
+.console-table-keys {
+    display: block;
+    color: var(--ledger-ink-secondary);
+    font-weight: 400;
+}
+
+.console-table thead th {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    padding: var(--ledger-space-2) var(--ledger-space-4);
+    background: var(--ledger-surface-aged);
+    border-block-end: 1px solid var(--ledger-hairline);
+    color: var(--ledger-ink);
+    font-size: var(--ledger-text-label);
+    font-weight: 700;
+    text-align: start;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.console-table tbody th,
+.console-table tbody td {
+    padding: var(--ledger-space-2) var(--ledger-space-4);
+    border-block-end: 1px solid var(--ledger-hairline);
+    text-align: start;
+    vertical-align: top;
+    font-weight: 400;
+}
+
+.console-table tbody tr:focus-visible,
+.console-table tbody tr[data-current] {
+    outline: var(--ledger-focus-width) solid var(--ledger-focus-ring);
+    outline-offset: calc(-1 * var(--ledger-focus-width));
+    background: var(--ledger-surface-paper);
+}
+
+.console-person-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ledger-space-3);
+}
+
+.console-initial {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 28px;
+    block-size: 28px;
+    background: var(--ledger-green);
+    border-radius: var(--ledger-radius-sm);
+    color: var(--ledger-on-green);
+    font-family: var(--ledger-font-serif);
+    font-weight: 700;
+}
+
+.console-person-cell-name {
+    display: block;
+    font-weight: 600;
+}
+
+.console-person-cell-email,
+.console-status-detail,
+.console-muted {
+    display: block;
+    color: var(--ledger-ink-secondary);
+}
+
+.console-status {
+    display: inline-block;
+    padding: 0 var(--ledger-space-2);
+    border: 1px solid var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+    font-weight: 600;
+}
+
+.console-status-active {
+    color: var(--ledger-good);
+    border-color: var(--ledger-good);
+}
+
+.console-status-deactivated {
+    color: var(--ledger-ink-secondary);
+}
+
+.console-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ledger-space-2);
+}
+
+.console-dialog-list {
+    margin-block: var(--ledger-space-2) 0;
+    padding-inline-start: var(--ledger-space-5);
+    list-style: disc;
+}
+
+.console-dialog-list li + li {
+    margin-block-start: var(--ledger-space-1);
+}
+
+.console-link {
+    color: var(--ledger-green);
+    font-weight: 600;
+    text-decoration: underline;
+}

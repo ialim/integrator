@@ -17,7 +17,10 @@ it('creates the framework tables and each module\'s own tables when migrated', f
 
     expect($tables)->toBe([
         'audit_entries', // Shared
-        'cache', 'cache_locks', 'failed_jobs', 'job_batches', 'jobs', 'migrations', 'sessions',
-        'staff_members', // Staff
+        'cache', 'cache_locks', 'failed_jobs', 'job_batches', 'jobs', 'migrations',
+        'notification_deliveries', // Notifications
+        'outbox_events', // Shared
+        'sessions',
+        'staff_members', 'staff_sessions', // Staff
     ]);
 });

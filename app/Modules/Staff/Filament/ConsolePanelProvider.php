@@ -2,14 +2,16 @@
 
 namespace App\Modules\Staff\Filament;
 
+use App\Modules\Staff\Filament\Pages\AcceptInvitationPage;
 use App\Modules\Staff\Filament\Pages\SignIn;
 use App\Modules\Staff\Filament\Pages\Today;
 use App\Modules\Staff\Http\ExtendStaffSessionController;
 use App\Modules\Staff\Http\Middleware\EndStaffSessionAfter12Hours;
+use App\Modules\Staff\Http\Middleware\SignOutInactiveStaff;
+use App\Modules\Staff\Http\Middleware\TrackStaffSession;
 use App\Modules\Staff\Models\StaffMember;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
-use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -66,12 +68,17 @@ final class ConsolePanelProvider extends PanelProvider
             ->globalSearch(false)
             ->breadcrumbs(false)
             ->pages([Today::class])
+            ->resources([StaffResource::class])
             ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn () => ConsoleShell::title())
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => ConsoleShell::identity())
             ->renderHook(PanelsRenderHook::BODY_START, fn () => ConsoleShell::phoneNotice())
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => ConsoleShell::session())
             ->renderHook(PanelsRenderHook::SIMPLE_PAGE_START, fn () => ConsoleShell::session())
             ->renderHook(PanelsRenderHook::BODY_END, fn () => ConsoleShell::script())
+            // An invitation link opens before sign-in: the invitee sets a password, then an authenticator app.
+            ->routes(function (): void {
+                Route::get('invitation/{token}', AcceptInvitationPage::class)->where('token', '[A-Za-z0-9]{1,128}')->name('invitation');
+            })
             ->authenticatedRoutes(function (): void {
                 Route::post('session/extend', ExtendStaffSessionController::class)->name('session.extend');
             })
@@ -87,8 +94,9 @@ final class ConsolePanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                SignOutInactiveStaff::class,
                 EndStaffSessionAfter12Hours::class,
+                TrackStaffSession::class,
             ], isPersistent: true);
     }
 }

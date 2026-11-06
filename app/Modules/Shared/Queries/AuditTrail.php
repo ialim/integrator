@@ -24,6 +24,18 @@ final class AuditTrail
             ->all());
     }
 
+    /** The most recent entry for a subject: who last changed it, and when. */
+    public function latestFor(string $subjectType, string $subjectId): ?AuditEntry
+    {
+        return $this->map(DB::table('audit_entries')
+            ->where('subject_type', $subjectType)
+            ->where('subject_id', $subjectId)
+            ->orderByDesc('sequence')
+            ->limit(1)
+            ->get()
+            ->all())[0] ?? null;
+    }
+
     /**
      * @return list<AuditEntry>
      */

@@ -6,6 +6,7 @@ use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
+use App\Modules\Staff\StatusTables\StaffAccountStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -55,7 +56,7 @@ final class CreateFirstAdmin extends Action
                 'password' => $password,
                 'role' => StaffRole::Admin,
                 'is_founder' => true,
-                'is_active' => true,
+                'status' => StaffAccountStatus::Active,
             ]);
 
             $this->saveAndAudit(Actor::system(), 'staff.first_admin_created', $admin);

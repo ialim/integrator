@@ -4,11 +4,13 @@ use App\Modules\Shared\Alerts\FounderAlert;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Queries\AuditTrail;
 use App\Modules\Staff\Filament\Pages\SignIn;
+use App\Modules\Staff\Http\Middleware\TrackStaffSession;
 use App\Modules\Staff\Http\StaffSession;
 use Database\Factories\Staff\FirstAdminFactory;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -117,6 +119,18 @@ it('signs in after both steps and starts the 12 hours', function () {
         ->and(session(StaffSession::KEY))->toBe(app(Clock::class)->now()->getTimestamp());
 });
 
+it('records the new session against the member at sign-in, under their lock', function () {
+    $admin = StaffConsole::admin();
+
+    firstStep()
+        ->set('data.multiFactor.app.code', StaffConsole::currentCode())
+        ->call('authenticate')
+        ->assertRedirect('/console');
+
+    expect(DB::table('staff_sessions')->where('staff_member_id', $admin->id)->pluck('session_id')->all())->toBe([session()->getId()])
+        ->and(session(TrackStaffSession::KEY))->toBe(session()->getId());
+});
+
 it('signs in with a recovery code, which is then used up and audited', function () {
     $admin = StaffConsole::admin();
     StaffConsole::provider()->saveRecoveryCodes($admin, ['recovery-one', 'recovery-two']);
@@ -200,7 +214,8 @@ it('refuses the next request of a signed-in member who has been deactivated', fu
     StaffConsole::deactivate($admin);
     Auth::guard('staff')->forgetUser(); // as a fresh request would, the member is read again
 
-    $this->get('/console/today')->assertForbidden()->assertDontSee('Access denied');
+    $this->get('/console/today')->assertRedirect('/console/login');
+    $this->get('/console/login')->assertOk()->assertSee('your staff account is no longer active')->assertDontSee('Access denied');
 });
 
 it('reaches the second step with a mixed-case email', function () {

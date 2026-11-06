@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Http;
 
 use App\Modules\Shared\Support\Iso8601;
 use App\Modules\Shared\Support\Wat;
+use App\Modules\Staff\Http\Middleware\SignOutInactiveStaff;
 use App\Modules\Staff\Models\StaffMember;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;
@@ -23,7 +24,7 @@ final class ExtendStaffSessionController
 
     private const DECAY_SECONDS = 15 * 60;
 
-    public function __invoke(Request $request, StaffSession $staffSession): JsonResponse
+    public function __invoke(Request $request, StaffSession $staffSession, StaffSessionRecords $records): JsonResponse
     {
         /** @var StaffMember $member */
         $member = Filament::auth()->user();
@@ -62,7 +63,14 @@ final class ExtendStaffSessionController
         }
 
         RateLimiter::clear($limiterKey);
-        $request->session()->regenerate();
+
+        // A new session id, with the old session destroyed rather than left signed in, recorded at once.
+        if (! $records->rotate($request->session(), $member->id)) {
+            $ended = SignOutInactiveStaff::signOut($request, $member->id, 'session_revoked');
+
+            return $ended instanceof JsonResponse ? $ended : new JsonResponse(['message' => SignOutInactiveStaff::MESSAGE], 401);
+        }
+
         $endsAt = $staffSession->start($request->session());
 
         Log::info('staff.stayed_signed_in', ['staff_id' => $member->id, 'ends_at' => Iso8601::format($endsAt)]);

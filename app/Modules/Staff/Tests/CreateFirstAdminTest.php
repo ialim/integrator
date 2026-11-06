@@ -6,6 +6,7 @@ use App\Modules\Staff\Actions\CreateFirstAdmin;
 use App\Modules\Staff\Actions\FirstAdminRefused;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
+use App\Modules\Staff\StatusTables\StaffAccountStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,7 +38,7 @@ it('creates the founder\'s Admin when no staff account exists, and says how to f
         ->and($admin->email)->toBe('ada@example.com')
         ->and($admin->role)->toBe(StaffRole::Admin)
         ->and($admin->is_founder)->toBeTrue()
-        ->and($admin->is_active)->toBeTrue()
+        ->and($admin->status)->toBe(StaffAccountStatus::Active)
         ->and($admin->app_authentication_secret)->toBeNull()
         ->and(Hash::check(FIRST_ADMIN_PASSWORD, $admin->password))->toBeTrue();
 });
@@ -58,11 +59,11 @@ it('writes an audit row naming system as the actor, with personal fields only ma
         ->and($entry->occurredAt->toIso8601ZuluString())->toBe('2026-10-26T09:00:00Z')
         ->and($entry->changes)->toEqual([
             'email' => 'changed',
-            'is_active' => ['from' => null, 'to' => true],
             'is_founder' => ['from' => null, 'to' => true],
             'name' => 'changed',
             'password' => 'changed',
             'role' => ['from' => null, 'to' => 'admin'],
+            'status' => ['from' => null, 'to' => 'active'],
         ]);
 
     expect(json_encode($entry->changes))->not->toContain('ada@example.com')->not->toContain('Ada');

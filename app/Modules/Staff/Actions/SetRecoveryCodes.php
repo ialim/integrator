@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
 use SensitiveParameter;
 
@@ -20,6 +21,9 @@ final class SetRecoveryCodes extends Action
     public function handle(StaffMember $member, #[SensitiveParameter] ?array $hashedCodes, ?Actor $actor = null): void
     {
         $this->transaction(function () use ($member, $hashedCodes, $actor): void {
+            app(LockStaffMember::class)->handle($member->id);
+            $member->refresh();
+
             $before = $member->getAppAuthenticationRecoveryCodes() ?? [];
             $after = $hashedCodes === null ? null : array_values($hashedCodes);
 

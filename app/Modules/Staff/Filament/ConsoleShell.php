@@ -74,6 +74,6 @@ final class ConsoleShell
 
     public static function script(): HtmlString
     {
-        return new HtmlString(Blade::render("@vite('resources/console/session.ts')"));
+        return new HtmlString(Blade::render("@vite(['resources/console/session.ts', 'resources/console/table-keys.ts'])"));
     }
 }

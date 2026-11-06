@@ -4,8 +4,12 @@ use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Staff\Actions\SetAuthenticatorSecret;
 use App\Modules\Staff\Http\Middleware\EndStaffSessionAfter12Hours;
 use App\Modules\Staff\Http\StaffSession;
+use App\Modules\Staff\Http\StaffSessionRecords;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\ArraySessionHandler;
+use Illuminate\Session\Store;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\Support\StaffConsole;
 
@@ -193,4 +197,46 @@ it('never lets a session lapse from idleness before 12 hours', function () {
 
     expect($config['lifetime'])->toBeGreaterThanOrEqual(720)
         ->and(config('session.lifetime'))->toBeGreaterThanOrEqual(720);
+});
+
+it('destroys the old session when "Stay signed in" starts a new one, and records the new id at once', function () {
+    $this->get('/console/today')->assertOk();
+    app(Clock::class)->advance('11 hours 56 minutes');
+    $before = session()->getId();
+
+    expect(DB::table('staff_sessions')->pluck('session_id')->all())->toBe([$before]);
+
+    $this->postJson('/console/session/extend', ['code' => StaffConsole::currentCode()])->assertOk();
+
+    expect(session()->getId())->not->toBe($before)
+        ->and(DB::table('staff_sessions')->pluck('session_id')->all())->toBe([session()->getId()]);
+});
+
+it('rotates a staff session with the old one destroyed in the session store, not left behind signed in', function () {
+    $handler = new ArraySessionHandler(120);
+    $store = new Store('integrator_session', $handler);
+    $store->start();
+    $store->put('signed_in', true);
+    $store->save();
+    $old = $store->getId();
+
+    expect($handler->read($old))->not->toBe('');
+
+    $store->start();
+
+    expect(app(StaffSessionRecords::class)->rotate($store, $this->admin->id))->toBeTrue()
+        ->and($store->getId())->not->toBe($old)
+        ->and($handler->read($old))->toBe('')
+        ->and($store->get('signed_in'))->toBeTrue()
+        ->and(DB::table('staff_sessions')->where('session_id', $store->getId())->value('staff_member_id'))->toBe($this->admin->id);
+});
+
+it('removes the session\'s staff record when the member signs out', function () {
+    $this->get('/console/today')->assertOk();
+
+    expect(DB::table('staff_sessions')->count())->toBe(1);
+
+    $this->post('/console/logout')->assertRedirect();
+
+    expect(DB::table('staff_sessions')->count())->toBe(0);
 });

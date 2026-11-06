@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Shared\Alerts\FounderAlerts;
+use App\Modules\Shared\Events\RelayOutbox;
 use App\Modules\Shared\Support\Id;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -26,3 +27,6 @@ Artisan::command('alerts:test', function (FounderAlerts $alerts) {
 
 // The scheduler runs this directly, never through the queue the alerts report on.
 Schedule::command('alerts:send-held')->everyMinute()->onOneServer()->withoutOverlapping(5);
+
+// The outbox relay (AD-4): a queued job each minute; one runs at a time.
+Schedule::job(new RelayOutbox)->everyMinute()->onOneServer()->name('outbox-relay');

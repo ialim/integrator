@@ -3,6 +3,8 @@
 use App\Modules\Shared\Http\ApiExceptionRenderer;
 use App\Modules\Shared\Http\Middleware\AddServerTime;
 use App\Modules\Shared\Http\Middleware\AssignRequestId;
+use App\Modules\Shared\Http\QueryExceptionRedactor;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Database errors are reported and rendered without their bound values.
+        $exceptions->map(QueryException::class, fn (QueryException $e): QueryException => QueryExceptionRedactor::redact($e));
 
         $exceptions->render(fn (Throwable $e, Request $request) => ApiExceptionRenderer::render($e, $request));
     })->create();

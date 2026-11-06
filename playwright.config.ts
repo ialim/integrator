@@ -2,8 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 /*
  * The automated accessibility check (axe-core) of the staff console's sign-in,
- * second-step, set-up and Today pages. It needs the app running with a fresh
- * database seeded by `php artisan app:seed-test-state first-admin`; CI does this
+ * second-step, set-up, Today, Staff and invitation pages. It needs the app
+ * running with a fresh database seeded by
+ * `php artisan app:seed-test-state first-admin invited-staff`; CI does this
  * in the `accessibility` job. A11Y_BASE_URL points it elsewhere.
  */
 export default defineConfig({

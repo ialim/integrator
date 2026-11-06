@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Database\Factories\Staff\FirstAdminScenario;
+use Database\Factories\Staff\InvitedStaffScenario;
 
 /**
  * The named states `php artisan app:seed-test-state` can create. Each entry is
@@ -19,6 +20,7 @@ final class TestStateScenarios
     {
         return [
             'first-admin' => FirstAdminScenario::class,
+            'invited-staff' => InvitedStaffScenario::class,
         ];
     }
 }
