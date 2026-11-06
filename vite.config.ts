@@ -3,12 +3,17 @@ import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vitest/config';
 
+// Vitest runs Vite's dev server, which laravel-vite-plugin refuses to start
+// in CI; the tests need none of its entry points, so it loads only for Vite.
+const forVite = process.env.VITEST === undefined;
+
 export default defineConfig({
     plugins: [
-        laravel({
-            input: ['resources/app/main.tsx'],
-            refresh: true,
-        }),
+        forVite &&
+            laravel({
+                input: ['resources/app/main.tsx'],
+                refresh: true,
+            }),
         react(),
         tailwindcss(),
     ],
