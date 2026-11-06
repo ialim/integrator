@@ -3,7 +3,9 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\StatusTables\TransitionRefused;
+use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Events\StaffSignInReset;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
@@ -16,6 +18,7 @@ use Illuminate\Auth\Access\AuthorizationException;
  * Invited until they set both up again. The last active Admin cannot reset
  * themselves.
  */
+#[NeedsCapability(StaffCapabilities::MANAGE_STAFF)]
 final class ResetSignIn extends StaffAccountAction
 {
     public const MOVE = 'reset_sign_in';

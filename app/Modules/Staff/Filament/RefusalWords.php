@@ -3,6 +3,7 @@
 namespace App\Modules\Staff\Filament;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Queries\AuditTrail;
 use App\Modules\Shared\StatusTables\TransitionRefused;
 use App\Modules\Shared\Support\Wat;
 use App\Modules\Staff\Models\StaffMember;
@@ -35,6 +36,26 @@ final class RefusalWords
             StaffAccountStatus::Active => "{$name} has already set up their sign-in and is active, so this cannot be done now. The account was last changed{$byWhom}. Nothing was changed.",
             default => "{$name} is now {$refused->current->label()}, so this cannot be done. Nothing was changed.",
         };
+    }
+
+    /**
+     * A switch that already had the asked value, say because another Admin
+     * got there first: who set it and when, when the audit trail has it.
+     */
+    public function supportDutiesAlready(StaffMember $member): string
+    {
+        $word = $member->support_duties ? 'On' : 'Off';
+        $last = null;
+
+        foreach (app(AuditTrail::class)->forSubject($member->getTable(), $member->id) as $entry) {
+            if (array_key_exists('support_duties', $entry->changes)) {
+                $last = $entry;
+            }
+        }
+
+        $byWhom = $last === null ? '' : ": {$this->who($last->actorType, $last->actorId)} switched them {$word} at {$this->when($last->occurredAt)}";
+
+        return "Support duties were already {$word} for {$member->name}{$byWhom}. Nothing was changed.";
     }
 
     private function who(string $type, ?string $id): string

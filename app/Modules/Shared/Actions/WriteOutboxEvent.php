@@ -2,6 +2,7 @@
 
 namespace App\Modules\Shared\Actions;
 
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Events\OutboxEvent;
 use App\Modules\Shared\Support\Id;
@@ -15,6 +16,7 @@ use LogicException;
  * aggregate's sequence; the Action holds the aggregate's lock, and a unique
  * constraint backs the sequence up.
  */
+#[NeedsNoCapability('Nested inside an Action, which has already checked its actor; it only writes that Action\'s outbox event')]
 final class WriteOutboxEvent
 {
     public function __construct(private readonly Clock $clock) {}

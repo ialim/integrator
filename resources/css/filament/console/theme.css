@@ -212,6 +212,11 @@ h3,
     box-shadow: inset 4px 0 0 var(--ledger-green) !important;
 }
 
+/* Rail group headings: ink-secondary on the aged surface (8:1); Filament's grey fails contrast. */
+.fi-sidebar-group-label {
+    color: var(--ledger-ink-secondary);
+}
+
 .fi-sidebar-item.fi-active .fi-sidebar-item-label,
 .fi-sidebar-item.fi-active .fi-icon {
     color: var(--ledger-green);
@@ -655,4 +660,74 @@ h3,
     color: var(--ledger-green);
     font-weight: 600;
     text-decoration: underline;
+}
+
+/* Switches: the word On or Off beside a 34 by 18px track (the Support duties switch) */
+
+.console-duties {
+    display: block;
+}
+
+.console-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ledger-space-2);
+    min-height: var(--ledger-target-console);
+    margin-block-start: var(--ledger-space-1);
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--ledger-ink);
+    font: inherit;
+    cursor: pointer;
+}
+
+.console-switch:disabled {
+    cursor: wait;
+}
+
+.console-switch-label {
+    color: var(--ledger-ink-secondary);
+}
+
+.console-switch-track {
+    position: relative;
+    flex: none;
+    inline-size: 34px;
+    block-size: 18px;
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+}
+
+.console-switch-thumb {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-start: 2px;
+    inline-size: 12px;
+    block-size: 12px;
+    background: var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+}
+
+.console-switch[aria-checked='true'] .console-switch-track {
+    background: var(--ledger-green);
+    border-color: var(--ledger-green);
+}
+
+.console-switch[aria-checked='true'] .console-switch-thumb {
+    inset-inline-start: auto;
+    inset-inline-end: 2px;
+    background: var(--ledger-on-green);
+}
+
+.console-switch-word {
+    min-inline-size: 2em;
+    font-weight: 600;
+}
+
+/* A page outside the member's role: shown, and who can */
+
+.console-refused p {
+    color: var(--ledger-ink);
 }

@@ -29,6 +29,7 @@ use SensitiveParameter;
  * @property string|null $password
  * @property StaffRole $role
  * @property bool $is_founder
+ * @property bool $support_duties
  * @property StaffAccountStatus $status
  * @property string|null $invitation_token_hash
  * @property CarbonImmutable|null $invitation_expires_at
@@ -64,6 +65,7 @@ final class StaffMember extends Authenticatable implements FilamentUser, HasAppA
             'password' => 'hashed',
             'role' => StaffRole::class,
             'is_founder' => 'boolean',
+            'support_duties' => 'boolean',
             'status' => StaffAccountStatus::class,
             'invitation_expires_at' => 'immutable_datetime',
             'invitation_accepted_at' => 'immutable_datetime',

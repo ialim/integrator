@@ -3,7 +3,9 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\StatusTables\TransitionRefused;
+use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Events\StaffInvitationResent;
 use App\Modules\Staff\Models\StaffMember;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -16,6 +18,7 @@ use Illuminate\Auth\Access\AuthorizationException;
  * yet) starts again: their password and any second factor are cleared and
  * their sessions revoked, so the new link is the only way in.
  */
+#[NeedsCapability(StaffCapabilities::MANAGE_STAFF)]
 final class ResendInvitation extends StaffAccountAction
 {
     public const MOVE = 'resend_invitation';

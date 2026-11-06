@@ -44,21 +44,30 @@ it('shows every account in a console table with a caption, column headings, name
         ->and($html)->toContain('data-console-search')
         ->and($html)->toContain('<span class="console-initial" aria-hidden="true">B</span>')
         ->and($html)->toContain('Bola Ade')
-        ->and($html)->toContain('Money: payments, credit notes and refunds')
+        ->and($html)->toContain('<span class="console-duties">Money</span>')
         ->and($html)->toContain('Link works until Friday 6 November 2026, 14:05 WAT')
         ->and($html)->toContain('Ada Founder')
-        ->and($html)->toContain('Everything, including staff accounts and settings')
+        ->and($html)->toContain('<span class="console-duties">Everything</span>')
         ->and($html)->not->toContain('Access denied');
 });
 
-it('refuses the Staff page to Finance and Operations on the server, in the console\'s words', function (StaffRole $role) {
+it('refuses the Staff page to Finance and Operations on the server, naming who can, inside the console shell', function (StaffRole $role) {
     $member = StaffConsole::active(StaffConsole::admin(), $role, 'Not An Admin');
     StaffConsole::signIn($this, $member);
 
-    $this->get('/console/staff')
+    $html = $this->get('/console/staff')
         ->assertForbidden()
-        ->assertSee('Only an Admin can open the Staff page.')
-        ->assertDontSee('Access denied');
+        ->assertSee('The Staff page is for Admins. Ask Ada Founder.')
+        ->assertSee('Staff console')
+        ->assertDontSee('Access denied')
+        ->assertDontSee('Forbidden')
+        ->assertDontSee('Add a staff member')
+        ->getContent();
+
+    expect(substr_count($html, '<h1'))->toBe(1)
+        ->and($html)->toContain('fi-sidebar')
+        ->and($html)->not->toContain('<caption>')
+        ->and($html)->not->toContain('lock-closed');
 
     $this->get('/console/today')->assertOk()->assertDontSee('href="'.url('/console/staff').'"', false);
 })->with([StaffRole::Finance, StaffRole::Operations]);
@@ -311,7 +320,7 @@ it('shows the refusal in words when the acting Admin lost Admin rights meanwhile
 
     $page->callMountedAction()
         ->assertSet('noticeIsRefusal', true)
-        ->assertSet('notice', ListStaff::NO_LONGER_ADMIN);
+        ->assertSet('notice', 'Your account is not active, so nothing was changed.');
 
     expect($member->refresh()->status)->toBe(StaffAccountStatus::Active);
 });
@@ -344,6 +353,6 @@ it('gives the table rows no label of their own, so screen readers read their cel
     $html = $this->get('/console/staff')->assertOk()->getContent();
 
     expect(preg_match('/<tr[^>]*aria-label/', $html))->toBe(0)
-        ->and($html)->toContain('Goods, content and customer cases')
-        ->and($html)->not->toContain('(Support)');
+        ->and($html)->toContain('<span class="console-duties">Goods</span>')
+        ->and($html)->not->toContain('Goods and Support');
 });

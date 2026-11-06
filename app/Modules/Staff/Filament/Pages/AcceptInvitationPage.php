@@ -2,6 +2,7 @@
 
 namespace App\Modules\Staff\Filament\Pages;
 
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Actions\AcceptInvitation;
 use App\Modules\Staff\Actions\InvalidStaffDetails;
 use App\Modules\Staff\Actions\InvitationUnusable;
@@ -34,6 +35,7 @@ use SensitiveParameter;
  *
  * @property-read Schema $form
  */
+#[NeedsNoCapability('An invitee opens their invitation link before they have signed in; the link is the proof')]
 final class AcceptInvitationPage extends SimplePage
 {
     use WithRateLimiting;

@@ -4,17 +4,23 @@ import { execSync } from 'node:child_process';
 import { totp } from './totp';
 
 /*
- * The staff console's accessibility criteria (Stories 1.3 and 1.4), against a
- * fresh database holding the founder's Admin and one invited Operations
- * account (`app:seed-test-state first-admin invited-staff`). The test values
- * match database/factories/Staff/FirstAdminFactory.php, StaffAccountFactory.php
- * and InvitedStaffScenario.php.
+ * The staff console's accessibility criteria (Stories 1.3, 1.4 and 1.5),
+ * against a fresh database holding the founder's Admin, one invited
+ * Operations account and one active Operations account with Support duties
+ * Off (`app:seed-test-state first-admin invited-staff active-operations`).
+ * The test values match database/factories/Staff/FirstAdminFactory.php,
+ * StaffAccountFactory.php, InvitedStaffScenario.php and
+ * ActiveOperationsScenario.php.
  */
 const email = process.env.A11Y_STAFF_EMAIL ?? 'founder@example.test';
 const password = process.env.A11Y_STAFF_PASSWORD ?? 'ledger-test-password';
 const inviteeName = 'Bola Operations';
 const invitationToken =
     process.env.A11Y_INVITATION_TOKEN ?? 'a11yInvitationToken0000000000000000000000000000000000000000000000';
+const operationsName = 'Chika Operations';
+const operationsEmail = process.env.A11Y_OPERATIONS_EMAIL ?? 'chika@example.test';
+const operationsPassword = process.env.A11Y_OPERATIONS_PASSWORD ?? 'operations-test-passphrase';
+const operationsSecret = process.env.A11Y_OPERATIONS_SECRET ?? 'KRUGS4ZANFZSAYJAORSXG5BAONSWG4TF';
 
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -69,11 +75,16 @@ async function focusRingWidth(page: Page): Promise<string> {
     });
 }
 
-async function firstStep(page: Page): Promise<void> {
+async function firstStep(page: Page, as = { email, password }): Promise<void> {
     await page.goto('/console/login');
-    await page.getByLabel('Email address').fill(email);
-    await page.locator('input[type="password"]').fill(password);
+    await page.getByLabel('Email address').fill(as.email);
+    await page.locator('input[type="password"]').fill(as.password);
     await page.getByRole('button', { name: 'Continue' }).click();
+}
+
+/** The rail: each group is a list named by the group's label. */
+function railList(page: Page, group: string): Locator {
+    return page.locator('.fi-sidebar-nav').getByRole('list', { name: group, exact: true });
 }
 
 /** The field's error is in words, and the field points at it with aria-describedby. */
@@ -280,8 +291,17 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     await expectOneTopHeading(page);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Staff');
 
+    // An Admin's rail: every group that has a page, each announced as a labelled list, the current place marked.
+    await expect(railList(page, 'Queues')).toBeVisible();
+    await expect(railList(page, 'People')).toBeVisible();
+    await expect(railList(page, 'People').getByRole('link', { name: 'Staff' })).toHaveAttribute('aria-current', 'page');
+    await expect(railList(page, 'Queues').getByRole('link', { name: 'Today' })).not.toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+
     const table = page.getByRole('table');
-    await expect(table.locator('caption')).toContainText('Staff accounts: 2 people.');
+    await expect(table.locator('caption')).toContainText('Staff accounts: 3 people.');
     await expect(table.getByRole('columnheader')).toHaveText(['Name', 'Role', 'Duties', 'Status', 'Changes']);
     await expect(page.getByRole('row', { name: new RegExp(inviteeName) })).toContainText('Invited');
     await expectNoViolations(page, 'the Staff page');
@@ -299,13 +319,38 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     await page.keyboard.press('j');
     await expect(page.locator('[data-row][data-current]')).toContainText('Ada Founder');
     await page.keyboard.press('j');
-    await expect(page.locator('[data-row][data-current]')).toContainText(inviteeName);
+    await expect(page.locator('[data-row][data-current]')).toContainText(operationsName);
     await page.keyboard.press('k');
     await expect(page.locator('[data-row][data-current]')).toContainText('Ada Founder');
     expect(await focusRingWidth(page)).toBe('3px');
     await page.keyboard.press('j');
     await page.keyboard.press('Enter');
-    await expect(page.locator('[data-row][data-current]').getByRole('button').first()).toBeFocused();
+
+    // The Operations row's first control is its Support duties switch, announced with the person and the word Off.
+    const supportSwitch = page.locator('[data-row][data-current]').getByRole('switch');
+    await expect(supportSwitch).toBeFocused();
+    await expect(supportSwitch).toHaveAccessibleName(`Support duties for ${operationsName}: Off`);
+    await expect(supportSwitch).toHaveAttribute('aria-checked', 'false');
+    expect(await focusRingWidth(page)).toBe('3px');
+    await expectNoViolations(page, 'the Support duties switch, Off');
+
+    // Enter switches it On; focus stays on the switch, which now says On.
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(`Support duties are now On for ${operationsName}.`)).toBeVisible();
+    const operationsSwitch = page.getByRole('row', { name: new RegExp(operationsName) }).getByRole('switch');
+    await expect(operationsSwitch).toHaveAccessibleName(`Support duties for ${operationsName}: On`);
+    await expect(operationsSwitch).toHaveAttribute('aria-checked', 'true');
+    await expect(operationsSwitch).toBeFocused();
+    await expect(page.getByRole('row', { name: new RegExp(operationsName) })).toContainText('Goods and Support');
+    await expectNoViolations(page, 'the Support duties switch, On');
+
+    // Space switches it back Off, so the Operations account's later checks start from the seeded state; focus stays.
+    await page.keyboard.press('Space');
+    await expect(page.getByText(`Support duties are now Off for ${operationsName}.`)).toBeVisible();
+    await expect(operationsSwitch).toHaveAccessibleName(`Support duties for ${operationsName}: Off`);
+    await expect(operationsSwitch).toHaveAttribute('aria-checked', 'false');
+    await expect(operationsSwitch).toBeFocused();
+
     await page.keyboard.press('/');
     await expect(page.getByLabel('Search by name or email')).toBeFocused();
 
@@ -337,4 +382,30 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     await expectWorksAt200PercentZoom(page, 'the Staff page');
+});
+
+test('Operations: a rail of its own groups only, and the Staff page refused in words naming who can', async ({
+    page,
+}) => {
+    await firstStep(page, { email: operationsEmail, password: operationsPassword });
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(operationsSecret));
+    await page.waitForURL('**/console/today');
+
+    // Only the groups the role can use: Queues with Today, the current place. No People group, nothing greyed out.
+    await expect(railList(page, 'Queues')).toBeVisible();
+    await expect(railList(page, 'Queues').getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.fi-sidebar-nav').getByRole('list', { name: 'People' })).toHaveCount(0);
+    await expect(page.locator('.fi-sidebar-nav').getByRole('link', { name: 'Staff' })).toHaveCount(0);
+    await expectNoViolations(page, 'the Today page for Operations');
+
+    // Following a link to the Staff page: refused by the server, inside the console shell, naming who can.
+    const response = await page.goto('/console/staff');
+    expect(response?.status()).toBe(403);
+    await expectOneTopHeading(page);
+    await expect(page.getByText('The Staff page is for Admins. Ask Ada Founder.')).toBeVisible();
+    await expect(page.getByText('Staff console', { exact: true })).toBeVisible();
+    await expect(page.getByText('Access denied')).toHaveCount(0);
+    await expect(page.getByRole('table')).toHaveCount(0);
+    await expectNoViolations(page, 'the refused Staff page');
+    await expectWorksAt200PercentZoom(page, 'the refused Staff page');
 });

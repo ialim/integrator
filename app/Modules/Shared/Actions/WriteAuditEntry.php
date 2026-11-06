@@ -4,6 +4,7 @@ namespace App\Modules\Shared\Actions;
 
 use App\Modules\Shared\Audit\Actor;
 use App\Modules\Shared\Audit\PersonalFields;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Logging\RequestId;
 use App\Modules\Shared\Support\Id;
@@ -20,6 +21,7 @@ use LogicException;
  * bigserial; Story 1.6 adds the hash chain, the sealing job and the trigger
  * that rejects UPDATE and DELETE.
  */
+#[NeedsNoCapability('Nested inside an Action, which has already checked its actor; it only appends that Action\'s audit row')]
 final class WriteAuditEntry
 {
     public function __construct(private readonly Clock $clock) {}

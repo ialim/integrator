@@ -16,8 +16,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 /**
  * What the Admin's staff-account Actions share: locking the acting Admin and
  * the member together (with every active Admin when the last-Admin rule could
- * apply, so two Admins can never each remove the other), the server-side Admin
- * check, the last-Admin rule and fresh invitation links.
+ * apply, so two Admins can never each remove the other), the server-side
+ * capability check against the registry, the last-Admin rule and fresh
+ * invitation links. Each concrete Action declares its capability with
+ * #[NeedsCapability].
  */
 abstract class StaffAccountAction extends Action
 {
@@ -28,7 +30,7 @@ abstract class StaffAccountAction extends Action
      *
      * @return array{0: StaffMember, 1: StaffMember, 2: array<string, StaffMember>}
      *
-     * @throws AuthorizationException when the actor is not an active Admin
+     * @throws AuthorizationException when the actor does not hold the Action's capability
      * @throws ModelNotFoundException when the member does not exist
      */
     protected function lockActorAndMember(StaffMember $admin, string $memberId, bool $withActiveAdmins = false): array
@@ -41,24 +43,12 @@ abstract class StaffAccountAction extends Action
 
         $locked = app(LockStaffMember::class)->handle(...$ids);
         $actor = $locked[$admin->id] ?? throw new AuthorizationException('Only an active Admin can manage staff accounts.');
-        $this->assertActiveAdmin($actor);
+        // The capability the concrete Action declares, on the actor as read under the lock.
+        $this->authorizeCapability($actor);
 
         $member = $locked[$memberId] ?? throw (new ModelNotFoundException)->setModel(StaffMember::class, [$memberId]);
 
         return [$actor, $member, $locked];
-    }
-
-    /**
-     * The server's own check that only an Admin manages staff accounts,
-     * whatever the screen offered.
-     *
-     * @throws AuthorizationException
-     */
-    protected function assertActiveAdmin(StaffMember $actor): void
-    {
-        if (! $actor->isActiveAdmin()) {
-            throw new AuthorizationException('Only an Admin can manage staff accounts. Ask an Admin to make this change.');
-        }
     }
 
     /**

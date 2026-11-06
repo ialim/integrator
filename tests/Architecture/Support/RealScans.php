@@ -2,6 +2,8 @@
 
 namespace Tests\Architecture\Support;
 
+use App\Modules\Staff\Capabilities\CapabilityRegistry;
+
 /**
  * Each architecture rule's real configuration (roots, namespace, exemptions),
  * in one place so the real test and its planted-violation test use the same one.
@@ -41,6 +43,12 @@ final class RealScans
     public static function contractFakes(): array
     {
         return (new ContractFakeScanner)->scan(app_path('Modules'));
+    }
+
+    /** @return list<Violation> */
+    public static function capabilities(): array
+    {
+        return (new CapabilityDeclarationScanner)->scan([app_path('Modules')], app(CapabilityRegistry::class)->names());
     }
 
     /** @return list<Violation> */

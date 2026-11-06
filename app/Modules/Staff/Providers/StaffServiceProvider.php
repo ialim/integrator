@@ -3,9 +3,13 @@
 namespace App\Modules\Staff\Providers;
 
 use App\Modules\Shared\Audit\PersonalFields;
+use App\Modules\Shared\Capabilities\CapabilityCheck;
 use App\Modules\Shared\Events\OutboxListeners;
 use App\Modules\Staff\Actions\ForgetStaffSession;
 use App\Modules\Staff\Auth\StaffUserProvider;
+use App\Modules\Staff\Capabilities\CapabilityRegistry;
+use App\Modules\Staff\Capabilities\RegistryCapabilityCheck;
+use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Console\CreateFirstAdminCommand;
 use App\Modules\Staff\Events\SendStaffInvitation;
 use App\Modules\Staff\Events\StaffAccountCreated;
@@ -22,6 +26,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 final class StaffServiceProvider extends ServiceProvider
@@ -32,6 +37,14 @@ final class StaffServiceProvider extends ServiceProvider
 
         // System fonts only: no bundled Inter font file on any console page.
         $this->app->singleton(AssetManager::class, SystemFontsOnly::class);
+
+        // The FR-52 capability registry; each module declares its own capabilities into it.
+        $this->app->singleton(CapabilityRegistry::class);
+        // The kernel's #[NeedsCapability] check on every Action is answered by the registry.
+        $this->app->singleton(CapabilityCheck::class, RegistryCapabilityCheck::class);
+        $this->callAfterResolving(CapabilityRegistry::class, function (CapabilityRegistry $registry): void {
+            StaffCapabilities::declareIn($registry);
+        });
 
         $this->callAfterResolving(PersonalFields::class, function (PersonalFields $fields): void {
             $fields->declare((new StaffMember)->getTable(), StaffMember::PERSONAL_FIELDS);
@@ -48,6 +61,9 @@ final class StaffServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../Filament/views', 'staff');
+
+        // One Filament view overridden: the rail group's list is labelled by the group's name.
+        View::prependNamespace('filament-panels', __DIR__.'/../Filament/views/vendor/filament-panels');
 
         Auth::provider('staff', function (Application $app, array $config): StaffUserProvider {
             /** @var array{model: class-string<StaffMember>} $config */

@@ -5,6 +5,8 @@ namespace App\Modules\Shared\Actions;
 use App\Modules\Shared\Audit\Actor;
 use App\Modules\Shared\Audit\AuditChanges;
 use App\Modules\Shared\Audit\PersonalFields;
+use App\Modules\Shared\Capabilities\CapabilityCheck;
+use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\Events\OutboxEvent;
 use App\Modules\Shared\Locks\LockRegistry;
 use App\Modules\Shared\Queries\AuditEntry;
@@ -13,9 +15,11 @@ use App\Modules\Shared\StatusTables\StatusTable;
 use App\Modules\Shared\StatusTables\TransitionRefused;
 use App\Modules\Shared\StatusTables\Transitions;
 use Closure;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use LogicException;
+use ReflectionClass;
 
 /**
  * Base of every module Action (AD-1, the single write path; AD-4, the Action
@@ -24,6 +28,8 @@ use LogicException;
  * 1. locks its aggregate roots up front through `Lock{Root}` actions, in the
  *    fixed global order; a nested Action asserts the lock with
  *    {@see self::assertLocked()} and never locks itself;
+ *    and, when it declares #[NeedsCapability], checks the actor with
+ *    {@see self::authorizeCapability()};
  * 2. checks each move against the declared transition table with
  *    {@see self::move()}, which refuses with {@see TransitionRefused};
  * 3. records what it changed with {@see self::saveAndAudit()} or
@@ -128,6 +134,25 @@ abstract class Action
     protected function emit(OutboxEvent $event): string
     {
         return app(WriteOutboxEvent::class)->handle($event);
+    }
+
+    /**
+     * The server's check that $actor holds the capability this Action
+     * declares with #[NeedsCapability], whatever the screen offered. Every
+     * Action that declares one calls this (the architecture rule checks), so
+     * the declaration is the lock. Call it on the actor as read under lock.
+     *
+     * @throws AuthorizationException
+     */
+    protected function authorizeCapability(Model $actor): void
+    {
+        $attributes = (new ReflectionClass(static::class))->getAttributes(NeedsCapability::class);
+
+        if ($attributes === []) {
+            throw new LogicException(static::class.' declares no capability with #[NeedsCapability].');
+        }
+
+        app(CapabilityCheck::class)->authorize($actor, $attributes[0]->newInstance()->capability);
     }
 
     /** A nested Action's check that the calling Action holds the root's lock. */

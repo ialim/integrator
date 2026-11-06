@@ -3,6 +3,7 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
  * The console also refuses a member who may no longer sign in on every
  * request, so a session store without rows to delete is covered too.
  */
+#[NeedsNoCapability('Nested inside a staff-account Action, which has already checked the acting Admin\'s capability')]
 final class RevokeStaffSessions extends Action
 {
     /** Returns how many sessions were revoked. */

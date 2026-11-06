@@ -3,6 +3,7 @@
 namespace App\Modules\Shared\Actions;
 
 use App\Modules\Shared\Alerts\FounderAlerts;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Events\OutboxListeners;
 use App\Modules\Shared\Events\OutboxMessage;
@@ -45,6 +46,7 @@ use Throwable;
  * below the queued job's timeout, so the worker does not kill a run between
  * a provider call and marking its result.
  */
+#[NeedsNoCapability('A system job: the scheduled relay hands outbox events to their listeners; there is no staff actor')]
 final class RelayOutboxEvents
 {
     public const MAX_ATTEMPTS = 10;

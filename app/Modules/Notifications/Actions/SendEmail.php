@@ -6,6 +6,7 @@ use App\Modules\Notifications\Contracts\EmailMessage;
 use App\Modules\Notifications\Contracts\EmailProvider;
 use App\Modules\Notifications\Queries\EmailDeliveries;
 use App\Modules\Shared\Actions\Action;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Providers\ProviderErrored;
 use App\Modules\Shared\Providers\ProviderFailure;
@@ -40,6 +41,7 @@ use Throwable;
  *
  * Only outbox listeners call this; the address and text are never stored.
  */
+#[NeedsNoCapability('Called by outbox listeners after the staff Action that emitted the event has committed; there is no staff actor')]
 final class SendEmail extends Action
 {
     public const CHANNEL = 'email';

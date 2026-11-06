@@ -11,7 +11,11 @@ use App\Modules\Staff\Actions\InvalidStaffDetails;
 use App\Modules\Staff\Actions\InvitationLinks;
 use App\Modules\Staff\Actions\ResendInvitation;
 use App\Modules\Staff\Actions\ResetSignIn;
+use App\Modules\Staff\Actions\SetSupportDuties;
+use App\Modules\Staff\Capabilities\CapabilityRefused;
+use App\Modules\Staff\Capabilities\CapabilityRegistry;
 use App\Modules\Staff\Events\StaffInvitationIssued;
+use App\Modules\Staff\Filament\GuardedByCapability;
 use App\Modules\Staff\Filament\RefusalWords;
 use App\Modules\Staff\Filament\StaffResource;
 use App\Modules\Staff\Locks\LockStaffMember;
@@ -40,10 +44,16 @@ use Livewire\Attributes\Locked;
  * naming the person and whose body lists what will happen; only the
  * irreversible button is red. A lost race or a refusal is shown in words above
  * the table, with who changed the account and when, never as an error page.
+ *
+ * An Operations row carries the Support duties switch, which shows the word
+ * On or Off beside its track. A member without `staff.manage` who opens the
+ * page is refused by the server (403) inside the console shell, in words that
+ * name who can; any Livewire call they make is refused too. The page needs
+ * the capability its resource declares ({@see GuardedByCapability}).
  */
 final class ListStaff extends Page
 {
-    public const REFUSED = 'Only an Admin can open the Staff page. Ask an Admin to add, change or deactivate a staff account.';
+    use GuardedByCapability;
 
     public const NO_LONGER_ADMIN = 'Nothing was changed: your account is no longer an active Admin account, so you cannot change staff accounts. Ask another Admin.';
 
@@ -67,12 +77,6 @@ final class ListStaff extends Page
 
     #[Locked]
     public bool $noticeIsRefusal = false;
-
-    /** The server refuses Finance and Operations, in the console's words. */
-    public static function authorizeResourceAccess(): void
-    {
-        abort_unless(StaffResource::canAccess(), 403, self::REFUSED);
-    }
 
     public function getTitle(): string
     {
@@ -100,6 +104,39 @@ final class ListStaff extends Page
         return [$this->createAction()];
     }
 
+    /** "Money", "Goods", "Goods and Support" or "Everything", from the capability registry. */
+    public function dutiesOf(StaffMember $member): string
+    {
+        return app(CapabilityRegistry::class)->duties($member);
+    }
+
+    /** Only an Operations account that is not deactivated has the Support duties switch. */
+    public function hasSupportSwitch(StaffMember $member): bool
+    {
+        return $member->role === StaffRole::Operations && $member->status !== StaffAccountStatus::Deactivated;
+    }
+
+    /**
+     * The Support duties switch: On gives the member the Support duties group
+     * from their next request, Off takes it away; audited.
+     */
+    public function switchSupportDuties(string $member, bool $on): void
+    {
+        $this->attempt(function () use ($member, $on): void {
+            $result = app(SetSupportDuties::class)->handle($this->actingAdmin(), $this->idOf(['member' => $member]), $on);
+            $changed = $result->member;
+
+            $this->say($result->changed
+                ? "Support duties are now {$this->onOff($changed->support_duties)} for {$changed->name}. It applies from their next page or click."
+                : app(RefusalWords::class)->supportDutiesAlready($changed));
+        });
+    }
+
+    public function onOff(bool $on): string
+    {
+        return $on ? 'On' : 'Off';
+    }
+
     public function createAction(): Action
     {
         return Action::make('create')
@@ -116,7 +153,7 @@ final class ListStaff extends Page
                 TextInput::make('email')->label('Email address')->email()->required()->maxLength(255)->autocomplete('off'),
                 Select::make('role')
                     ->label('Role')
-                    ->options(collect(StaffRole::cases())->mapWithKeys(fn (StaffRole $role) => [$role->value => $role->label().': '.$role->duties()])->all())
+                    ->options(collect(StaffRole::cases())->mapWithKeys(fn (StaffRole $role) => [$role->value => $role->label().': '.app(CapabilityRegistry::class)->dutiesOfRole($role)])->all())
                     ->required()
                     ->native(),
             ])
@@ -213,6 +250,9 @@ final class ListStaff extends Page
             $change();
         } catch (TransitionRefused $e) {
             $this->say(app(RefusalWords::class)->for($e), refusal: true);
+        } catch (CapabilityRefused $e) {
+            // The acting member lost the capability, or their account is no longer active: the registry's words say which.
+            $this->say($e->getMessage(), refusal: true);
         } catch (AuthorizationException) {
             // The acting Admin lost Admin rights meanwhile, say to another Admin deactivating them at the same moment.
             $this->say(self::NO_LONGER_ADMIN, refusal: true);
@@ -230,7 +270,7 @@ final class ListStaff extends Page
     private function actingAdmin(): StaffMember
     {
         $member = Filament::auth()->user();
-        abort_unless($member instanceof StaffMember, 403, self::REFUSED);
+        abort_unless($member instanceof StaffMember, 403, self::refusalWords());
 
         return $member;
     }

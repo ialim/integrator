@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
 use SensitiveParameter;
@@ -13,6 +14,7 @@ use SensitiveParameter;
  * regenerated, and when one is used up at sign-in. Filament reaches this
  * through {@see StaffMember::saveAppAuthenticationRecoveryCodes()}.
  */
+#[NeedsNoCapability('A staff member saves their own recovery codes while setting up their authenticator app')]
 final class SetRecoveryCodes extends Action
 {
     /**

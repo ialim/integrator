@@ -5,6 +5,7 @@ namespace App\Modules\Staff\Actions;
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Alerts\FounderAlerts;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\StatusTables\TransitionRefused;
 use App\Modules\Staff\Events\StaffAccountActivated;
 use App\Modules\Staff\Locks\LockStaffMember;
@@ -27,6 +28,7 @@ use Throwable;
  * Setting or removing an Admin's authenticator also alerts the founder, so an
  * enrolment by someone who learnt the password is noticed.
  */
+#[NeedsNoCapability('A staff member sets up or recovers their own authenticator app while signing in')]
 final class SetAuthenticatorSecret extends Action
 {
     public function __construct(private readonly FounderAlerts $alerts) {}

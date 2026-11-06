@@ -18,9 +18,17 @@ Lay the foundation every later epic builds on. The project is scaffolded as a mo
 
 ## Requirements & Constraints
 
-- Staff roles are Finance, Operations and Admin, with capabilities from one matrix. Support duties are a separate permission group held by Operations, switched on or off without a release. The last active Admin can never be deactivated. Deactivation revokes every session at once.
+- **Staff roles:** Finance, Operations and Admin. A staff member can use only the capabilities their role holds; Admin can do everything. The founder is an Admin with a founder flag.
+- **Capability matrix** (one source of truth; later epics build the screens behind most rows):
+  - Finance and Admin: confirm Payments, issue and apply Credit Notes, pay refunds; set the Platform Rate and the underpayment tolerance; reveal full Supplier bank details (audited).
+  - Operations and Admin: approve Paid Orders, update Shipment statuses, record dispatch serials; maintain Products, stock, Lead Times, Back-order Discounts, Documentation; edit Zone Rates and Stores; consent to cancelling Approved Orders, decide Return Request remedies, run manufacturer RMAs; mark a suspected counterfeit; record Supplier details, contacts and documents (Finance can view).
+  - Support duties (Operations and Admin): verify callers, look up serials, open Cases, generate Issue Codes, record device arrival and investigation findings.
+  - Admin only: markups, margin floor, VAT rate, return windows, the NGN 5 tolerance; switch Active Suppliers and approve Suppliers; edit Supplier and platform bank details (Finance second approver); manual NIN verification, Level 3 approval, vouching rights, direct account creation, Holds and revocations; create and deactivate staff accounts.
+- **Support duties** are a separate permission group, held by Operations at launch and switched on or off per Operations account by an Admin without a release, so a future Support role can take them. The switch is audited. An account without Support duties is refused the Support desk.
+- The server enforces every rule; screens are a convenience, never the lock.
+- The last active Admin can never be deactivated. Deactivation revokes every session at once.
 - Staff sessions last 12 hours with mandatory two-step sign-in. A warning appears 5 minutes before the session ends, offering "Stay signed in".
-- The audit trail is append-only and hash-chained. It covers every state change to money, stock, access, identity data, pricing parameters, Cases and Return Requests, and every read of a NIN or bank detail (with a reason code). Entries hold identifiers and field differences, never personal values such as a NIN, name or email; such a field is recorded as "changed" or as a keyed hash. No application role can edit or delete entries.
+- The audit trail is append-only and hash-chained. It covers every state change to money, stock, access (role and access changes included), identity data, pricing parameters, Cases and Return Requests, and every read of a NIN or bank detail (with a reason code). Entries hold identifiers and field differences, never personal values such as a NIN, name or email; such a field is recorded as "changed" or as a keyed hash. No application role can edit or delete entries. "Look up" on an identifier is Admin only.
 - The Integrator app installs from the browser and opens without an address bar on Android 9+ Chrome and iOS 16.4+ Safari.
 - Availability and recovery: 1-hour recovery point, 4-hour recovery time, a restore drill each quarter.
 - When two actions race, the first valid one wins and the other gets the current state, never an error.
@@ -38,15 +46,17 @@ Lay the foundation every later epic builds on. The project is scaffolded as a mo
   - Local development runs in Docker.
   - Founder alerts go by email, plus an external heartbeat monitor that alerts when expected pings stop.
   - The hourly offsite copy (encrypted database dump and object-storage copy) runs in GitHub Actions, outside Laravel Cloud.
+  - Staff invitations last 72 hours. An Admin can resend one (voiding the old link) or "Reset sign-in" (clears password and authenticator, revokes sessions, sends a fresh invitation, audited). Staff emails are unique only among Invited and Active accounts; a returning person gets a new account.
 - **Stack:**
   - Backend: PHP 8.4, Laravel 13.x, Filament 5.x (console at `/console`), Sanctum 4.x, PostgreSQL 17.
   - App: React 19, TypeScript 6.0, Vite 8, vite-plugin-pwa 2.x, TanStack Query and Router, Tailwind 4. Source in `resources/app/`, built into Laravel's public assets.
-- **Modules:** 13 under `app/Modules/` (Shared, Identity, Catalogue, Pricing, Projects, Orders, CreditNotes, Fulfilment, Documentation, Notifications, Returns, Staff, Reporting), each with `Actions/`, `Queries/`, `Locks/`, `Models/`, `Events/`, `Http/`, `Filament/`, `Contracts/`, `StatusTables/`, `Database/Migrations/`, `Database/Views/`, `Tests/`. Repo-level `tests/Architecture/` and `tests/Flows/`.
-- **Single write path:** only a module's Actions write its tables. Each module registers its own Filament resources, and every console create, edit and delete goes through an Action, with no carve-out for plain fields.
+- **Modules:** 13 under `app/Modules/` (Shared, Identity, Catalogue, Pricing, Projects, Orders, CreditNotes, Fulfilment, Documentation, Notifications, Returns, Staff, Reporting). `Staff` owns staff accounts and roles, the audit trail, pending approvals, work items, deputies and the holiday calendar.
+- **Capability registry:** one registry in `Staff` maps each capability to Finance, Operations and Admin, with Support duties as its own group. Every console resource and Action declares the capability it needs, and a test fails naming any that does not. Other modules add their capabilities as they are built.
+- **Single write path:** only a module's Actions write its tables. Each module registers its own Filament resources over its own models, and every console create, edit, delete or switch goes through an Action, with no carve-out for plain fields.
 - **Module boundaries:** modules use each other only through public Actions, Queries (returning DTOs) and Lock actions; never another module's models or tables. Cross-module foreign keys are `ON DELETE RESTRICT`. Architecture tests enforce all three and name the offending file.
 - **Action contract:**
   1. Lock aggregate roots up front, in the fixed global order, through `Lock{Root}` actions. Nested Actions assert the lock is held and never lock themselves.
-  2. Check the move against a declared transition table.
+  2. Check the move against a declared transition table (states, moves, allowed actor roles, required evidence).
   3. Refuse with a typed `TransitionRefused`, which becomes HTTP `409` with the current resource.
   4. Require an `Idempotency-Key` for client-retryable operations (same key, different payload returns `422`).
   5. Audit inside the transaction, naming the actor (User, staff member or `system`) with optional `acting_as` and `acting_for`.
@@ -65,23 +75,29 @@ Lay the foundation every later epic builds on. The project is scaffolded as a mo
 
 - **Ledger tokens:** one source for the console theme and the app, light mode only. Key colours: ledger-green `#153D2E`, surface-paper `#FAF6EC`, surface-aged `#F0E9D6`, ink `#1A1812`, brass `#6B4E0C`, error `#8A1C14`. Serif titles and sans body on system stacks, 12px floor; 4px-based spacing; 2px radius on controls; no shadows, gradients or pills; line icons always paired with words.
 - **Console shell:** built for 1280px: green top bar with the "integrator" wordmark, "Staff console", current WAT time, and the person's name and role, plus a 224px rail on the aged surface. Below 1024px or at 400% zoom the rail becomes a menu button, panes stack and wide tables scroll in their own box. A phone gets a notice that the console is for a desktop.
-- **Role-aware rail:** groups Queues, Work, Money, Catalogue, People, Rules, Watch, with Today first. Shows only what the role can use, nothing greyed out, no padlock; Admin sees every group. A page outside the role is refused and names who can do it, never "Access denied".
+- **Role-aware rail:** groups Queues, Work, Money, Catalogue, People, Rules, Watch, with Today first. Each role sees only its own groups and links; nothing greyed out, no padlock. Admin sees every group. The current place is marked visually and for screen readers, and groups are announced as lists. Later epics add queue counts that turn brass over target, and the deputy note with an out-of-office switch.
+- **Visibility treatments:** "not shown" (the layout closes up, with no dash, blank or padlock) for anything a role can never use; "shown, and who can" (names the role or person who can, and offers a request where one exists) when a link leads somewhere outside the role; "shown, but not now" (a dashed button with its reason) for something allowed but not yet possible. Never "Access denied", never a lock icon.
+- **Switches** show the word On or Off beside the 34 by 18px track and are announced with that word.
 - **Sign-in:** code entry is six boxes over one real input so paste and auto-fill work.
 - **Console tables:** fixed header, screen-reader caption, J, K, Enter and / keyboard movement.
-- **Dialogs:** title is a question naming the subject, body lists what will happen, red only for the irreversible button. Switches show the word On or Off. Lost races show who did it and when.
+- **Dialogs:** title is a question naming the subject, body lists what will happen, red only for the irreversible button. Lost races show who did it and when.
 - **Records:** a read-only History panel on each record; money and audit records have no Edit or Delete.
+- **Console free text:** every box says who will read it ("staff only" or "the business will read this").
 - **App shell:** signed-out holding screen with the wordmark; text pages on one template (Install the app with iPhone steps in words, accessibility statement, not found, signed out, service down). Install offered once from the second visit, always on the Install page. A new version never reloads under the person; an "Update when you finish" banner appears. At 320px: one column, 16px margin, no sideways scroll, both orientations. Record the cold-start baseline on a 2 GB Android over slow 3G.
 - **Shared formatters:** one tested set for money, dates, ranges, WAT times, time left, phone numbers, references, read-aloud codes, serials, names and measures, used by app and console.
-- **Accessibility:** WCAG 2.2 AA: 3px focus ring, skip link, reading-order focus, landmarks and one top heading per screen, field errors in words beside the field, works at 200% zoom, honours larger-text and reduce-motion. Every story's criteria state what keyboard, screen-reader and 200% zoom users can do.
-- **Copy:** plain voice, sentence case, British spelling, no exclamation marks or emoji; buttons say what they do (never Submit or OK).
+- **Accessibility:** WCAG 2.2 AA: 3px focus ring, skip link, reading-order focus, landmarks and one top heading per screen, field errors in words beside the field, works at 200% zoom, honours larger-text and reduce-motion. Every story's criteria state what keyboard, screen-reader and 200% zoom users can do, and every screen covers its listed states.
+- **Copy:** plain voice, sentence case, British spelling, no exclamation marks or emoji; buttons say what they do (never Submit or OK). A refusal is firm, gives the reason and names who can.
 
 ## Cross-Story Dependencies
 
 - **Story 1.1 comes first:** every other story needs the module layout, architecture tests, Clock, UUIDv7 helper, test seeding and CI.
 - **Hosting and audit:** Story 1.6 extends the Story 1.2 restore runbook to recreate the audit trigger and roles. The least-privilege role spike must finish before the Staff audit work closes.
-- **Staff stories:** Story 1.3 creates the first Admin (founder flag) through a `Staff` Action, audited as `system`. Story 1.4 adds the outbox relay, the email provider interface and its fault-injecting fake, and invitation sign-up (invitees set up password and authenticator before any console page). Story 1.5 builds on the accounts and rail from 1.3 and 1.4.
+- **Staff stories:**
+  - Story 1.3 creates the first Admin (founder flag) through a `Staff` Action, audited as `system`.
+  - Story 1.4 adds the outbox relay, the email provider interface and its fault-injecting fake, invitation sign-up, and the Staff page with its own Admin-only server check. Its "duties" column is a per-role placeholder.
+  - Story 1.5 builds on the accounts, console shell and rail from 1.3 and 1.4. It replaces the duties placeholder with the registry and the Support duties switch, and puts the Staff page and its Actions under declared capabilities. The switch writes audit rows through the existing audit path, which Story 1.6 then hardens.
 - **Shared look:** Story 1.7 shares the tokens and formatters with the console from Story 1.3.
 - **Later epics:**
-  - Epic 2 builds the Approvals page, "acting as", the founder's weekly review and the one-tick sweep command on top of this audit trail and staff model.
+  - Epic 2 builds the Approvals page, "acting as" (an Admin about to use a Finance or Operations capability is first told "You are acting as Finance", and the audit row carries `acting_as`), the founder's weekly review and the one-tick sweep command, on top of this audit trail, staff model and capability registry.
   - Epic 2's Supplier onboarding adds Supplier capabilities to the Story 1.5 registry and Supplier personal-data columns (and audited bank-detail reveals) to the Story 1.6 audit rules; nothing in Epic 1 changes for it. Before Story 2.9 ships, the Supplier bank-detail key joins the host secret store, the escrow store and the Story 1.2 restore drill.
-  - Epic 3 adds Integrator sign-in on the app shell. Epic 4 adds deputies, the holiday calendar, work items and unusual-pattern alerts.
+  - Epic 3 adds Integrator sign-in on the app shell. Epic 4 adds deputies, the out-of-office switch, the holiday calendar, work items and unusual-pattern alerts. Epics 13 and 16 build the Support desk and returned-device screens behind the Support duties group.

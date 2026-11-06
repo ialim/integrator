@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Database\Factories\Staff\ActiveOperationsScenario;
 use Database\Factories\Staff\FirstAdminScenario;
 use Database\Factories\Staff\InvitedStaffScenario;
 
@@ -21,6 +22,7 @@ final class TestStateScenarios
         return [
             'first-admin' => FirstAdminScenario::class,
             'invited-staff' => InvitedStaffScenario::class,
+            'active-operations' => ActiveOperationsScenario::class,
         ];
     }
 }

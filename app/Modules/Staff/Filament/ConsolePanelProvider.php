@@ -7,6 +7,7 @@ use App\Modules\Staff\Filament\Pages\SignIn;
 use App\Modules\Staff\Filament\Pages\Today;
 use App\Modules\Staff\Http\ExtendStaffSessionController;
 use App\Modules\Staff\Http\Middleware\EndStaffSessionAfter12Hours;
+use App\Modules\Staff\Http\Middleware\RefusedPageStatus;
 use App\Modules\Staff\Http\Middleware\SignOutInactiveStaff;
 use App\Modules\Staff\Http\Middleware\TrackStaffSession;
 use App\Modules\Staff\Models\StaffMember;
@@ -31,7 +32,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 /**
  * The staff console at /console (AD-18): its own `staff` guard, email and
  * password then an authenticator-app code, required for every staff member,
- * and a session that ends 12 hours after sign-in.
+ * and a session that ends 12 hours after sign-in. Every page and resource
+ * declares its capability; the rail and each page load follow the capability
+ * registry (FR-52).
  */
 final class ConsolePanelProvider extends PanelProvider
 {
@@ -67,6 +70,8 @@ final class ConsolePanelProvider extends PanelProvider
             ->maxContentWidth(Width::Full)
             ->globalSearch(false)
             ->breadcrumbs(false)
+            // The rail: Queues, Work, Money, Catalogue, People, Rules, Watch, each shown only when it holds a page the member can use.
+            ->navigationGroups(ConsoleRail::groups())
             ->pages([Today::class])
             ->resources([StaffResource::class])
             ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn () => ConsoleShell::title())
@@ -92,6 +97,7 @@ final class ConsolePanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                RefusedPageStatus::class,
             ])
             ->authMiddleware([
                 SignOutInactiveStaff::class,

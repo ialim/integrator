@@ -2,6 +2,9 @@
     The Staff page: one console table with a fixed header and a caption.
     J and K move between rows, Enter goes to the row's first button, and /
     goes to the search box (resources/console/table-keys.ts).
+
+    A member without the capability never sees this view: GuardedByCapability
+    swaps in staff::refused-page, inside the console shell, sent as 403.
 --}}
 <x-filament-panels::page>
     @php($members = $this->getMembers())
@@ -55,7 +58,28 @@
                             </span>
                         </th>
                         <td>{{ $member->role->label() }}</td>
-                        <td>{{ $member->role->duties() }}</td>
+                        <td>
+                            <span class="console-duties">{{ $this->dutiesOf($member) }}</span>
+                            @if ($this->hasSupportSwitch($member))
+                                {{-- Never disabled while the request runs: a disabled control drops keyboard focus. --}}
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked="{{ $member->support_duties ? 'true' : 'false' }}"
+                                    class="console-switch"
+                                    wire:key="support-duties-{{ $member->id }}"
+                                    wire:click="switchSupportDuties(@js($member->id), {{ $member->support_duties ? 'false' : 'true' }})"
+                                    wire:loading.attr="aria-busy"
+                                    wire:target="switchSupportDuties"
+                                    data-support-duties
+                                >
+                                    <span class="console-switch-label">Support duties</span>
+                                    <span class="sr-only">for {{ $member->name }}:</span>
+                                    <span class="console-switch-track" aria-hidden="true"><span class="console-switch-thumb"></span></span>
+                                    <span class="console-switch-word">{{ $this->onOff($member->support_duties) }}</span>
+                                </button>
+                            @endif
+                        </td>
                         <td>
                             <span @class(['console-status', 'console-status-'.$member->status->value])>{{ $member->status->label() }}</span>
                             @if ($member->status === \App\Modules\Staff\StatusTables\StaffAccountStatus::Invited)

@@ -101,7 +101,8 @@ jobs:
             'The foreign-key rule' \
             'Clock-only time' \
             'AD-15, providers behind module interfaces' \
-            'AD-11, UUIDv7 keys everywhere'; do
+            'AD-11, UUIDv7 keys everywhere' \
+            'FR-52, every console page and Action declares its capability'; do
             echo "$output" | grep -qF "${rule}" || { echo "No failure reported for rule: ${rule}"; missing=1; }
           done
           test "$missing" -eq 0
@@ -178,12 +179,12 @@ jobs:
       - run: npm ci
       - name: Build the app and console assets
         run: npm run build
-      - name: Prepare a fresh database with the founder's Admin and one invited staff member
+      - name: Prepare a fresh database with the founder's Admin, one invited staff member and one active Operations member
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
-          php artisan app:seed-test-state first-admin invited-staff
+          php artisan app:seed-test-state first-admin invited-staff active-operations
       - name: Start the app
         run: |
           # Laravel's router script serves from the current directory, so start it in public/.
@@ -195,7 +196,7 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8000/console/login
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
-      - name: Sign-in, second-step, set-up, Today, Staff and invitation pages have no axe-core violations
+      - name: Sign-in, second-step, set-up, Today, Staff, refused and invitation pages, and the rail per role, have no axe-core violations
         run: npm run test:a11y
       - name: Keep the report and server log on failure
         if: failure()

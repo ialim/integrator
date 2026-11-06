@@ -2,6 +2,7 @@
 
 namespace App\Modules\Staff\Filament\Pages;
 
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Http\StaffSessionRecords;
 use App\Modules\Staff\Models\StaffMember;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
@@ -25,6 +26,7 @@ use Livewire\Attributes\Locked;
  * Throttling is Filament's: 5 sign-in attempts a minute, and 5 wrong codes.
  * A throttled attempt is reported in words beside the field, not in a toast.
  */
+#[NeedsNoCapability('Signing in comes before any capability: the member is not signed in yet')]
 final class SignIn extends Login
 {
     /** Why the last session ended, shown once above the form. */

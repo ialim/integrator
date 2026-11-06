@@ -1,9 +1,14 @@
 <?php
 
 use App\Console\Commands\SeedTestState;
+use App\Modules\Staff\Models\StaffMember;
+use App\Modules\Staff\Models\StaffRole;
+use App\Modules\Staff\StatusTables\StaffAccountStatus;
 use Database\Factories\ActionFactory;
+use Database\Factories\Staff\ActiveOperationsScenario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Process;
 
 uses(RefreshDatabase::class);
@@ -51,3 +56,17 @@ it('refuses to build factories outside local and testing', function () {
 
     ActionFactory::assertAvailable();
 })->throws(LogicException::class, 'Test factories exist only in local and testing');
+
+it('seeds the accessibility run\'s state: the founder, an invitee and an active Operations member with Support duties Off', function () {
+    $this->artisan('app:seed-test-state', ['scenarios' => ['first-admin', 'invited-staff', 'active-operations']])->assertSuccessful();
+
+    $operations = StaffMember::query()->where('email', ActiveOperationsScenario::EMAIL)->firstOrFail();
+
+    expect(StaffMember::query()->count())->toBe(3)
+        ->and($operations->name)->toBe(ActiveOperationsScenario::NAME)
+        ->and($operations->role)->toBe(StaffRole::Operations)
+        ->and($operations->status)->toBe(StaffAccountStatus::Active)
+        ->and($operations->support_duties)->toBeFalse()
+        ->and($operations->getAppAuthenticationSecret())->toBe(ActiveOperationsScenario::SECRET)
+        ->and(Hash::check(ActiveOperationsScenario::PASSWORD, (string) $operations->password))->toBeTrue();
+});

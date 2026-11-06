@@ -3,8 +3,10 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\StatusTables\TransitionRefused;
+use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Events\StaffAccountDeactivated;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
@@ -13,11 +15,13 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * An Admin deactivates a staff account (Invited or Active to Deactivated,
- * which is final). Every session of that person is revoked at once. The last
+ * which is final). Every session of that person is revoked at once, and any
+ * Support duties are switched off in the same audited change. The last
  * active Admin can never be deactivated. When two Admins deactivate the same
  * account together, the second waits for the first's lock, then is refused
  * with the current state and who changed it (AD-4).
  */
+#[NeedsCapability(StaffCapabilities::MANAGE_STAFF)]
 final class DeactivateStaffAccount extends StaffAccountAction
 {
     public const MOVE = 'deactivate';
@@ -44,6 +48,8 @@ final class DeactivateStaffAccount extends StaffAccountAction
                 'deactivated_at' => $this->clock->now(),
                 'invitation_token_hash' => null,
                 'invitation_expires_at' => null,
+                // Support duties end with the account, in the same audit row.
+                'support_duties' => false,
             ]);
 
             $this->saveAndAudit(Actor::staff($actor->id), 'staff.account_deactivated', $member);

@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
 use App\Modules\Staff\StatusTables\StaffAccountStatus;
@@ -16,6 +17,7 @@ use SensitiveParameter;
  * Creates the founder's Admin account, and only while no staff account exists.
  * The actor is `system`: nobody is signed in yet.
  */
+#[NeedsNoCapability('Run from the command line to create the founder\'s Admin before any staff member exists; audited as the system')]
 final class CreateFirstAdmin extends Action
 {
     /**

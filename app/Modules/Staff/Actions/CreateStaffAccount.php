@@ -3,6 +3,8 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsCapability;
+use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Events\StaffAccountCreated;
 use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
@@ -19,6 +21,7 @@ use Illuminate\Support\Str;
  * the change audited with the Admin as actor, and `StaffAccountCreated`
  * written to the outbox, all in one transaction (AD-4).
  */
+#[NeedsCapability(StaffCapabilities::MANAGE_STAFF)]
 final class CreateStaffAccount extends StaffAccountAction
 {
     /** The unique index on email among Invited and Active accounts (owner's decision, 6 November 2026). */
@@ -45,7 +48,7 @@ final class CreateStaffAccount extends StaffAccountAction
         try {
             return $this->transaction(function () use ($admin, $name, $email, $role): StaffMember {
                 $actor = app(LockStaffMember::class)->handle($admin->id)[$admin->id];
-                $this->assertActiveAdmin($actor);
+                $this->authorizeCapability($actor);
 
                 // Unique only among Invited and Active accounts: a deactivated person who comes back gets a new account.
                 if (StaffMember::query()->where('email', $email)->whereIn('status', [StaffAccountStatus::Invited->value, StaffAccountStatus::Active->value])->exists()) {

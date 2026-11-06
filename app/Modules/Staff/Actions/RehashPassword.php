@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
 use SensitiveParameter;
@@ -13,6 +14,7 @@ use SensitiveParameter;
  * have changed. Laravel's guard would otherwise save the model itself; the
  * staff user provider sends it here instead (AD-1).
  */
+#[NeedsNoCapability('Sign-in upgrades the hash of the password the member has just entered')]
 final class RehashPassword extends Action
 {
     public function handle(StaffMember $member, #[SensitiveParameter] string $password): void

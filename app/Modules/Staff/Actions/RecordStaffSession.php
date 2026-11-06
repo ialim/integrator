@@ -3,6 +3,7 @@
 namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Support\Id;
 use App\Modules\Staff\Locks\LockStaffMember;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Not audited: it records a session, not a change to the account.
  */
+#[NeedsNoCapability('Sign-in records the new session of the member signing in')]
 final class RecordStaffSession extends Action
 {
     public function __construct(private readonly Clock $clock) {}

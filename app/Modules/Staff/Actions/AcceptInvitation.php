@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Capabilities\NeedsNoCapability;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\StatusTables\Transitions;
 use App\Modules\Staff\Locks\LockStaffMember;
@@ -18,6 +19,7 @@ use SensitiveParameter;
  * no console page but the set-up opens before that, and only until the
  * invitation's 72 hours run out. After that the Admin sends a new one.
  */
+#[NeedsNoCapability('An invitee accepts their own invitation link before they have signed in; the link is the proof')]
 final class AcceptInvitation extends Action
 {
     public const MOVE = 'accept_invitation';
