@@ -2,9 +2,11 @@
 # The automated restore drill. Proves the runbook end to end on a throwaway
 # environment: a seeded PostgreSQL 17 database and its objects are backed up
 # by scripts/ops/backup.sh, encrypted, to MinIO; scripts/ops/restore.sh then
-# restores the copy into a fresh database and fresh object storage, starts
-# the app on it and checks /api/v1/health; finally the app itself reads the
-# restored rows and objects. Fails loudly at the first broken step.
+# restores the copy into a fresh database and fresh object storage, recreates
+# the audit trail's triggers before any write, starts the app on it and checks
+# /api/v1/health; finally the app itself reads the restored rows and objects,
+# and the restored audit trail refuses an UPDATE. Fails loudly at the first
+# broken step.
 #
 # Usage: bash tests/Ops/drill.sh      (needs Docker; runs locally and in CI)
 set -Eeuo pipefail
@@ -55,6 +57,13 @@ run -e "DB_URL=${SOURCE_DB}" app php artisan migrate --force --no-interaction
 run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${SOURCE_DB}" --command "
     CREATE TABLE drill_receipts (id integer PRIMARY KEY, reference text NOT NULL, amount_kobo bigint NOT NULL);
     INSERT INTO drill_receipts SELECT n, 'RCPT-' || lpad(n::text, 6, '0'), n * 1000 FROM generate_series(1, ${ROWS}) AS n;"
+# One audit row, and no trigger on either audit table in the copy: the restore must recreate both, not merely restore them.
+AUDIT_ROW=019a0000-0000-7000-8000-00000000d211
+run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${SOURCE_DB}" --command "
+    INSERT INTO audit_entries (id, occurred_at, actor_type, action, subject_type, changes)
+        VALUES ('${AUDIT_ROW}', now(), 'system', 'drill.seeded', 'drill_receipts', '{}');
+    DROP TRIGGER audit_entries_insert_only ON audit_entries;
+    DROP TRIGGER audit_seals_insert_only ON audit_seals;"
 OBJECT_BODY="drill receipt $(date -u +%Y-%m-%dT%H:%M:%SZ) $RANDOM"
 run app sh -c "printf '%s' '${OBJECT_BODY}' | rclone rcat MINIO:drill-objects/receipts/2026/drill-receipt.txt"
 
@@ -148,6 +157,20 @@ echo "${served}"
 grep -qx "rows=${ROWS}" <<< "${served}" || fail "the app does not see ${ROWS} restored rows"
 grep -qx "last=RCPT-$(printf '%06d' "${ROWS}")" <<< "${served}" || fail "the restored rows differ"
 grep -qxF "object=${OBJECT_BODY}" <<< "${served}" || fail "the app cannot read the restored object"
+
+echo "==> The restored audit trail refuses an UPDATE on both tables: the restore recreated the triggers"
+for table in audit_entries audit_seals; do
+    if update_answer="$(run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${RESTORED_DB}"         --command "UPDATE ${table} SET id = id" 2>&1)"; then
+        fail "an UPDATE on the restored ${table} was accepted"
+    fi
+    grep -q "insert-only: UPDATE on ${table}" <<< "${update_answer}" || fail "unexpected answer to the UPDATE on ${table}: ${update_answer}"
+    echo "UPDATE on ${table} refused."
+done
+if run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${RESTORED_DB}"     --command "UPDATE audit_entries SET action = 'drill.tampered' WHERE id = '${AUDIT_ROW}'" >/dev/null 2>&1; then
+    fail "an UPDATE of the seeded audit row was accepted"
+fi
+audit_action="$(run app psql --no-psqlrc --tuples-only --no-align --quiet "${RESTORED_DB}"     --command "SELECT action FROM audit_entries WHERE id = '${AUDIT_ROW}'" | tr -d '')"
+[[ "${audit_action}" == "drill.seeded" ]] || fail "the restored audit row reads '${audit_action}', not 'drill.seeded'"
 
 record="$(run app cat /drill/record.md | tr -d '\r')"
 grep -qF "| ${COPY} |" <<< "${record}" || fail "the restore did not pick the newest copy ${COPY}: ${record}"

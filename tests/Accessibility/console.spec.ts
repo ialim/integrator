@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process';
 import { totp } from './totp';
 
 /*
- * The staff console's accessibility criteria (Stories 1.3, 1.4 and 1.5),
+ * The staff console's accessibility criteria (Stories 1.3 to 1.6),
  * against a fresh database holding the founder's Admin, one invited
  * Operations account and one active Operations account with Support duties
  * Off (`app:seed-test-state first-admin invited-staff active-operations`).
@@ -384,6 +384,75 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     await expectWorksAt200PercentZoom(page, 'the Staff page');
 });
 
+test('the Audit trail page: Watch group, the chain check announced, Look up errors in words, History read-only', async ({
+    page,
+}) => {
+    await waitForNextCode();
+    await firstStep(page);
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(secret));
+    await page.waitForURL('**/console/today');
+
+    await page.goto('/console/audit-trail');
+    await expectOneTopHeading(page);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Audit trail');
+    await expect(railList(page, 'Watch').getByRole('link', { name: 'Audit trail' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+
+    const table = page.getByRole('table');
+    await expect(table.locator('caption')).toContainText('of the audit trail, newest first.');
+    await expect(table.getByRole('columnheader')).toHaveText([
+        'Sequence',
+        'When',
+        'Who',
+        'What',
+        'Record',
+        'Changes',
+        'Seal',
+    ]);
+    await expect(page.getByRole('button', { name: /^(Edit|Delete|Export)/ })).toHaveCount(0);
+    await expectNoViolations(page, 'the Audit trail page');
+
+    // The chain check, by keyboard: its result is announced in a status region.
+    const check = page.getByRole('button', { name: 'Check the chain' });
+    await check.focus();
+    expect(await focusRingWidth(page)).toBe('3px');
+    await page.keyboard.press('Enter');
+    const result = page.getByRole('status').filter({ hasText: 'The chain is' });
+    await expect(result).toContainText(/The chain is intact/);
+    await expect(result).toHaveAttribute('aria-live', 'polite');
+    await expectNoViolations(page, 'the Audit trail page with the chain check result');
+
+    // Look up refuses what is not an identifier, in words tied to the field.
+    const lookup = page.getByLabel('Record or person identifier');
+    await lookup.fill('not an identifier');
+    await page.getByRole('button', { name: 'Look up', exact: true }).click();
+    await expect(page.getByText('Enter an identifier like')).toBeVisible();
+    await expectErrorTiedToField(page, lookup, 'Enter an identifier like');
+    await expectNoViolations(page, 'the Audit trail page with a Look up error');
+    await expectWorksAt200PercentZoom(page, 'the Audit trail page');
+
+    // History on a staff row: focus moves into the dialog, its title names the person, no Edit or Delete.
+    await page.goto('/console/staff');
+    await page
+        .getByRole('row', { name: new RegExp(operationsName) })
+        .getByRole('button', { name: 'History' })
+        .click();
+    const dialog = page.locator('.fi-modal-open .fi-modal-window');
+    await expect(dialog.getByRole('heading', { name: `History of ${operationsName}` })).toBeVisible();
+    await expect
+        .poll(() => page.evaluate(() => document.activeElement?.closest('.fi-modal-window') !== null))
+        .toBe(true);
+    await expect(dialog.getByRole('list', { name: 'History, newest first' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^(Edit|Delete)/ })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Close' }).first()).toBeVisible();
+    await expectNoViolations(page, 'the History dialog');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
 test('Operations: a rail of its own groups only, and the Staff page refused in words naming who can', async ({
     page,
 }) => {
@@ -408,4 +477,13 @@ test('Operations: a rail of its own groups only, and the Staff page refused in w
     await expect(page.getByRole('table')).toHaveCount(0);
     await expectNoViolations(page, 'the refused Staff page');
     await expectWorksAt200PercentZoom(page, 'the refused Staff page');
+
+    // The Audit trail page is not in the rail for Operations, and is refused on load in words naming who can.
+    await expect(page.locator('.fi-sidebar-nav').getByRole('link', { name: 'Audit trail' })).toHaveCount(0);
+    const auditResponse = await page.goto('/console/audit-trail');
+    expect(auditResponse?.status()).toBe(403);
+    await expectOneTopHeading(page);
+    await expect(page.getByText('The Audit trail page is for Admins. Ask Ada Founder.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Check the chain' })).toHaveCount(0);
+    await expectNoViolations(page, 'the refused Audit trail page');
 });

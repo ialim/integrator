@@ -112,6 +112,8 @@
                                 @else
                                     <span class="console-muted">None: deactivated accounts stay closed</span>
                                 @endif
+                                {{-- Read-only: who did what to the account and when, from the audit trail. --}}
+                                {{ ($this->historyAction)(['member' => $member->id]) }}
                             </span>
                         </td>
                     </tr>

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Shared\Alerts;
 
+use App\Modules\Shared\Audit\AuditSealing;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Logging\RequestId;
 use App\Modules\Shared\Support\Iso8601;
@@ -17,7 +18,8 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Alerts to the founder by email (AD-20).
+ * Alerts to the founder by email (AD-20): failed jobs, and a failed or
+ * overdue audit seal ({@see AuditSealing}).
  *
  * - Sent synchronously, never through the queue they may be reporting on.
  * - One alert per kind per throttle window (15 minutes). Occurrences inside
@@ -30,6 +32,15 @@ use Throwable;
 final class FounderAlerts
 {
     public const KIND_FAILED_JOB = 'failed_job';
+
+    /** A sealing run of the audit trail threw (Story 1.6). */
+    public const KIND_AUDIT_SEAL_FAILED = 'audit_seal_failed';
+
+    /** Audit rows stayed unsealed past the grace period (Story 1.6). */
+    public const KIND_AUDIT_SEAL_OVERDUE = 'audit_seal_overdue';
+
+    /** An audit table's insert-only trigger is missing or disabled (Story 1.6). */
+    public const KIND_AUDIT_PROTECTION_MISSING = 'audit_protection_missing';
 
     private const PREFIX = 'founder-alerts:';
 

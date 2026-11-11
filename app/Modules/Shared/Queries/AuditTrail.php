@@ -6,8 +6,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Reads the audit trail, oldest first. Later stories build each record's
- * read-only History panel on this.
+ * Reads the audit trail: oldest first for a subject, newest first for the
+ * History panels, the Audit trail page and its Look up. Read-only; the trail
+ * cannot be edited.
  */
 final class AuditTrail
 {
@@ -34,6 +35,49 @@ final class AuditTrail
             ->limit(1)
             ->get()
             ->all())[0] ?? null;
+    }
+
+    /**
+     * A subject's entries, newest first: its History panel. Callers ask
+     * for one more than they show, to know whether older ones were left out.
+     *
+     * @return list<AuditEntry>
+     */
+    public function historyOf(string $subjectType, string $subjectId, int $limit = 200): array
+    {
+        return $this->map(DB::table('audit_entries')
+            ->where('subject_type', $subjectType)
+            ->where('subject_id', $subjectId)
+            ->orderByDesc('sequence')
+            ->limit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * The latest entries across the trail, newest first.
+     *
+     * @return list<AuditEntry>
+     */
+    public function recent(int $limit = 50): array
+    {
+        return $this->map(DB::table('audit_entries')->orderByDesc('sequence')->limit($limit)->get()->all());
+    }
+
+    /**
+     * "Look up": every entry naming $id as its subject, its actor or the
+     * person it was done for, newest first.
+     *
+     * @return list<AuditEntry>
+     */
+    public function lookUp(string $id, int $limit = 200): array
+    {
+        return $this->map(DB::table('audit_entries')
+            ->where(fn ($query) => $query->where('subject_id', $id)->orWhere('actor_id', $id)->orWhere('acting_for', $id))
+            ->orderByDesc('sequence')
+            ->limit($limit)
+            ->get()
+            ->all());
     }
 
     /**

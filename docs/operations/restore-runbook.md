@@ -101,7 +101,8 @@ Write down the time you decide to restore. **The 4-hour clock starts then.**
 
    [`scripts/ops/restore.sh`](../../scripts/ops/restore.sh) fetches the latest copy, says how old it is
    (the recovery point), decrypts it straight into `pg_restore` (the plain dump never touches disk),
-   restores in one transaction, restores objects if a target is set, and lists the rows per table.
+   restores in one transaction, **recreates the audit trail's triggers before anything else can write**
+   (step 7), restores objects if a target is set, and lists the rows per table.
 5. **Point the app at the restored database** when the script asks: in Laravel Cloud, attach the new
    database to `production` (or set its `DB_*` values), attach the new bucket if you restored objects,
    redeploy, bring the app up (`php artisan up`) and restart the queue worker. Then press Enter.
@@ -113,8 +114,29 @@ Write down the time you decide to restore. **The 4-hour clock starts then.**
    the `migrations` count the script printed; they must match. Where the script can reach the app's
    command line itself (the local drill), set `RESTORE_APP_CHECK_CMD` to a command that prints that
    count and the script compares it for you.
-7. **Before any write** (added by Story 1.6): recreate the audit trigger and the database roles.
-   Until Story 1.6 there are none.
+7. **Before any write: the audit trigger.** The script has already done this, right after `pg_restore` and
+   before the app is pointed at the database; check its output shows
+
+   ```text
+   ==> [...] recreate the audit protection
+   ==> [...] check the audit trigger rejects an UPDATE
+     UPDATE on audit_entries: refused by the trigger.
+     DELETE on audit_entries: refused by the trigger.
+     UPDATE on audit_seals: refused by the trigger.
+     DELETE on audit_seals: refused by the trigger.
+   ```
+
+   It runs [`app/Modules/Shared/Database/audit-protection.sql`](../../app/Modules/Shared/Database/audit-protection.sql),
+   the same SQL the migration runs, so a copy whose trigger was disabled or dropped comes back protected.
+   If you ever restore without the script, run that file with
+   `psql --set ON_ERROR_STOP=1 --dbname="$RESTORE_DATABASE_URL" --file=app/Modules/Shared/Database/audit-protection.sql`
+   before step 5. If the script says the copy **predates the audit seals**, it has still protected
+   `audit_entries` (and checked the refusal); run `php artisan migrate --force` against the restored
+   database before any write, which adds the seals and their trigger.
+   There are **no database roles** to recreate: the app runs under the one role Laravel Cloud injects (see
+   [decision 0001](../decisions/0001-audit-trail-least-privilege-fallback.md)).
+   Then, once the app is up, open the console's **Audit trail** page and run **Check the chain**: it should
+   say the chain is intact.
 8. **Restart the copies.** Change the GitHub secret `BACKUP_DATABASE_URL` to the new database, run
    **Offsite backup** by hand once, and check the heartbeat monitor is green.
 9. **Record** the elapsed time the script printed (it counts from its own start; add the time from your
@@ -138,12 +160,16 @@ restores into a **throwaway** environment and never touches production or stagin
    `RESTORE_APP_START_CMD=php artisan serve --no-reload --host=127.0.0.1 --port=8010`,
    `RESTORE_HEALTH_URL=http://127.0.0.1:8010/api/v1/health`, `APP_KEY=<production APP_KEY>` and
    `RESTORE_APP_CHECK_CMD=DB_URL=<the throwaway database URL> php artisan tinker --execute='echo Illuminate\Support\Facades\DB::table(getenv("RESTORE_CHECK_TABLE"))->count(), PHP_EOL;'`.
-4. Check a handful of recent records by eye against what you know happened before the copy.
+4. Check that the script recreated the audit trigger and that it refused the `UPDATE` (step 7), then
+   prove it once more by hand:
+   `psql "<the throwaway database URL>" --command "UPDATE audit_entries SET action = action"` must fail with
+   "The audit trail is insert-only". Check a handful of recent records by eye against what you know
+   happened before the copy.
 5. Delete the throwaway database and environment, and the local copy of the key if you made one.
 6. Add a row to the drill log below and commit it.
 
-Later epics extend the drill: the NIN master and HMAC keys from their second secret store (AD-16), and
-the audit trigger and roles (Story 1.6).
+Later epics extend the drill: the NIN master and HMAC keys from their second secret store (AD-16). The
+audit trigger is part of it from Story 1.6; there are no database roles to restore (decision 0001).
 
 ### The automated drill
 
@@ -151,7 +177,9 @@ the audit trigger and roles (Story 1.6).
 PostgreSQL 17 database and a bucket on MinIO, backs them up encrypted with a throwaway key, restores into
 a fresh database and bucket, starts the app on them, checks `/api/v1/health`, has the app read back the
 restored rows and object (`RESTORE_APP_CHECK_CMD`), and prints the elapsed time (also in the CI job
-summary). It also checks that a backup against an unreachable database fails at the `dump` step and
+summary). The seeded database has an audit row and **no** trigger on either audit table, so the drill proves
+the restore recreates both before any write: an `UPDATE` on the restored `audit_entries` and `audit_seals`
+must be refused and the row left as it was. It also checks that a backup against an unreachable database fails at the `dump` step and
 leaves nothing in the bucket, that `restore.sh` refuses a database that is not empty, and that it picks
 the newest copy when an older one is present. It proves the scripts, not the real copy or the real key,
 so it does not replace the quarterly drill.

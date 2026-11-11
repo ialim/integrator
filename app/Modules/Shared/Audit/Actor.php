@@ -4,7 +4,8 @@ namespace App\Modules\Shared\Audit;
 
 /**
  * Who did something, as the audit trail records it: a User, a staff member or
- * the system itself, with optional `acting_as` and `acting_for` ids.
+ * the system itself, optionally `acting_as` a role (an Admin using a Finance
+ * capability is acting as "finance", Epic 2) and `acting_for` a person (by id).
  */
 final class Actor
 {
@@ -36,11 +37,13 @@ final class Actor
         return new self(self::USER, $id);
     }
 
-    public function actingAs(?string $id): self
+    /** The role the actor is acting as, e.g. "finance"; a role, never a person. */
+    public function actingAs(?string $role): self
     {
-        return new self($this->type, $this->id, $id, $this->actingFor);
+        return new self($this->type, $this->id, $role, $this->actingFor);
     }
 
+    /** The person (by id) the actor is acting for. */
     public function actingFor(?string $id): self
     {
         return new self($this->type, $this->id, $this->actingAs, $id);

@@ -1,8 +1,9 @@
 <?php
 
 /*
- * Founder alerts (AD-20): failed jobs from the app; failed and missing
- * backups from the heartbeat monitor (docs/operations/alerts.md).
+ * Founder alerts (AD-20): failed jobs and failed or overdue audit seals from
+ * the app; failed and missing backups, and missed audit sealing runs, from
+ * the heartbeat monitor (docs/operations/alerts.md).
  */
 return [
 
@@ -17,6 +18,12 @@ return [
 
     // Throttle state lives on the database cache, never on the queue it reports on.
     'cache_store' => env('ALERTS_CACHE_STORE', 'database'),
+
+    // Audit rows left unsealed longer than this raise the "Audit seal overdue" alert.
+    'audit_seal_grace_minutes' => 30,
+
+    // Each completed sealing run pings this heartbeat check (a secret). Unset means no ping.
+    'audit_seal_heartbeat_url' => env('AUDIT_SEAL_HEARTBEAT_URL'),
 
     // Times are shown in WAT and UTC.
     'local_timezone' => 'Africa/Lagos',

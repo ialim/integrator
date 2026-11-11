@@ -63,7 +63,8 @@ Related: [alerts.md](alerts.md) (heartbeat and email), [restore-runbook.md](rest
   The queue runs on the database driver (`QUEUE_CONNECTION=database`). A job that has used all its tries
   fails permanently and emails the founder (see [alerts.md](alerts.md)).
 - [ ] Scheduler: **on** (it runs `php artisan schedule:run` every minute). The schedule sends any held
-      founder alerts (`alerts:send-held`); later stories add their jobs to it.
+      founder alerts (`alerts:send-held`) and seals the audit trail every 5 minutes (`audit:seal`); later
+      stories add their jobs to it.
 
 ## 5. Object storage
 
@@ -99,6 +100,7 @@ Enter secrets in Laravel Cloud's environment settings, which is the host's secre
 | `MAIL_USERNAME`, `MAIL_PASSWORD` | from the SMTP provider | **yes** |
 | `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | a sending address verified with the SMTP provider; `integrator` | no |
 | `FOUNDER_ALERT_EMAIL` | the founder's address for alerts | **yes** |
+| `AUDIT_SEAL_HEARTBEAT_URL` | the audit sealing heartbeat check's ping URL (see [alerts.md](alerts.md)); unset means no ping | **yes** |
 
 Do **not** enter any `OFFSITE_S3_*` value in Laravel Cloud. Only the backup runner writes the offsite
 bucket, so a compromised app cannot delete the copies. (`config/filesystems.php` has an `offsite` disk for

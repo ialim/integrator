@@ -17,7 +17,8 @@ use Tests\Support\StaffConsole;
 /*
  * Two Admins deactivate the same account at the same moment, in two real
  * processes with their own database connections. No RefreshDatabase: each
- * racer must commit, so this test cleans up after itself.
+ * racer must commit, so this test cleans up after itself, and leaves the
+ * committed audit rows to the next fresh migration.
  */
 
 function raceConnection(): PDO
@@ -33,9 +34,15 @@ function raceConnection(): PDO
     return $pdo;
 }
 
+/**
+ * The audit trail refuses TRUNCATE (Story 1.6), so its committed rows stay;
+ * the database is marked for a fresh migration instead, which the next test
+ * runs before it starts.
+ */
 function cleanRaceTables(): void
 {
-    DB::statement('TRUNCATE staff_sessions, notification_deliveries, outbox_events, audit_entries, staff_members CASCADE');
+    DB::statement('TRUNCATE staff_sessions, notification_deliveries, outbox_events, staff_members CASCADE');
+    RefreshDatabaseState::$migrated = false;
 }
 
 /**

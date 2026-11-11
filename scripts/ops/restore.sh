@@ -3,7 +3,8 @@
 #
 #   1. fetch the latest integrator-*.dump.age (or RESTORE_DUMP) from the offsite bucket;
 #   2. decrypt it with the founder's private age key;
-#   3. pg_restore it into a clean database (the script refuses a database with tables);
+#   3. pg_restore it into a clean database (the script refuses a database with tables), then
+#      recreate the audit trail's insert-only triggers before any write and prove an UPDATE is refused;
 #   4. restore object storage from the offsite objects/ folder (when a target is set);
 #   5. start the app (when RESTORE_APP_START_CMD is set) or wait for it to be pointed here;
 #   6. check /api/v1/health and a row count;
@@ -29,6 +30,8 @@
 #                                  app and prints it on its last line; it must equal the psql count
 #   RESTORE_RECORD_FILE            a Markdown file the result row is appended to
 #   PG_RESTORE, PSQL               binaries (default pg_restore, psql); version 17 or later
+#   AUDIT_PROTECTION_SQL           the audit triggers' SQL (default: the repository's
+#                                  app/Modules/Shared/Database/audit-protection.sql)
 set -Eeuo pipefail
 
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -173,6 +176,48 @@ fi
 if (( statuses[0] != 0 )); then
     step "decrypt"
     false
+fi
+
+step "recreate the audit protection"
+# Before any write (AD-21): the same SQL the migration runs. Safe to run again over the restored triggers.
+AUDIT_PROTECTION_SQL="${AUDIT_PROTECTION_SQL:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/app/Modules/Shared/Database/audit-protection.sql}"
+audit_tables="$(sql "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('audit_entries', 'audit_seals')")"
+
+# WHERE false: even without the trigger, these statements change nothing.
+check_refusals() {
+    local table statement refusal
+    for table in "$@"; do
+        for statement in "UPDATE ${table} SET id = id WHERE false" "DELETE FROM ${table} WHERE false"; do
+            if refusal="$(sql "${statement}" 2>&1)"; then
+                echo "The restored ${table} accepted '${statement}': the audit trigger is missing." >&2
+                return 1
+            fi
+            [[ "${refusal}" == *"insert-only"* ]] || { echo "Unexpected answer to '${statement}': ${refusal}" >&2; return 1; }
+            echo "  ${statement%% *} on ${table}: refused by the trigger."
+        done
+    done
+}
+
+if (( audit_tables > 0 )); then
+    [[ -r "${AUDIT_PROTECTION_SQL}" ]] || { echo "Cannot read ${AUDIT_PROTECTION_SQL}." >&2; false; }
+fi
+if (( audit_tables == 2 )); then
+    "${PSQL}" --no-psqlrc --quiet --set ON_ERROR_STOP=1 --dbname="${RESTORE_DATABASE_URL}" --file="${AUDIT_PROTECTION_SQL}"
+
+    step "check the audit trigger rejects an UPDATE"
+    check_refusals audit_entries audit_seals
+elif (( audit_tables == 1 )); then
+    # A copy taken before the seals existed: protect audit_entries with the same statements (the part of
+    # the SQL file above its audit_seals marker), then the migration adds the rest.
+    grep -q '^-- audit_seals:' "${AUDIT_PROTECTION_SQL}" || { echo "No audit_seals marker in ${AUDIT_PROTECTION_SQL}." >&2; false; }
+    sed '/^-- audit_seals:/,$d' "${AUDIT_PROTECTION_SQL}"         | "${PSQL}" --no-psqlrc --quiet --set ON_ERROR_STOP=1 --dbname="${RESTORE_DATABASE_URL}"
+
+    step "check the audit trigger rejects an UPDATE"
+    check_refusals audit_entries
+    echo "This copy predates the audit seals (Story 1.6): audit_entries is protected, but run" >&2
+    echo "'php artisan migrate --force' against the restored database before any write; the migration adds the seals." >&2
+else
+    echo "No audit tables in this copy; nothing to protect."
 fi
 
 step "restore object storage"

@@ -49,7 +49,8 @@ it('holds each capability for the right groups, with Admin holding every one', f
     expect(capabilityRegistry()->groupsHolding(StaffCapabilities::TODAY))->toBe([CapabilityGroup::Finance, CapabilityGroup::Operations, CapabilityGroup::SupportDuties, CapabilityGroup::Admin])
         ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::MANAGE_STAFF))->toBe([CapabilityGroup::Admin])
         ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::SUPPORT_DESK))->toBe([CapabilityGroup::SupportDuties, CapabilityGroup::Admin])
-        ->and(capabilityRegistry()->names())->toBe([StaffCapabilities::TODAY, StaffCapabilities::MANAGE_STAFF, StaffCapabilities::SUPPORT_DESK]);
+        ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::VIEW_AUDIT))->toBe([CapabilityGroup::Admin])
+        ->and(capabilityRegistry()->names())->toBe([StaffCapabilities::TODAY, StaffCapabilities::MANAGE_STAFF, StaffCapabilities::SUPPORT_DESK, StaffCapabilities::VIEW_AUDIT]);
 });
 
 it('allows each role only its own capabilities, and Support duties only while the switch is On', function () {
@@ -59,19 +60,19 @@ it('allows each role only its own capabilities, and Support duties only while th
 
     $matrix = fn (StaffMember $member): array => array_map(fn (string $capability) => capabilityRegistry()->allows($member->refresh(), $capability), capabilityRegistry()->names());
 
-    expect($matrix($admin))->toBe([true, true, true])
-        ->and($matrix($finance))->toBe([true, false, false])
-        ->and($matrix($operations))->toBe([true, false, false])
+    expect($matrix($admin))->toBe([true, true, true, true])
+        ->and($matrix($finance))->toBe([true, false, false, false])
+        ->and($matrix($operations))->toBe([true, false, false, false])
         ->and(capabilityRegistry()->groupsOf($operations))->toBe([CapabilityGroup::Operations]);
 
     app(SetSupportDuties::class)->handle($admin, $operations->id, true);
 
-    expect($matrix($operations))->toBe([true, false, true])
+    expect($matrix($operations))->toBe([true, false, true, false])
         ->and(capabilityRegistry()->groupsOf($operations))->toBe([CapabilityGroup::Operations, CapabilityGroup::SupportDuties]);
 
     app(SetSupportDuties::class)->handle($admin, $operations->id, false);
 
-    expect($matrix($operations))->toBe([true, false, false]);
+    expect($matrix($operations))->toBe([true, false, false, false]);
 });
 
 it('refuses an unknown capability rather than quietly allowing it', function () {
@@ -143,7 +144,7 @@ it('shows an Admin every group that has a page, People with Staff included, in r
 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
-    expect(railGroupLabels($html))->toBe(['Queues', 'People'])
+    expect(railGroupLabels($html))->toBe(['Queues', 'People', 'Watch'])
         ->and($html)->toContain('href="'.url('/console/staff').'"')
         ->and($html)->toMatch('/<ul[^>]*aria-labelledby="fi-sidebar-group-label-people-[0-9a-f]{8}"/');
 

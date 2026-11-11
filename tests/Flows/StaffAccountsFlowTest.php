@@ -494,8 +494,8 @@ it('refuses a deactivated Admin\'s Actions', function () {
 });
 
 it('converts is_active into a status when the status migration runs, and back again', function () {
-    // Back to before the status migration (and the delivery keys and Support duties after it), then add accounts the old way.
-    Artisan::call('migrate:rollback', ['--step' => 3, '--force' => true]);
+    // Back to before the status migration (and the delivery keys, Support duties and audit seals after it), then add accounts the old way.
+    Artisan::call('migrate:rollback', ['--step' => 4, '--force' => true]);
 
     expect(Schema::hasColumn('staff_members', 'is_active'))->toBeTrue()
         ->and(Schema::hasColumn('staff_members', 'status'))->toBeFalse();
@@ -522,7 +522,7 @@ it('converts is_active into a status when the status migration runs, and back ag
     $unanswered = StaffConsole::invite($founderMember, StaffRole::Operations, 'Chika Obi');
     DB::table('notification_deliveries')->delete();
 
-    Artisan::call('migrate:rollback', ['--step' => 3, '--force' => true]);
+    Artisan::call('migrate:rollback', ['--step' => 4, '--force' => true]);
 
     expect((bool) DB::table('staff_members')->where('id', $answered->id)->value('is_active'))->toBeTrue()
         ->and((bool) DB::table('staff_members')->where('id', $unanswered->id)->value('is_active'))->toBeFalse()

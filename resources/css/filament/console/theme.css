@@ -731,3 +731,46 @@ h3,
 .console-refused p {
     color: var(--ledger-ink);
 }
+
+/* The Audit trail page and each record's History panel: read-only */
+
+.console-panel + .console-panel,
+.console-panel + .console-table-scroll {
+    margin-block-start: var(--ledger-space-4);
+}
+
+.console-audit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ledger-space-3);
+    margin-block: var(--ledger-space-3);
+}
+
+.console-audit-lookup .console-input {
+    max-inline-size: 28rem;
+}
+
+.console-change-list {
+    margin: 0;
+    padding-inline-start: var(--ledger-space-4);
+    list-style: disc;
+}
+
+.console-history {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.console-history-entry {
+    padding-block: var(--ledger-space-3);
+    border-block-end: 1px solid var(--ledger-control-edge);
+}
+
+.console-history-entry:last-child {
+    border-block-end: 0;
+}
+
+.console-history-line {
+    margin: 0 0 var(--ledger-space-1);
+}

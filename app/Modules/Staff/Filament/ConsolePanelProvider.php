@@ -3,6 +3,7 @@
 namespace App\Modules\Staff\Filament;
 
 use App\Modules\Staff\Filament\Pages\AcceptInvitationPage;
+use App\Modules\Staff\Filament\Pages\AuditTrail;
 use App\Modules\Staff\Filament\Pages\SignIn;
 use App\Modules\Staff\Filament\Pages\Today;
 use App\Modules\Staff\Http\ExtendStaffSessionController;
@@ -72,7 +73,8 @@ final class ConsolePanelProvider extends PanelProvider
             ->breadcrumbs(false)
             // The rail: Queues, Work, Money, Catalogue, People, Rules, Watch, each shown only when it holds a page the member can use.
             ->navigationGroups(ConsoleRail::groups())
-            ->pages([Today::class])
+            // Registered explicitly: Today in Queues, the Audit trail in Watch.
+            ->pages([Today::class, AuditTrail::class])
             ->resources([StaffResource::class])
             ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn () => ConsoleShell::title())
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => ConsoleShell::identity())

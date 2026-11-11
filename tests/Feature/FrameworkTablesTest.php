@@ -16,7 +16,7 @@ it('creates the framework tables and each module\'s own tables when migrated', f
     sort($tables);
 
     expect($tables)->toBe([
-        'audit_entries', // Shared
+        'audit_entries', 'audit_seals', // Shared
         'cache', 'cache_locks', 'failed_jobs', 'job_batches', 'jobs', 'migrations',
         'notification_deliveries', // Notifications
         'outbox_events', // Shared

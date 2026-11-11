@@ -18,10 +18,14 @@ final class StaffCapabilities
     /** The Support desk (Epics 13 and 16 build its screens): the Support duties group. */
     public const SUPPORT_DESK = 'support.desk';
 
+    /** The Audit trail page, its chain check and "Look up": Admins only. */
+    public const VIEW_AUDIT = 'audit.view';
+
     public static function declareIn(CapabilityRegistry $registry): void
     {
         $registry->declare(self::TODAY, 'The Today page', CapabilityGroup::Finance, CapabilityGroup::Operations, CapabilityGroup::SupportDuties);
         $registry->declare(self::MANAGE_STAFF, 'Managing staff accounts and their Support duties');
         $registry->declare(self::SUPPORT_DESK, 'The Support desk', CapabilityGroup::SupportDuties);
+        $registry->declare(self::VIEW_AUDIT, 'Reading the audit trail and looking up an identifier in it');
     }
 }
