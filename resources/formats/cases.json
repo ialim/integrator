@@ -1,0 +1,170 @@
+{
+    "about": "The one set of cases for both formatters: resources/formats/index.ts (Vitest) and app/Modules/Shared/Formats/Format.php (Pest). Each case calls fn with args and expects out, or expects it to throw. Arguments that look like ISO 8601 instants are passed as dates. Every row of the Formats table in EXPERIENCE.md has cases here.",
+    "cases": [
+        { "fn": "money", "args": [73172994], "out": "₦731,729.94" },
+        { "fn": "money", "args": [6840000], "out": "₦68,400.00" },
+        { "fn": "money", "args": [0], "out": "₦0.00" },
+        { "fn": "money", "args": [5], "out": "₦0.05" },
+        { "fn": "money", "args": [-3825000], "out": "−₦38,250.00" },
+        { "fn": "money", "args": [-950000], "out": "−₦9,500.00" },
+        { "fn": "money", "args": [123456789012], "out": "₦1,234,567,890.12" },
+        { "fn": "money", "args": [1.5], "throws": true },
+        { "fn": "money", "args": ["73172994"], "throws": true },
+        { "fn": "money", "args": [9007199254740992], "throws": true },
+
+        { "fn": "usd", "args": [3721], "out": "USD 37.21" },
+        { "fn": "usd", "args": [123450], "out": "USD 1,234.50" },
+        { "fn": "usd", "args": [-100], "out": "−USD 1.00" },
+        { "fn": "usd", "args": [0.5], "throws": true },
+
+        { "fn": "rate", "args": [136800], "out": "₦1,368.00 to the dollar" },
+        { "fn": "rate", "args": [0], "throws": true },
+        { "fn": "rate", "args": [-136800], "throws": true },
+
+        { "fn": "percent", "args": [200], "out": "2%" },
+        { "fn": "percent", "args": [250], "out": "2.5%" },
+        { "fn": "percent", "args": [1234], "out": "12.34%" },
+        { "fn": "percent", "args": [5], "out": "0.05%" },
+        { "fn": "percent", "args": [0], "out": "0%" },
+        { "fn": "percent", "args": [-150], "out": "−1.5%" },
+        { "fn": "percent", "args": [2.5], "throws": true },
+
+        { "fn": "date", "args": ["2026-10-07T09:00:00Z", "2026-10-07T09:00:00Z"], "out": "Wed 7 Oct" },
+        { "fn": "date", "args": ["2026-10-06T23:30:00Z", "2026-10-07T09:00:00Z"], "out": "Wed 7 Oct" },
+        { "fn": "date", "args": ["2026-10-06T22:59:00Z", "2026-10-07T09:00:00Z"], "out": "Tue 6 Oct" },
+        { "fn": "date", "args": ["2026-10-07T09:00:00Z", "2026-10-07T09:00:00Z", true], "out": "7 Oct 2026" },
+        { "fn": "date", "args": ["2027-01-03T10:00:00Z", "2026-10-07T09:00:00Z"], "out": "3 Jan 2027" },
+        { "fn": "date", "args": ["2025-10-07T10:00:00Z", "2026-10-07T09:00:00Z"], "out": "7 Oct 2025" },
+        { "fn": "date", "args": ["2026-12-31T23:30:00Z", "2026-10-07T09:00:00Z"], "out": "1 Jan 2027" },
+        { "fn": "date", "args": ["not a date", "2026-10-07T09:00:00Z"], "throws": true },
+
+        {
+            "fn": "dateRange",
+            "args": ["2026-10-05T09:00:00Z", "2026-10-11T09:00:00Z", "2026-10-07T09:00:00Z"],
+            "out": "Mon 5 Oct to Sun 11 Oct"
+        },
+        {
+            "fn": "dateRange",
+            "args": ["2026-12-28T09:00:00Z", "2027-01-03T09:00:00Z", "2026-10-07T09:00:00Z"],
+            "out": "28 Dec 2026 to 3 Jan 2027"
+        },
+        {
+            "fn": "dateRange",
+            "args": ["2026-10-11T09:00:00Z", "2026-10-05T09:00:00Z", "2026-10-07T09:00:00Z"],
+            "throws": true
+        },
+
+        { "fn": "time", "args": ["2026-10-07T10:24:00Z"], "out": "11:24 am" },
+        { "fn": "time", "args": ["2026-10-07T13:05:00Z"], "out": "2:05 pm" },
+        { "fn": "time", "args": ["2026-10-07T11:00:00Z"], "out": "12:00 pm" },
+        { "fn": "time", "args": ["2026-10-07T23:00:00Z"], "out": "12:00 am" },
+        { "fn": "time", "args": ["2026-10-07T07:00:00Z"], "out": "8:00 am" },
+        { "fn": "time", "args": ["2026-10-07T13:05:00Z", true], "out": "2:05 pm WAT" },
+
+        { "fn": "dateTime", "args": ["2026-10-09T15:10:00Z", "2026-10-07T09:00:00Z"], "out": "Fri 9 Oct, 4:10 pm" },
+        { "fn": "dateTime", "args": ["2026-10-08T09:42:00Z", "2026-10-07T09:00:00Z"], "out": "Thu 8 Oct, 10:42 am" },
+        { "fn": "dateTime", "args": ["2027-10-09T15:10:00Z", "2026-10-07T09:00:00Z"], "out": "9 Oct 2027, 4:10 pm" },
+        {
+            "fn": "dateTime",
+            "args": ["2026-11-06T09:00:00Z", "2026-11-03T10:00:00Z", true],
+            "out": "6 Nov 2026, 10:00 am West Africa Time"
+        },
+        {
+            "fn": "dateTime",
+            "args": ["2026-11-06T09:00:00Z", "2026-11-03T10:00:00Z", false],
+            "out": "Fri 6 Nov, 10:00 am"
+        },
+
+        { "fn": "timeLeft", "args": [11520], "out": "3 h 12 min" },
+        { "fn": "timeLeft", "args": [11579], "out": "3 h 12 min" },
+        { "fn": "timeLeft", "args": [169200], "out": "47 h" },
+        { "fn": "timeLeft", "args": [720], "out": "12 min" },
+        { "fn": "timeLeft", "args": [300], "out": "5 min" },
+        { "fn": "timeLeft", "args": [59], "out": "under 1 min" },
+        { "fn": "timeLeft", "args": [0], "throws": true },
+        { "fn": "timeLeft", "args": [-60], "throws": true },
+
+        { "fn": "businessHours", "args": [2], "out": "2 business hours" },
+        { "fn": "businessHours", "args": [1], "out": "1 business hour" },
+        { "fn": "businessDays", "args": [1], "out": "1 business day" },
+        { "fn": "businessDays", "args": [2], "out": "2 business days" },
+        { "fn": "businessDays", "args": [-1], "throws": true },
+
+        { "fn": "phone", "args": ["08035550142"], "out": "0803 555 0142" },
+        { "fn": "phone", "args": ["+2348035550142"], "out": "0803 555 0142" },
+        { "fn": "phone", "args": ["234 803 555 0142"], "out": "0803 555 0142" },
+        { "fn": "phone", "args": ["0803-555-0142"], "out": "0803 555 0142" },
+        { "fn": "phone", "args": ["08035550142", true], "out": "0803 ••• 0142" },
+        { "fn": "phone", "args": ["+2348035550142", true], "out": "0803 ••• 0142" },
+        { "fn": "phone", "args": ["0803555014"], "throws": true },
+        { "fn": "phone", "args": ["+4479460000000"], "throws": true },
+        { "fn": "phone", "args": ["0803 555 O142"], "throws": true },
+        { "fn": "phone", "args": ["0803\u00a0555 0142"], "throws": true },
+        {
+            "fn": "phone",
+            "args": ["\u0660\u0668\u0660\u0663\u0665\u0665\u0665\u0660\u0661\u0664\u0662"],
+            "throws": true
+        },
+        { "fn": "phone", "args": ["0803\t555\u000b0142"], "out": "0803 555 0142" },
+
+        { "fn": "reference", "args": ["order", 42], "out": "INT-0042" },
+        { "fn": "reference", "args": ["creditNote", 12], "out": "CN-0012" },
+        { "fn": "reference", "args": ["case", 231], "out": "C-0231" },
+        { "fn": "reference", "args": ["returnRequest", 87], "out": "RR-0087" },
+        { "fn": "reference", "args": ["business", 243], "out": "BA-0243" },
+        { "fn": "reference", "args": ["profile", 1187], "out": "P-1187" },
+        { "fn": "reference", "args": ["auditEntry", 20644], "out": "L-20644" },
+        { "fn": "reference", "args": ["order", 0], "throws": true },
+        { "fn": "reference", "args": ["invoice", 1], "throws": true },
+        { "fn": "reference", "args": ["toString", 1], "throws": true },
+        { "fn": "reference", "args": ["__proto__", 1], "throws": true },
+
+        { "fn": "issueCode", "args": ["IC-4829-QK7M"], "out": "IC-4829-QK7M" },
+        { "fn": "issueCode", "args": ["ic4829qk7m"], "out": "IC-4829-QK7M" },
+        { "fn": "issueCode", "args": ["IC-4829-QK7O"], "throws": true },
+        { "fn": "issueCode", "args": ["IC-482-QK7M"], "throws": true },
+        { "fn": "issueCode", "args": ["ic4829qk7\u017f"], "throws": true },
+
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PTA"], "out": "7KQ4-M2XD-9PTA" },
+        { "fn": "readAloudCode", "args": ["7kq4 m2xd 9pta"], "out": "7KQ4-M2XD-9PTA" },
+        { "fn": "readAloudCode", "args": ["7KQ4-M2XD-9PTA"], "out": "7KQ4-M2XD-9PTA" },
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PT0"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PTO"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PTI"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PTL"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4M2XD9PT1"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4M2X"], "throws": true },
+        { "fn": "readAloudCode", "args": [""], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4 M2XD 9PT\u00df"], "throws": true },
+        { "fn": "readAloudCode", "args": ["7KQ4\u3000M2XD-9PTA"], "throws": true },
+
+        { "fn": "serial", "args": ["NG4P-77124"], "out": "NG4P-77124" },
+        { "fn": "serial", "args": ["  sn 0O1l-77 "], "out": "sn 0O1l-77" },
+        { "fn": "serial", "args": ["   "], "throws": true },
+        { "fn": "serial", "args": ["\fNG4P-77124\u000b"], "out": "NG4P-77124" },
+        { "fn": "serial", "args": ["\u00a0NG4P-77124"], "throws": true },
+        { "fn": "serial", "args": ["NG4P\u000077124"], "throws": true },
+        { "fn": "serial", "args": ["NG4P\u007f77124"], "throws": true },
+
+        { "fn": "person", "args": ["Chidi Okafor", "team"], "out": "Chidi" },
+        { "fn": "person", "args": ["Chidi Okafor", "console"], "out": "Chidi O." },
+        { "fn": "person", "args": ["Chidi Okafor", "document"], "out": "Chidi Okafor" },
+        { "fn": "person", "args": ["  Chidi   Emeka  Okafor ", "console"], "out": "Chidi O." },
+        { "fn": "person", "args": ["Chidi   Emeka Okafor", "document"], "out": "Chidi Emeka Okafor" },
+        { "fn": "person", "args": ["Funmi", "console"], "out": "Funmi" },
+        { "fn": "person", "args": ["ada ọkafor", "console"], "out": "ada Ọ." },
+        { "fn": "person", "args": ["   ", "team"], "throws": true },
+        { "fn": "person", "args": ["Chidi Okafor", "nickname"], "throws": true },
+        { "fn": "person", "args": ["Chidi\u2003Okafor", "console"], "out": "Chidi\u2003Okafor" },
+
+        { "fn": "measure", "args": [305, "m"], "out": "305 m" },
+        { "fn": "measure", "args": [2, "TB"], "out": "2 TB" },
+        { "fn": "measure", "args": ["2.1", "MB"], "out": "2.1 MB" },
+        { "fn": "measure", "args": [4, "MP"], "out": "4MP" },
+        { "fn": "measure", "args": [1200, "m"], "out": "1,200 m" },
+        { "fn": "measure", "args": ["-3", "m"], "throws": true },
+        { "fn": "measure", "args": ["2.1", ""], "throws": true },
+        { "fn": "measure", "args": [2.5, "m"], "throws": true },
+        { "fn": "measure", "args": ["2.50", "m"], "out": "2.50 m" }
+    ]
+}

@@ -28,20 +28,21 @@
     --ledger-focus-ring: #153d2e;
     --ledger-focus-ring-on-green: #ffffff;
 
-    /* Type: serif titles, sans body, monospace codes */
+    /* Type: serif titles, sans body, monospace codes. Sizes are in rem (16px
+       at the browser's default) so a larger-text setting scales them. */
     --ledger-font-serif: 'Palatino Linotype', Palatino, 'Book Antiqua', 'Noto Serif', 'Times New Roman', serif;
     --ledger-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --ledger-font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', Menlo, monospace;
-    --ledger-text-title-console: 26px;
-    --ledger-text-title-screen: 21px;
-    --ledger-text-heading: 19px;
-    --ledger-text-heading-small: 16px;
-    --ledger-text-body: 15px;
-    --ledger-text-small: 13px;
-    --ledger-text-label: 12px; /* the smallest size anywhere */
-    --ledger-text-button-console: 14px;
-    --ledger-text-input: 16px;
-    --ledger-text-table-console: 13px;
+    --ledger-text-title-console: 1.625rem; /* 26px */
+    --ledger-text-title-screen: 1.3125rem; /* 21px */
+    --ledger-text-heading: 1.1875rem; /* 19px */
+    --ledger-text-heading-small: 1rem; /* 16px */
+    --ledger-text-body: 0.9375rem; /* 15px */
+    --ledger-text-small: 0.8125rem; /* 13px */
+    --ledger-text-label: 0.75rem; /* 12px; the smallest size anywhere */
+    --ledger-text-button-console: 0.875rem; /* 14px */
+    --ledger-text-input: 1rem; /* 16px */
+    --ledger-text-table-console: 0.8125rem; /* 13px */
 
     /* Spacing: a 4px-based scale plus named sizes that must not drift */
     --ledger-space-1: 4px;

@@ -3,17 +3,18 @@
 namespace App\Modules\Staff\Filament;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Contracts\Clock;
+use App\Modules\Shared\Formats\Format;
 use App\Modules\Shared\Queries\AuditTrail;
 use App\Modules\Shared\StatusTables\TransitionRefused;
-use App\Modules\Shared\Support\Wat;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\StatusTables\StaffAccountStatus;
 
 /**
  * Turns a refused staff-account change into words for the screen: the rule's
  * own reason, or for a lost race the account's current state with who changed
- * it and when ("Bola Ade was already deactivated by Ada Founder at 14:05 WAT
- * on Tuesday 3 November 2026"). Never an error page.
+ * it and when ("Bola Ade was already deactivated by Ada Founder at 2:05 pm
+ * on Tue 3 Nov"). Never an error page.
  */
 final class RefusalWords
 {
@@ -71,8 +72,6 @@ final class RefusalWords
 
     private function when(\DateTimeInterface $at): string
     {
-        $wat = Wat::of($at);
-
-        return $wat->format('H:i').' '.Wat::LABEL.' on '.$wat->format('l j F Y');
+        return Format::time($at).' on '.Format::date($at, app(Clock::class)->now());
     }
 }

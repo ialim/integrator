@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /*
- * The automated accessibility check (axe-core) of the staff console's sign-in,
+ * The automated accessibility check (axe-core) of every Integrator app shell
+ * screen (tests/Accessibility/app.spec.ts: built assets only, no rows needed)
+ * and of the staff console's sign-in,
  * second-step, set-up, Today, Staff, refused and invitation pages, and the
  * rail per role. It needs the app running with a fresh database seeded by
  * `php artisan app:seed-test-state first-admin invited-staff active-operations`; CI does this

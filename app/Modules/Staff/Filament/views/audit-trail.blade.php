@@ -8,6 +8,7 @@
 --}}
 <x-filament-panels::page>
     @php($words = app(\App\Modules\Staff\Filament\AuditWords::class))
+    @php($now = app(\App\Modules\Shared\Contracts\Clock::class)->now())
     @php($shown = $this->getEntries())
     @php($entries = $shown['entries'])
     @php($names = $words->staffNames($entries))
@@ -82,7 +83,7 @@
                 @forelse ($entries as $entry)
                     <tr wire:key="audit-{{ $entry->id }}" data-row tabindex="-1">
                         <th scope="row">{{ $entry->sequence }}</th>
-                        <td><time datetime="{{ \App\Modules\Shared\Support\Iso8601::format($entry->occurredAt) }}">{{ \App\Modules\Shared\Support\Wat::dateTime($entry->occurredAt) }}</time></td>
+                        <td><time datetime="{{ \App\Modules\Shared\Support\Iso8601::format($entry->occurredAt) }}">{{ \App\Modules\Shared\Formats\Format::dateTime($entry->occurredAt, $now) }}</time></td>
                         <td>{{ $words->who($entry, $names) }}</td>
                         <td>{{ $words->what($entry) }}</td>
                         <td>{{ $words->record($entry, $names) }}</td>

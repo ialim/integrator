@@ -134,7 +134,7 @@ it('lets the first of two racing Admins deactivate the account; the other sees w
     $winner = collect($results)->firstWhere('outcome', 'won')['by'];
     $loser = collect($results)->firstWhere('outcome', 'refused');
 
-    expect($loser['words'])->toBe("Bola Ade was already deactivated by {$winner} at 14:05 WAT on Tuesday 3 November 2026. Nothing else was changed.");
+    expect($loser['words'])->toBe("Bola Ade was already deactivated by {$winner} at 2:05 pm on Tue 3 Nov. Nothing else was changed.");
 
     DB::reconnect();
 

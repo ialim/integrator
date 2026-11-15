@@ -14,7 +14,15 @@
         "verbatimModuleSyntax": true,
         "skipLibCheck": true,
         "noEmit": true,
-        "types": ["vite/client", "node"]
+        "types": ["vite/client", "vite-plugin-pwa/client", "node"],
+        "resolveJsonModule": true
     },
-    "include": ["resources/app", "resources/console", "tests/Accessibility", "vite.config.ts", "playwright.config.ts"]
+    "include": [
+        "resources/app",
+        "resources/console",
+        "resources/formats",
+        "tests/Accessibility",
+        "vite.config.ts",
+        "playwright.config.ts"
+    ]
 }

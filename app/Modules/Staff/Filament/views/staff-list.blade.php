@@ -85,19 +85,19 @@
                             @if ($member->status === \App\Modules\Staff\StatusTables\StaffAccountStatus::Invited)
                                 <span class="console-status-detail">
                                     @if ($member->invitation_accepted_at && $member->canSignIn())
-                                        Password set; authenticator app still to set up, until {{ \App\Modules\Shared\Support\Wat::dateTime($member->invitation_expires_at) }}
+                                        Password set; authenticator app still to set up{{ $member->invitation_expires_at ? ', until '.\App\Modules\Shared\Formats\Format::dateTime($member->invitation_expires_at, $now) : '' }}
                                     @elseif ($member->invitation_accepted_at)
                                         The time to finish setting up has run out; send a new invitation
                                     @elseif (isset($inDoubt[$member->id]))
                                         {{ \App\Modules\Staff\Filament\StaffResource\ListStaff::INVITATION_IN_DOUBT }}
                                     @elseif ($member->invitation_expires_at && $member->invitation_expires_at->greaterThan($now))
-                                        Link works until {{ \App\Modules\Shared\Support\Wat::dateTime($member->invitation_expires_at) }}
+                                        Link works until {{ \App\Modules\Shared\Formats\Format::dateTime($member->invitation_expires_at, $now) }}
                                     @else
                                         Link has expired; send a new invitation
                                     @endif
                                 </span>
                             @elseif ($member->status === \App\Modules\Staff\StatusTables\StaffAccountStatus::Deactivated && $member->deactivated_at)
-                                <span class="console-status-detail">Since {{ \App\Modules\Shared\Support\Wat::dateTime($member->deactivated_at) }}</span>
+                                <span class="console-status-detail">Since {{ \App\Modules\Shared\Formats\Format::dateTime($member->deactivated_at, $now) }}</span>
                             @endif
                         </td>
                         <td>

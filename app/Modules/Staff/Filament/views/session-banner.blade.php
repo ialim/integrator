@@ -13,7 +13,7 @@
 >
     <div class="console-banner console-banner-needs" role="alert" data-session-warning @unless ($inWarning) hidden @endunless>
         <p>
-            Your session ends in <span data-session-minutes>{{ $minutesLeft }} {{ $minutesLeft === 1 ? 'minute' : 'minutes' }}</span>,
+            Your session ends in <span data-session-minutes>{{ $timeLeft }}</span>,
             at <span data-session-ends-wat>{{ $endsAtWat }}</span>. Unsaved values are kept as a draft if it ends.
         </p>
         <button type="button" class="console-button" data-session-stay>Stay signed in</button>

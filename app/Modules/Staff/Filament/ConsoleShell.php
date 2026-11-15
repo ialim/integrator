@@ -3,8 +3,8 @@
 namespace App\Modules\Staff\Filament;
 
 use App\Modules\Shared\Contracts\Clock;
+use App\Modules\Shared\Formats\Format;
 use App\Modules\Shared\Support\Iso8601;
-use App\Modules\Shared\Support\Wat;
 use App\Modules\Staff\Http\StaffSession;
 use App\Modules\Staff\Models\StaffMember;
 use Filament\Facades\Filament;
@@ -14,7 +14,7 @@ use Illuminate\Support\HtmlString;
 
 /**
  * The render hooks that turn Filament's layout into the Ledger console shell:
- * "Staff console" beside the wordmark, the WAT clock with the person's name
+ * "Staff console" beside the wordmark, the West Africa Time clock with the person's name
  * and role, the phone notice, the session warning and the console script.
  */
 final class ConsoleShell
@@ -31,7 +31,7 @@ final class ConsoleShell
 
         return view('staff::topbar-identity', [
             'nowIso' => Iso8601::format($now),
-            'nowWat' => Wat::time($now),
+            'nowWat' => Format::time($now),
             'member' => $member instanceof StaffMember ? $member : null,
         ]);
     }
@@ -63,11 +63,11 @@ final class ConsoleShell
         return view('staff::session-banner', [
             'memberId' => $member->id,
             'endsAtIso' => Iso8601::format($endsAt),
-            'endsAtWat' => Wat::time($endsAt),
+            'endsAtWat' => Format::time($endsAt),
             'nowIso' => Iso8601::format($staffSession->now()),
             'warningSeconds' => StaffSession::WARNING_SECONDS,
             'inWarning' => $staffSession->isInWarning($session),
-            'minutesLeft' => max(1, (int) ceil($secondsLeft / 60)),
+            'timeLeft' => Format::timeLeft(max(1, (int) ceil($secondsLeft / 60)) * 60),
             'extendUrl' => route('filament.'.StaffMember::PANEL.'.session.extend'),
         ]);
     }

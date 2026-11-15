@@ -81,15 +81,15 @@ describe('the session draft', () => {
 
 describe('the session clock', () => {
     it('shows West Africa Time, one hour ahead of UTC', () => {
-        expect(formatWat(new Date('2026-10-26T08:05:00Z'))).toBe('09:05 WAT');
-        expect(formatWat(new Date('2026-10-26T23:30:00Z'))).toBe('00:30 WAT');
+        expect(formatWat(new Date('2026-10-26T08:05:00Z'))).toBe('9:05 am');
+        expect(formatWat(new Date('2026-10-26T23:30:00Z'))).toBe('12:30 am');
     });
 
     it('counts the minutes left in words, never below one', () => {
-        expect(minutesLeftText(300)).toBe('5 minutes');
-        expect(minutesLeftText(61)).toBe('2 minutes');
-        expect(minutesLeftText(60)).toBe('1 minute');
-        expect(minutesLeftText(5)).toBe('1 minute');
+        expect(minutesLeftText(300)).toBe('5 min');
+        expect(minutesLeftText(61)).toBe('2 min');
+        expect(minutesLeftText(60)).toBe('1 min');
+        expect(minutesLeftText(5)).toBe('1 min');
     });
 });
 
@@ -102,7 +102,7 @@ function consolePage(endsAt: string, now: string, member = MEMBER): void {
             <div id="console-session" data-member="${member}" data-ends-at="${endsAt}" data-server-time="${now}"
                 data-warning-seconds="300" data-extend-url="/console/session/extend">
                 <div data-session-warning hidden>
-                    <span data-session-minutes></span> <span data-session-ends-wat>21:00 WAT</span>
+                    <span data-session-minutes></span> <span data-session-ends-wat>9:00 pm</span>
                     <button type="button" data-session-stay>Stay signed in</button>
                 </div>
                 <div data-draft-banner hidden>
@@ -162,24 +162,22 @@ describe('the running session script', () => {
         delete window.Livewire;
     });
 
-    it('shows the warning once 5 minutes are left, and keeps the WAT clock current', async () => {
+    it('shows the warning once 5 minutes are left, and keeps the West Africa Time clock current', async () => {
         consolePage('2026-10-26T20:00:00Z', '2026-10-26T19:50:00Z');
         stop = start(document, reload);
 
         expect(element('[data-session-warning]').hidden).toBe(true);
-        expect(element('[data-console-clock]').textContent).toBe('20:50 WAT');
+        expect(element('[data-console-clock]').textContent).toBe('8:50 pm');
 
         await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
 
         expect(element('[data-session-warning]').hidden).toBe(false);
-        expect(element('[data-session-minutes]').textContent).toBe('5 minutes');
+        expect(element('[data-session-minutes]').textContent).toBe('5 min');
     });
 
     it('hides the warning and moves the end time when "Stay signed in" succeeds', async () => {
         consolePage('2026-10-26T19:54:00Z', '2026-10-26T19:50:00Z');
-        vi.mocked(fetch).mockResolvedValue(
-            jsonReply(200, { ends_at: '2026-10-27T07:50:00Z', ends_at_wat: '08:50 WAT' }),
-        );
+        vi.mocked(fetch).mockResolvedValue(jsonReply(200, { ends_at: '2026-10-27T07:50:00Z', ends_at_wat: '8:50 am' }));
         stop = start(document, reload);
         expect(element('[data-session-warning]').hidden).toBe(false);
 
@@ -187,7 +185,7 @@ describe('the running session script', () => {
 
         expect(fetch).toHaveBeenCalledWith('/console/session/extend', expect.objectContaining({ method: 'POST' }));
         expect(element('[data-session-warning]').hidden).toBe(true);
-        expect(element('[data-session-ends-wat]').textContent).toBe('08:50 WAT');
+        expect(element('[data-session-ends-wat]').textContent).toBe('8:50 am');
 
         // The old end time no longer signs the person out.
         await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
@@ -269,8 +267,8 @@ describe('the running session script', () => {
 
         const otherTab = new BroadcastChannel('console-session');
         otherTab.postMessage({ member: OTHER, endsAt: '2026-10-27T09:00:00Z' });
-        otherTab.postMessage({ member: MEMBER, endsAt: '2026-10-27T07:50:00Z', endsAtWat: '08:50 WAT' });
-        await vi.waitFor(() => expect(element('[data-session-ends-wat]').textContent).toBe('08:50 WAT'));
+        otherTab.postMessage({ member: MEMBER, endsAt: '2026-10-27T07:50:00Z', endsAtWat: '8:50 am' });
+        await vi.waitFor(() => expect(element('[data-session-ends-wat]').textContent).toBe('8:50 am'));
         otherTab.close();
 
         expect(element('[data-session-warning]').hidden).toBe(true);

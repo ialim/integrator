@@ -219,6 +219,28 @@ it('names the first broken sequence when a row no longer matches its seal', func
         ->assertSet('chainResult', "The chain is broken at sequence {$first}: the row's stored values no longer match its seal. Rows from there on cannot be trusted. Tell the founder.");
 });
 
+it('dates rows and History in the Formats words, with the year only on another year', function () {
+    app(Clock::class)->set('2025-12-31T10:00:00Z');
+    $founder = StaffConsole::admin();
+    app(Clock::class)->set('2026-11-09T09:00:00Z');
+    $operations = StaffConsole::active($founder, StaffRole::Operations, 'Chika Operations');
+    StaffConsole::signIn($this, $founder);
+
+    $html = $this->get('/console/audit-trail')->assertOk()->getContent();
+
+    expect($html)->toContain('>31 Dec 2025, 11:00 am</time>')
+        ->and($html)->toContain('>Mon 9 Nov, 10:00 am</time>')
+        ->and($html)->not->toContain(':00 WAT');
+
+    Livewire::test(ListStaff::class)
+        ->mountAction('history', arguments: ['member' => $founder->id])
+        ->assertMountedActionModalSee('31 Dec 2025, 11:00 am');
+
+    Livewire::test(ListStaff::class)
+        ->mountAction('history', arguments: ['member' => $operations->id])
+        ->assertMountedActionModalSee('Mon 9 Nov, 10:00 am');
+});
+
 it('offers History on every staff row: read-only, newest first, titled with the person', function () {
     $founder = StaffConsole::admin();
     $operations = StaffConsole::active($founder, StaffRole::Operations, 'Chika Operations');

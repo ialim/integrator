@@ -211,7 +211,7 @@ test('the Today page and the shell: one heading, skip link, landmarks, 200% zoom
     await expectOneTopHeading(page);
     await expect(page.getByRole('main')).toHaveCount(1);
     await expect(page.getByText('Staff console', { exact: true })).toBeVisible();
-    await expect(page.locator('[data-console-clock]')).toHaveText(/^\d{2}:\d{2} WAT$/);
+    await expect(page.locator('[data-console-clock]')).toHaveText(/^\d{1,2}:\d{2} [ap]m$/);
     await expectNoViolations(page, 'the Today page');
 
     // The skip link is the first stop and passes the menu.

@@ -9,6 +9,8 @@
  *    they sign in again, when the draft is offered back.
  */
 
+import { time, timeLeft } from '../formats';
+
 export type Draft = Record<string, string | boolean>;
 
 const DRAFT_PREFIX = 'console-draft:';
@@ -163,22 +165,14 @@ export function dropOtherMembersDrafts(storage: Storage | null, member: string):
     }
 }
 
-const watFormat = new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Africa/Lagos',
-});
-
-/** "14:05 WAT" */
+/** "2:05 pm", in West Africa Time, from the shared formats. */
 export function formatWat(instant: Date): string {
-    return `${watFormat.format(instant)} WAT`;
+    return time(instant);
 }
 
+/** "5 min", never below one: the minutes left, rounded up, from the shared formats. */
 export function minutesLeftText(secondsLeft: number): string {
-    const minutes = Math.max(1, Math.ceil(secondsLeft / 60));
-
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+    return timeLeft(Math.max(1, Math.ceil(secondsLeft / 60)) * 60);
 }
 
 function tabStorage(): Storage | null {
@@ -285,7 +279,7 @@ export function start(doc: Document = document, reload: () => void = () => windo
         if (clock !== null) {
             const text = formatWat(new Date(now()));
             clock.textContent = text;
-            clock.setAttribute('aria-label', `Time now, West Africa Time: ${text}`);
+            clock.setAttribute('aria-label', `Time now: ${text}`);
         }
 
         const secondsLeft = Math.floor((endsAt - now()) / 1000);

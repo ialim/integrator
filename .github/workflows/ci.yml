@@ -136,7 +136,7 @@ jobs:
         run: test -f public/build/manifest.json
 
   accessibility:
-    name: Accessibility (Playwright and axe-core on the staff console)
+    name: Accessibility (Playwright and axe-core on the app shell and the staff console)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -196,7 +196,7 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8000/console/login
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
-      - name: Sign-in, second-step, set-up, Today, Staff, refused and invitation pages, and the rail per role, have no axe-core violations
+      - name: Every app shell screen, and the console's sign-in, second-step, set-up, Today, Staff, refused and invitation pages and rail per role, have no axe-core violations
         run: npm run test:a11y
       - name: Keep the report and server log on failure
         if: failure()

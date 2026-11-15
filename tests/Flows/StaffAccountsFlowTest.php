@@ -142,7 +142,7 @@ it('emails one invitation through the email provider when the relay picks the ev
         ->and($sent[0]->subject)->toBe('Your invitation to the integrator staff console')
         ->and($sent[0]->text)->toContain('Ada Founder has given you a Finance account')
         ->and($sent[0]->text)->toContain(url('/console/invitation/'.StaffConsole::invitationToken($member)))
-        ->and($sent[0]->text)->toContain('until Friday 6 November 2026, 10:00 WAT');
+        ->and($sent[0]->text)->toContain('until 6 Nov 2026, 10:00 am West Africa Time');
 
     expect(outbox($member->id)[0]->relayed_at)->not->toBeNull()
         ->and(DB::table('notification_deliveries')->where('event_id', outbox($member->id)[0]->id)->value('status'))->toBe('sent');

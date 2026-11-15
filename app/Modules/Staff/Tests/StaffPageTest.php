@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Shared\Contracts\Clock;
+use App\Modules\Staff\Actions\AcceptInvitation;
 use App\Modules\Staff\Actions\DeactivateStaffAccount;
 use App\Modules\Staff\Filament\Pages\AcceptInvitationPage;
 use App\Modules\Staff\Filament\StaffResource\ListStaff;
@@ -45,10 +46,28 @@ it('shows every account in a console table with a caption, column headings, name
         ->and($html)->toContain('<span class="console-initial" aria-hidden="true">B</span>')
         ->and($html)->toContain('Bola Ade')
         ->and($html)->toContain('<span class="console-duties">Money</span>')
-        ->and($html)->toContain('Link works until Friday 6 November 2026, 14:05 WAT')
+        ->and($html)->toContain('Link works until Fri 6 Nov, 2:05 pm')
         ->and($html)->toContain('Ada Founder')
         ->and($html)->toContain('<span class="console-duties">Everything</span>')
         ->and($html)->not->toContain('Access denied');
+});
+
+it('dates the status lines in the Formats words, with the year only on another year', function () {
+    app(Clock::class)->set('2025-12-30T09:00:00Z');
+    $admin = StaffConsole::admin();
+    StaffConsole::deactivate(StaffConsole::active($admin, StaffRole::Finance, 'Dayo Gone'));
+    app(Clock::class)->set('2026-11-03T13:05:00Z');
+    $halfway = StaffConsole::invite($admin, StaffRole::Operations, 'Efe Halfway');
+    app(AcceptInvitation::class)->handle(StaffConsole::invitationToken($halfway), StaffConsole::INVITEE_PASSWORD);
+    StaffConsole::invite($admin, StaffRole::Finance, 'Bola Ade');
+    StaffConsole::signIn($this, $admin);
+
+    $html = $this->get('/console/staff')->assertOk()->getContent();
+
+    expect($html)->toContain('Since 30 Dec 2025, 10:00 am')
+        ->and($html)->toContain('Password set; authenticator app still to set up, until Fri 6 Nov, 2:05 pm')
+        ->and($html)->toContain('Link works until Fri 6 Nov, 2:05 pm')
+        ->and($html)->not->toContain('WAT');
 });
 
 it('refuses the Staff page to Finance and Operations on the server, naming who can, inside the console shell', function (StaffRole $role) {
@@ -143,7 +162,7 @@ it('shows who won a race and when, never an error page', function () {
 
     $page->callMountedAction()
         ->assertSet('noticeIsRefusal', true)
-        ->assertSet('notice', 'Bola Ade was already deactivated by Chidi Admin at 14:05 WAT on Tuesday 3 November 2026. Nothing else was changed.')
+        ->assertSet('notice', 'Bola Ade was already deactivated by Chidi Admin at 2:05 pm on Tue 3 Nov. Nothing else was changed.')
         ->assertSee('Bola Ade was already deactivated by Chidi Admin');
 });
 

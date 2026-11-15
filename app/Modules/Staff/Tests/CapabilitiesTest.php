@@ -321,7 +321,7 @@ it('tells the second Admin the switch was already On, with who set it and when, 
     Livewire::test(ListStaff::class)
         ->call('switchSupportDuties', $operations->id, true)
         ->assertSet('noticeIsRefusal', false)
-        ->assertSet('notice', 'Support duties were already On for Chika Operations: Ada Founder switched them On at 10:00 WAT on Friday 6 November 2026. Nothing was changed.');
+        ->assertSet('notice', 'Support duties were already On for Chika Operations: Ada Founder switched them On at 10:00 am on Fri 6 Nov. Nothing was changed.');
 
     expect(count(app(AuditTrail::class)->all()))->toBe($audited);
     Log::shouldNotHaveReceived('info', ['staff.support_duties_set', Mockery::any()]);

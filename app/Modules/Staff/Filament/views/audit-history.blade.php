@@ -9,6 +9,7 @@
     @var bool $more
     @var int $limit
 --}}
+@php($now = app(\App\Modules\Shared\Contracts\Clock::class)->now())
 @if ($entries === [])
     <p>Nothing has been recorded for this account yet.</p>
 @else
@@ -17,7 +18,7 @@
             @php($changes = $words->changes($entry))
             <li class="console-history-entry">
                 <p class="console-history-line">
-                    <time datetime="{{ \App\Modules\Shared\Support\Iso8601::format($entry->occurredAt) }}">{{ \App\Modules\Shared\Support\Wat::dateTime($entry->occurredAt) }}</time>:
+                    <time datetime="{{ \App\Modules\Shared\Support\Iso8601::format($entry->occurredAt) }}">{{ \App\Modules\Shared\Formats\Format::dateTime($entry->occurredAt, $now) }}</time>:
                     <strong>{{ $words->what($entry) }}</strong>, by {{ $words->who($entry, $names) }}.
                 </p>
                 @if ($changes !== [])

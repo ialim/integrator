@@ -34,7 +34,7 @@ it('shows the wordmark, "Staff console", the WAT time and the person\'s name and
         ->assertOk()
         ->assertSee('integrator')
         ->assertSee('Staff console')
-        ->assertSee('14:05 WAT')
+        ->assertSee('2:05 pm')
         ->assertSee('datetime="2026-10-26T13:05:00Z"', false)
         ->assertSee('Ada Founder')
         ->assertSee('Admin');

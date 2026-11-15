@@ -7,7 +7,7 @@ use App\Modules\Notifications\Actions\SendEmail;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Events\OutboxListener;
 use App\Modules\Shared\Events\OutboxMessage;
-use App\Modules\Shared\Support\Wat;
+use App\Modules\Shared\Formats\Format;
 use App\Modules\Staff\Actions\InvitationLinks;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\StatusTables\StaffAccountStatus;
@@ -98,7 +98,7 @@ final class SendStaffInvitation implements OutboxListener
             'Open this link to set your password, then set up an authenticator app on your phone:',
             InvitationLinks::url($token),
             '',
-            'The link works once, until '.Wat::dateTime($expiresAt).'. If it has stopped working, ask an Admin to send you a new one.',
+            'The link works once, until '.Format::dateTime($expiresAt, $this->clock->now(), true).'. If it has stopped working, ask an Admin to send you a new one.',
             '',
             'If you were not expecting this email, you can ignore it.',
         ]);

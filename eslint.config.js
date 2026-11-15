@@ -23,6 +23,7 @@ export default tseslint.config(
         files: [
             'resources/app/**/*.{ts,tsx}',
             'resources/console/**/*.ts',
+            'resources/formats/**/*.ts',
             'tests/Accessibility/**/*.ts',
             'vite.config.ts',
             'playwright.config.ts',

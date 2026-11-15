@@ -34,7 +34,7 @@ it('ends the session 12 hours after sign-in, at 21:00 WAT for a 09:00 WAT sign-i
     $html = $this->get('/console/today')->assertOk()->getContent();
 
     expect($html)->toContain('data-ends-at="2026-10-26T20:00:00Z"')
-        ->and($html)->toContain('21:00 WAT');
+        ->and($html)->toContain('9:00 pm');
 });
 
 it('keeps the warning hidden until 5 minutes are left', function () {
@@ -49,7 +49,7 @@ it('warns at 11 hours 55 minutes that the session ends in 5 minutes, with "Stay 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
     expect(warningBanner($html))->not->toBeNull()->not->toContain('hidden')
-        ->and($html)->toContain('Your session ends in <span data-session-minutes>5 minutes</span>')
+        ->and($html)->toContain('Your session ends in <span data-session-minutes>5 min</span>')
         ->and($html)->toContain('role="alert"')
         ->and($html)->toContain('Stay signed in</button>');
 });
@@ -92,7 +92,7 @@ it('starts a fresh 12 hours when "Stay signed in" gets the right authenticator c
 
     $this->postJson('/console/session/extend', ['code' => StaffConsole::currentCode()])
         ->assertOk()
-        ->assertJson(['ends_at' => '2026-10-27T07:56:00Z', 'ends_at_wat' => '08:56 WAT']);
+        ->assertJson(['ends_at' => '2026-10-27T07:56:00Z', 'ends_at_wat' => '8:56 am']);
 
     app(Clock::class)->advance('4 hours');
 

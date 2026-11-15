@@ -4,7 +4,7 @@
         class="console-clock"
         datetime="{{ $nowIso }}"
         data-console-clock
-        aria-label="Time now, West Africa Time: {{ $nowWat }}"
+        aria-label="Time now: {{ $nowWat }}"
     >{{ $nowWat }}</time>
     @if ($member)
         <span class="console-person">

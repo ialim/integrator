@@ -2,8 +2,8 @@
 
 namespace App\Modules\Staff\Http;
 
+use App\Modules\Shared\Formats\Format;
 use App\Modules\Shared\Support\Iso8601;
-use App\Modules\Shared\Support\Wat;
 use App\Modules\Staff\Http\Middleware\SignOutInactiveStaff;
 use App\Modules\Staff\Models\StaffMember;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -77,7 +77,7 @@ final class ExtendStaffSessionController
 
         return new JsonResponse([
             'ends_at' => Iso8601::format($endsAt),
-            'ends_at_wat' => Wat::time($endsAt),
+            'ends_at_wat' => Format::time($endsAt),
             'server_time' => Iso8601::format($staffSession->now()),
         ]);
     }
