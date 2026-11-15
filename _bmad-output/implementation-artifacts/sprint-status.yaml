@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-25-2026 12:00
-last_updated: 11-15-2026 18:00
+last_updated: 11-15-2026 20:00
 project: integrator
 project_key: NOKEY
 tracking_system: file-system
@@ -43,7 +43,7 @@ development_status:
   1-5-each-role-sees-only-its-own-work: review
   1-6-an-audit-trail-nobody-can-edit: review
   1-7-the-integrator-app-installs-on-a-phone: review
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   epic-2: backlog
   2-1-admin-sets-up-product-ranges-and-their-markup: backlog
@@ -257,3 +257,54 @@ development_status:
   16-14-confirm-or-clear-a-counterfeit: backlog
   16-15-the-three-returns-messages: backlog
   epic-16-retrospective: optional
+action_items:
+  - id: "epic-1-retro-item-1-show-the-no-longer-active-message-and-ke"
+    epic: 1
+    action: "Show the no-longer-active message and keep the draft when a signed-in
+      member is deactivated, reset or re-invited (not a 419); add a flow test on the
+      database session driver"
+    owner: "Dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-2-widen-the-service-worker-blocked-list-fi"
+    epic: 1
+    action: "Widen the service worker blocked list (/filament, /livewire, /storage)
+      and test the console with the worker installed"
+    owner: "Dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-3-share-the-axe-test-helpers-and-scan-the"
+    epic: 1
+    action: "Share the axe test helpers and scan the resend/reset dialogs, session
+      warning and phone notice"
+    owner: "Dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-4-merge-the-seven-stacked-epic-1-branches"
+    epic: 1
+    action: "Merge the seven stacked Epic 1 branches into main and mark stories 1-1
+      to 1-7 done"
+    owner: "ialim"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-5-before-go-live-staging-clock-setter-real"
+    epic: 1
+    action: "Before go-live: staging clock setter, real-phone cold-start reading,
+      cloud and spend checklists, drill that checks the chain after restore"
+    owner: "ialim"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-6-write-the-epic-2-conventions-note-strict"
+    epic: 1
+    action: "Write the Epic 2 conventions note: strict_types, Clock injection, final,
+      module capability declaration, Filament upgrade checklist"
+    owner: "Architect"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
+  - id: "epic-1-retro-item-7-decide-whether-api-v1-health-checks-the"
+    epic: 1
+    action: "Decide whether /api/v1/health checks the database or leaves the stateful
+      session middleware"
+    owner: "ialim"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
