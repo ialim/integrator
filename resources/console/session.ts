@@ -237,7 +237,10 @@ export function start(doc: Document = document, reload: () => void = () => windo
     const registerLivewire = (): void => {
         window.Livewire?.interceptRequest?.(({ onError }) => {
             onError(({ response, preventDefault }) => {
-                if (response.status === 401 && response.headers.get('X-Staff-Session') === 'ended') {
+                // An ended 401 or a bare 419 both mean the session is over: keep the draft and reload.
+                const endedByServer = response.status === 401 && response.headers.get('X-Staff-Session') === 'ended';
+
+                if (endedByServer || response.status === 419) {
                     preventDefault();
                     endSession();
                 }

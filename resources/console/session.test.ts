@@ -215,7 +215,10 @@ describe('the running session script', () => {
         expect(window.sessionStorage.getItem(draftKey(MEMBER, window.location.pathname))).toContain('Unsaved note');
     });
 
-    it('keeps a draft and reloads when Livewire is told the session ended', () => {
+    it.each([
+        ['told the session ended', 401, { 'X-Staff-Session': 'ended' }],
+        ['answered a bare 419', 419, {}],
+    ])('keeps a draft and reloads when Livewire is %s', (_case, status, headers) => {
         type ErrorHandler = (context: { response: Response; preventDefault: () => void }) => void;
         const handlers: ErrorHandler[] = [];
         window.Livewire = {
@@ -228,13 +231,30 @@ describe('the running session script', () => {
         const preventDefault = vi.fn();
         expect(handlers).toHaveLength(1);
         handlers[0]?.({
-            response: new Response('', { status: 401, headers: { 'X-Staff-Session': 'ended' } }),
+            response: new Response('', { status, headers }),
             preventDefault,
         });
 
         expect(preventDefault).toHaveBeenCalled();
         expect(reload).toHaveBeenCalledOnce();
         expect(window.sessionStorage.getItem(draftKey(MEMBER, window.location.pathname))).toContain('Unsaved note');
+    });
+
+    it('leaves any other Livewire error to Livewire', () => {
+        type ErrorHandler = (context: { response: Response; preventDefault: () => void }) => void;
+        const handlers: ErrorHandler[] = [];
+        window.Livewire = {
+            interceptRequest: (callback) => callback({ onError: (handler) => handlers.push(handler) }),
+        };
+        consolePage('2026-10-26T20:00:00Z', '2026-10-26T19:50:00Z');
+        stop = start(document, reload);
+
+        const preventDefault = vi.fn();
+        handlers[0]?.({ response: new Response('', { status: 401 }), preventDefault });
+        handlers[0]?.({ response: new Response('', { status: 500 }), preventDefault });
+
+        expect(preventDefault).not.toHaveBeenCalled();
+        expect(reload).not.toHaveBeenCalled();
     });
 
     it('offers a draft back to the same member and puts the values back', () => {

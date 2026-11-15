@@ -4,6 +4,7 @@ namespace App\Modules\Staff\Actions;
 
 use App\Modules\Shared\Actions\Action;
 use App\Modules\Shared\Capabilities\NeedsNoCapability;
+use App\Modules\Staff\Http\RevokedStaffSessions;
 use App\Modules\Staff\Locks\LockStaffMember;
 use App\Modules\Staff\Models\StaffMember;
 use Illuminate\Support\Facades\DB;
@@ -13,21 +14,29 @@ use Illuminate\Support\Facades\DB;
  * they were signed in on is signed out on its next request. A nested Action:
  * the calling Action holds the member's lock and does the auditing.
  *
+ * Each deleted id is remembered briefly once the transaction commits, so
+ * that next request is ended with the "no longer active" message rather than
+ * as an empty session.
+ *
  * The console also refuses a member who may no longer sign in on every
  * request, so a session store without rows to delete is covered too.
  */
 #[NeedsNoCapability('Nested inside a staff-account Action, which has already checked the acting Admin\'s capability')]
 final class RevokeStaffSessions extends Action
 {
+    public function __construct(private readonly RevokedStaffSessions $revoked) {}
+
     /** Returns how many sessions were revoked. */
     public function handle(StaffMember $member): int
     {
         return $this->transaction(function () use ($member): int {
             $this->assertLocked(LockStaffMember::ROOT, $member->id);
 
+            /** @var list<string> $sessionIds */
             $sessionIds = DB::table('staff_sessions')->where('staff_member_id', $member->id)->pluck('session_id')->all();
 
             if ($sessionIds !== []) {
+                $this->revoked->remember($sessionIds, $member->id);
                 DB::table('sessions')->whereIn('id', $sessionIds)->delete();
             }
 

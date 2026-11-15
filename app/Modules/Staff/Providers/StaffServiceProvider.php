@@ -17,12 +17,15 @@ use App\Modules\Staff\Events\StaffInvitationResent;
 use App\Modules\Staff\Events\StaffSignInReset;
 use App\Modules\Staff\Filament\ConsolePanelProvider;
 use App\Modules\Staff\Filament\SystemFontsOnly;
+use App\Modules\Staff\Http\Middleware\EndRevokedStaffSession;
 use App\Modules\Staff\Http\StaffSession;
 use App\Modules\Staff\Models\StaffMember;
 use Filament\Support\Assets\AssetManager;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -60,6 +63,10 @@ final class StaffServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Laravel sorts the console's authentication middleware ahead of the rest. A revoked
+        // session must end with its reason before it does, or it reads as any guest's.
+        $this->app->make(Kernel::class)->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, EndRevokedStaffSession::class);
+
         $this->loadViewsFrom(__DIR__.'/../Filament/views', 'staff');
 
         // One Filament view overridden: the rail group's list is labelled by the group's name.

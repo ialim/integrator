@@ -7,6 +7,7 @@ use App\Modules\Staff\Filament\Pages\AuditTrail;
 use App\Modules\Staff\Filament\Pages\SignIn;
 use App\Modules\Staff\Filament\Pages\Today;
 use App\Modules\Staff\Http\ExtendStaffSessionController;
+use App\Modules\Staff\Http\Middleware\EndRevokedStaffSession;
 use App\Modules\Staff\Http\Middleware\EndStaffSessionAfter12Hours;
 use App\Modules\Staff\Http\Middleware\RefusedPageStatus;
 use App\Modules\Staff\Http\Middleware\SignOutInactiveStaff;
@@ -94,6 +95,8 @@ final class ConsolePanelProvider extends PanelProvider
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,
+                // Before the forgery check: a session an Admin revoked ends with its reason, not a 419.
+                EndRevokedStaffSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
                 SubstituteBindings::class,
@@ -101,6 +104,8 @@ final class ConsolePanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
                 RefusedPageStatus::class,
             ])
+            // Livewire updates run the web group, then the persistent middleware: this one again, ahead of the auth middleware.
+            ->persistentMiddleware([EndRevokedStaffSession::class])
             ->authMiddleware([
                 SignOutInactiveStaff::class,
                 EndStaffSessionAfter12Hours::class,
