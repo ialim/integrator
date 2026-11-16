@@ -36,14 +36,25 @@ it('ships the icons the manifest names, a maskable one among them', function () 
         ->toContain("display: 'standalone'")
         ->toContain("purpose: 'maskable'")
         ->toContain('navigateFallbackDenylist: NEVER_ANSWERED')
-        ->toContain('const NEVER_ANSWERED = [/^\/api(\/|$)/, /^\/console(\/|$)/, /^\/up$/];');
+        ->toContain('/^\/api(\/|$)/,')
+        ->toContain('/^\/console(\/|$)/,')
+        ->toContain('/^\/up$/,')
+        ->toContain('/^\/filament(\/|$)/,')
+        ->toContain('/^\/livewire(-[0-9a-f]+)?(\/|$)/,')
+        ->toContain('/^\/storage(\/|$)/,')
+        ->toContain('/^\/sanctum(\/|$)/,')
+        ->toContain('/\.[a-z0-9]+$/i,');
 });
 
-it('never serves the shell for /api, /console or /up', function () {
+it('never serves the shell for /api, /console, /up or the vendor routes beside them', function () {
     $this->withoutVite();
 
     expect($this->getJson('/api/v1/health')->assertOk()->getContent())->not->toContain('<div id="app">')
         ->and($this->get('/api/v1/nothing')->getContent())->not->toContain('<div id="app">')
         ->and($this->get('/up')->getContent())->not->toContain('<div id="app">')
-        ->and($this->get('/console/login')->getContent())->not->toContain('<div id="app">');
+        ->and($this->get('/console/login')->getContent())->not->toContain('<div id="app">')
+        ->and($this->get('/filament/exports/1/download')->getContent())->not->toContain('<div id="app">')
+        ->and($this->get(route('livewire.preview-file', ['filename' => 'nothing.png'], false))->getContent())->not->toContain('<div id="app">')
+        ->and($this->get('/storage/nothing.png')->getContent())->not->toContain('<div id="app">')
+        ->and($this->get('/sanctum/csrf-cookie')->getContent())->not->toContain('<div id="app">');
 });

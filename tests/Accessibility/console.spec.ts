@@ -487,3 +487,46 @@ test('Operations: a rail of its own groups only, and the Staff page refused in w
     await expect(page.getByRole('button', { name: 'Check the chain' })).toHaveCount(0);
     await expectNoViolations(page, 'the refused Audit trail page');
 });
+
+test('with the app installed: the console still signs in and works, every page and Livewire call answered by the server', async ({
+    page,
+}) => {
+    // The app's service worker covers the whole site; opening the app installs it.
+    await page.goto('/');
+    await page.evaluate(async () => {
+        await navigator.serviceWorker.ready;
+    });
+
+    const fromWorker: string[] = [];
+    let livewireCalls = 0;
+    page.on('response', (response) => {
+        const request = response.request();
+        const path = new URL(response.url()).pathname;
+        const isLivewireCall = request.method() === 'POST' && /^\/livewire(-[0-9a-f]+)?\//.test(path);
+        livewireCalls += isLivewireCall ? 1 : 0;
+
+        if ((request.resourceType() === 'document' || isLivewireCall) && response.fromServiceWorker()) {
+            fromWorker.push(`${request.method()} ${path}`);
+        }
+    });
+
+    // The previous test used this account's code; a code can be used once.
+    await waitForNextCode();
+    await firstStep(page, { email: operationsEmail, password: operationsPassword });
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(operationsSecret));
+    await page.waitForURL('**/console/today');
+    await expect(page.getByText('Staff console', { exact: true })).toBeVisible();
+
+    const refused = await page.goto('/console/staff');
+    expect(refused?.status()).toBe(403);
+    await page.goto('/console/today');
+    await expect(railList(page, 'Queues')).toBeVisible();
+
+    // The worker really was in charge of these pages, or the check below proves nothing.
+    expect(
+        await page.evaluate(() => navigator.serviceWorker.controller !== null),
+        'the worker controls the console',
+    ).toBe(true);
+    expect(livewireCalls, 'the sign-in steps went through Livewire').toBeGreaterThan(0);
+    expect(fromWorker, 'console pages and Livewire calls answered by the worker').toEqual([]);
+});

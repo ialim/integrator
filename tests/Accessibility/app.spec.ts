@@ -210,7 +210,13 @@ test.describe('on an iPhone, second visit', () => {
     });
 });
 
-test('the service worker answers app navigations, never /console, /api or /up', async ({ page }) => {
+test('the service worker answers app navigations, never the server routes beside the app', async ({ page }) => {
+    // Livewire's route prefix carries a hash; read it from the console's own page.
+    await page.goto('/console/login');
+    const livewireScript = (await page.locator('script[src*="/livewire"]').first().getAttribute('src')) ?? '';
+    const livewirePrefix = new URL(livewireScript, page.url()).pathname.split('/')[1];
+    expect(livewirePrefix, 'Livewire 4 hashes its route prefix').toMatch(/^livewire-[0-9a-f]+$/);
+
     await page.goto('/');
     await page.evaluate(async () => {
         await navigator.serviceWorker.ready;
@@ -219,8 +225,21 @@ test('the service worker answers app navigations, never /console, /api or /up', 
     const app = await page.goto('/nothing-here');
     expect(app?.fromServiceWorker(), '/nothing-here from the worker').toBe(true);
 
-    for (const path of ['/console/login', '/api/v1/health', '/up']) {
-        const response = await page.goto(path);
-        expect(response?.fromServiceWorker(), `${path} from the network`).toBe(false);
+    for (const path of [
+        '/console/login',
+        '/api/v1/health',
+        '/up',
+        '/filament/exports/1/download',
+        `/${livewirePrefix}/preview-file/nothing.png`,
+        '/storage/nothing.png',
+        '/sanctum/csrf-cookie',
+        '/robots.txt',
+    ]) {
+        // Read the response itself: an empty answer (Sanctum's 204) aborts the page load.
+        const [response] = await Promise.all([
+            page.waitForResponse((answer) => new URL(answer.url()).pathname === path),
+            page.goto(path).catch(() => null),
+        ]);
+        expect(response.fromServiceWorker(), `${path} from the network`).toBe(false);
     }
 });

@@ -9,10 +9,24 @@ import { defineConfig } from 'vitest/config';
 /*
  * The service worker (AD-19). It lives at /sw.js so its scope is the whole
  * site, precaches the app shell's built assets from public/build, and answers
- * app navigations with the shell. It never caches or answers /api, /console
- * or /up, and leaves the console's own assets alone.
+ * app navigations with the shell. It never caches or answers the server's own
+ * routes (/api, /console, /up, and the vendor routes beside the console:
+ * Filament's downloads, Livewire's /livewire-<hash>/, /storage, Sanctum, and
+ * files in public/ such as /robots.txt), and leaves the console's own assets
+ * alone. A new server route outside these belongs on this list, and outside
+ * the shell's catch-all in routes/web.php.
  */
-const NEVER_ANSWERED = [/^\/api(\/|$)/, /^\/console(\/|$)/, /^\/up$/];
+const NEVER_ANSWERED = [
+    /^\/api(\/|$)/,
+    /^\/console(\/|$)/,
+    /^\/up$/,
+    /^\/filament(\/|$)/,
+    /^\/livewire(-[0-9a-f]+)?(\/|$)/,
+    /^\/storage(\/|$)/,
+    /^\/sanctum(\/|$)/,
+    // A path ending in a file extension is a file, never an app page.
+    /\.[a-z0-9]+$/i,
+];
 
 /** The shell's HTML names the hashed assets, so its revision follows them and the view. */
 function shellRevision(entries: { url: string; revision?: string | null }[]): string {
