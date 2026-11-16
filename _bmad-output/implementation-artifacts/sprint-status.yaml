@@ -299,7 +299,7 @@ action_items:
     action: "Write the Epic 2 conventions note: strict_types, Clock injection, final,
       module capability declaration, Filament upgrade checklist"
     owner: "Architect"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
   - id: "epic-1-retro-item-7-decide-whether-api-v1-health-checks-the"
     epic: 1

@@ -268,6 +268,7 @@ flowchart TD
 | Staff-tunable settings | Database rows owned by their module, changed through Actions (and AD-23 where two people are required), never `.env` entries. |
 | Ownership of shared settings | Platform bank details: Orders. WhatsApp opt-ins: Notifications (Identity calls it at Terms acceptance). Order Quote and NGN 5 tolerance: Pricing. |
 | Logging | Structured JSON. Never NIN, full bank details or file contents. Every log line carries the request id. |
+| Code style | No `strict_types`; the Clock by constructor; `final` by default; capabilities declared through `Shared`; a checklist for every Filament upgrade. Details in `docs/decisions/0002-code-conventions-from-epic-2.md`. |
 | Tests | Each module tests its own Actions. Every NFR-10 transition has a concurrency test (two racing calls, one winner) and an idempotent-replay test. Architecture tests enforce AD-1, AD-2 and the foreign-key rule. |
 
 ## Stack
