@@ -1,10 +1,12 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { execSync } from 'node:child_process';
+import { expectNoSidewaysScroll, expectNoViolations } from './checks';
 import { totp } from './totp';
 
 /*
- * The staff console's accessibility criteria (Stories 1.3 to 1.6),
+ * The staff console's accessibility criteria (Stories 1.3 to 1.6), including
+ * the Staff page's dialogs, the session warning and its dialog, and the phone
+ * notice,
  * against a fresh database holding the founder's Admin, one invited
  * Operations account and one active Operations account with Support duties
  * Off (`app:seed-test-state first-admin invited-staff active-operations`).
@@ -22,42 +24,12 @@ const operationsEmail = process.env.A11Y_OPERATIONS_EMAIL ?? 'chika@example.test
 const operationsPassword = process.env.A11Y_OPERATIONS_PASSWORD ?? 'operations-test-passphrase';
 const operationsSecret = process.env.A11Y_OPERATIONS_SECRET ?? 'KRUGS4ZANFZSAYJAORSXG5BAONSWG4TF';
 
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
-
 test.describe.configure({ mode: 'serial' });
 
 let secret = '';
 
-async function expectNoViolations(page: Page, where: string): Promise<void> {
-    // Filament fades dialogs in and out; axe reads a half-faded colour as low contrast.
-    // Endless animations (a loading spinner) never finish, so they are not waited for.
-    await page.waitForFunction(() =>
-        document
-            .getAnimations()
-            .every(
-                (animation) =>
-                    animation.playState !== 'running' || animation.effect?.getTiming().iterations === Infinity,
-            ),
-    );
-    const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-    const summary = results.violations.map(
-        (violation) =>
-            `${violation.id}: ${violation.help}\n    ${violation.nodes.map((node) => node.target.join(' ')).join('\n    ')}`,
-    );
-
-    expect(summary, `axe-core violations on ${where}`).toEqual([]);
-}
-
 async function expectOneTopHeading(page: Page): Promise<void> {
     await expect(page.locator('h1')).toHaveCount(1);
-}
-
-async function expectNoSidewaysScroll(page: Page): Promise<void> {
-    const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-
-    expect(overflow).toBeLessThanOrEqual(0);
 }
 
 /** The ring is drawn on the control, or on Filament's field wrapper around an input. */
@@ -107,7 +79,7 @@ async function expectErrorTiedToField(page: Page, field: Locator, message: strin
 async function expectWorksAt200PercentZoom(page: Page, where: string): Promise<void> {
     const size = page.viewportSize();
     await page.setViewportSize({ width: 640, height: 400 });
-    await expectNoSidewaysScroll(page);
+    await expectNoSidewaysScroll(page, `${where} at 200% zoom`);
     await expectNoViolations(page, `${where} at 200% zoom`);
 
     if (size !== null) {
@@ -225,13 +197,45 @@ test('the Today page and the shell: one heading, skip link, landmarks, 200% zoom
     // 200% zoom of a 1280px window: the rail becomes a menu button, nothing scrolls sideways.
     await page.setViewportSize({ width: 640, height: 400 });
     await expect(page.getByRole('button', { name: 'Open the menu' })).toBeVisible();
-    await expectNoSidewaysScroll(page);
+    await expectNoSidewaysScroll(page, 'the Today page at 200% zoom');
     await expectNoViolations(page, 'the Today page at 200% zoom');
 
     // A phone gets the notice that the console is for a desktop.
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(page.getByText('The staff console is made for a desktop.')).toBeVisible();
-    await expectNoSidewaysScroll(page);
+    await expectNoSidewaysScroll(page, 'the Today page at phone width');
+    await expectNoViolations(page, 'the Today page at phone width, with the phone notice');
+
+    // The session warning: the browser's clock moves to 2 minutes inside the warning, worked out
+    // from the end time and warning length the page carries. The server's session is untouched.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.clock.install();
+    await page.reload();
+    const sessionWarning = page.locator('[data-session-warning]');
+    await expect(sessionWarning).toBeHidden();
+    const untilInsideWarning = await page.locator('#console-session').evaluate((root: HTMLElement) => {
+        const offset = Date.parse(root.dataset.serverTime ?? '') - Date.now();
+        const endsAt = Date.parse(root.dataset.endsAt ?? '');
+        const warningMs = Number(root.dataset.warningSeconds) * 1000;
+
+        return endsAt - (Date.now() + offset) - warningMs + 120_000;
+    });
+    expect(untilInsideWarning, 'the session is not yet in its warning').toBeGreaterThan(0);
+    await page.clock.fastForward(untilInsideWarning);
+    await expect(sessionWarning).toBeVisible();
+    await expect(sessionWarning).toHaveAttribute('role', 'alert');
+    await expect(sessionWarning).toContainText(/Your session ends in \d+ min,\s+at /);
+    await expectNoViolations(page, 'the Today page with the session warning');
+    await expectWorksAt200PercentZoom(page, 'the Today page with the session warning');
+
+    await sessionWarning.getByRole('button', { name: 'Stay signed in' }).click();
+    const stayDialog = page.getByRole('dialog', { name: 'Stay signed in for another 12 hours?' });
+    await expect(stayDialog).toBeVisible();
+    await expect(stayDialog.getByLabel('Code from your authenticator app')).toBeFocused();
+    await expectNoViolations(page, 'the Stay signed in dialog');
+    await stayDialog.getByRole('button', { name: 'Not now' }).click();
+    await expect(stayDialog).toBeHidden();
+    await expect(sessionWarning.getByRole('button', { name: 'Stay signed in' })).toBeFocused();
 });
 
 test('the second step: no violations, a wrong code is refused in words beside the field', async ({ page }) => {
@@ -250,7 +254,7 @@ test('the second step: no violations, a wrong code is refused in words beside th
     await expectNoViolations(page, 'the second step with an error');
 
     await page.setViewportSize({ width: 640, height: 400 });
-    await expectNoSidewaysScroll(page);
+    await expectNoSidewaysScroll(page, 'the second step at 200% zoom');
     await expectNoViolations(page, 'the second step at 200% zoom');
 });
 
@@ -379,6 +383,31 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     await dialog.getByRole('button', { name: 'Keep the account' }).click();
     await expect(dialog).toBeHidden();
     // Wait until no dialog is left, not even one still fading out, before the next scan.
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The resend dialog, on the invited row: closed without sending, so the seeded invitation stays.
+    await page
+        .getByRole('row', { name: new RegExp(inviteeName) })
+        .getByRole('button', { name: 'Send a new invitation' })
+        .click();
+    await expect(dialog.getByRole('heading', { name: `Send ${inviteeName} a new invitation?` })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Send a new invitation' })).not.toHaveClass(/fi-color-danger/);
+    await expectNoViolations(page, 'the resend dialog');
+    await dialog.getByRole('button', { name: 'Do not send' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The reset dialog, on the Operations row: kept, so the Operations account still signs in later.
+    await page
+        .getByRole('row', { name: new RegExp(operationsName) })
+        .getByRole('button', { name: 'Reset sign-in' })
+        .click();
+    await expect(dialog.getByRole('heading', { name: `Reset ${operationsName}'s sign-in?` })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Reset sign-in' })).toHaveClass(/fi-color-danger/);
+    await expect(dialog.getByRole('button', { name: 'Keep their sign-in' })).not.toHaveClass(/fi-color-danger/);
+    await expectNoViolations(page, 'the reset dialog');
+    await dialog.getByRole('button', { name: 'Keep their sign-in' }).click();
+    await expect(dialog).toBeHidden();
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     await expectWorksAt200PercentZoom(page, 'the Staff page');

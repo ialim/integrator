@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright';
 import { devices, expect, test, type Page } from '@playwright/test';
+import { expectNoSidewaysScroll, expectNoViolations } from './checks';
 
 /*
  * The Integrator app shell's accessibility criteria (Story 1.7, UX-DR22):
@@ -8,8 +8,6 @@ import { devices, expect, test, type Page } from '@playwright/test';
  * landmarks and a visible 3px focus ring. It needs the built app (npm run
  * build) served by Laravel; no database rows are needed.
  */
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
-
 const SCREENS = [
     { name: 'the holding screen', path: '/', heading: 'integrator' },
     { name: 'the Install page', path: '/install', heading: 'Install the app' },
@@ -25,24 +23,6 @@ const SIZES = [
     // 200% zoom of a 1280 by 800 window lays out as 640 by 400.
     { label: 'a desktop at 200% zoom', width: 640, height: 400 },
 ];
-
-async function expectNoViolations(page: Page, where: string): Promise<void> {
-    const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-    const summary = results.violations.map(
-        (violation) =>
-            `${violation.id}: ${violation.help}\n    ${violation.nodes.map((node) => node.target.join(' ')).join('\n    ')}`,
-    );
-
-    expect(summary, `axe-core violations on ${where}`).toEqual([]);
-}
-
-async function expectNoSidewaysScroll(page: Page, where: string): Promise<void> {
-    const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-
-    expect(overflow, `sideways scroll on ${where}`).toBeLessThanOrEqual(0);
-}
 
 async function expectShell(page: Page, heading: string): Promise<void> {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
