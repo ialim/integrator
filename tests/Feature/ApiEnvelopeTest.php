@@ -5,7 +5,11 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+uses(RefreshDatabase::class);
 
 beforeEach(fn () => app(Clock::class)->set('2026-10-25T09:00:00Z'));
 afterEach(fn () => app(Clock::class)->reset());
@@ -14,6 +18,30 @@ it('answers the health check with status and server time', function () {
     $this->getJson('/api/v1/health')
         ->assertOk()
         ->assertExactJson(['status' => 'ok', 'server_time' => '2026-10-25T09:00:00Z']);
+});
+
+it('answers 503 in words when the database does not answer', function () {
+    DB::shouldReceive('select')->once()->with('select 1')->andThrow(new RuntimeException('connection refused'));
+
+    $this->getJson('/api/v1/health')
+        ->assertStatus(503)
+        ->assertExactJson([
+            'message' => 'The database is not answering.',
+            'errors' => [],
+            'code' => 'database_unavailable',
+            'server_time' => '2026-10-25T09:00:00Z',
+        ]);
+});
+
+it('starts no session for a health check, even from the app itself', function () {
+    config(['session.driver' => 'database']);
+    $before = DB::table('sessions')->count();
+
+    $this->getJson('/api/v1/health', ['Referer' => config('app.url').'/', 'Origin' => config('app.url')])
+        ->assertOk()
+        ->assertCookieMissing(config('session.cookie'));
+
+    expect(DB::table('sessions')->count())->toBe($before);
 });
 
 it('answers an unknown /api/v1 route with the JSON error envelope, never HTML', function () {

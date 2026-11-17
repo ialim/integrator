@@ -106,7 +106,8 @@ Write down the time you decide to restore. **The 4-hour clock starts then.**
 5. **Point the app at the restored database** when the script asks: in Laravel Cloud, attach the new
    database to `production` (or set its `DB_*` values), attach the new bucket if you restored objects,
    redeploy, bring the app up (`php artisan up`) and restart the queue worker. Then press Enter.
-6. **Check.** The script waits for `/api/v1/health` to answer `"status":"ok"`, prints the rows per table
+6. **Check.** The script waits for `/api/v1/health` to answer `"status":"ok"`, which it does only once the app
+   reaches its database, then prints the rows per table
    and checks that `RESTORE_CHECK_TABLE` has rows. It fails loudly at any step that goes wrong. A healthy
    app is not proof it reads the restored database, so also check the row count **through the app**:
    in Laravel Cloud's command runner run

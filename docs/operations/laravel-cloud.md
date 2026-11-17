@@ -40,7 +40,9 @@ Related: [alerts.md](alerts.md) (heartbeat and email), [restore-runbook.md](rest
   php artisan migrate --force
   ```
 
-- [ ] Health check path for the host's own checks: `/api/v1/health` (returns `{"status":"ok", ...}`).
+- [ ] Health check path for the host's own checks: `/api/v1/health`. It answers `{"status":"ok", ...}` when the app and its
+      database both answer, and `503` with `"code":"database_unavailable"` when the database does not. It starts
+      no session. `/up` answers whenever PHP runs, without checking the database.
 
 ## 3. Database
 

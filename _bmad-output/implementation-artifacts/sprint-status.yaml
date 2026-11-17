@@ -306,5 +306,5 @@ action_items:
     action: "Decide whether /api/v1/health checks the database or leaves the stateful
       session middleware"
     owner: "ialim"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-15.md"
