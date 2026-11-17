@@ -5,8 +5,9 @@
 # restores the copy into a fresh database and fresh object storage, recreates
 # the audit trail's triggers before any write, starts the app on it and checks
 # /api/v1/health; finally the app itself reads the restored rows and objects,
-# and the restored audit trail refuses an UPDATE. Fails loudly at the first
-# broken step.
+# the restored audit trail refuses an UPDATE, and the seals made before the
+# backup still verify on the restored rows. Fails loudly at the first broken
+# step.
 #
 # Usage: bash tests/Ops/drill.sh      (needs Docker; runs locally and in CI)
 set -Eeuo pipefail
@@ -64,6 +65,17 @@ run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${SOURCE_DB}" --command 
         VALUES ('${AUDIT_ROW}', now(), 'system', 'drill.seeded', 'drill_receipts', '{}');
     DROP TRIGGER audit_entries_insert_only ON audit_entries;
     DROP TRIGGER audit_seals_insert_only ON audit_seals;"
+
+echo "==> Seal the audit trail before the backup, as the five-minute schedule would"
+run -e "DB_URL=${SOURCE_DB}" app php artisan audit:seal
+chain_head() {
+    run -e "DB_URL=$1" app php artisan tinker --execute='
+        $head = app(App\Modules\Shared\Queries\AuditChain::class)->head();
+        echo $head === null ? "none" : $head["sequence"]." ".$head["hash"], PHP_EOL;' | tr -d '\r'
+}
+SOURCE_HEAD="$(chain_head "${SOURCE_DB}")"
+[[ "${SOURCE_HEAD}" != none ]] || fail "sealing left no chain head in the source"
+echo "Chain head before the backup: ${SOURCE_HEAD}"
 OBJECT_BODY="drill receipt $(date -u +%Y-%m-%dT%H:%M:%SZ) $RANDOM"
 run app sh -c "printf '%s' '${OBJECT_BODY}' | rclone rcat MINIO:drill-objects/receipts/2026/drill-receipt.txt"
 
@@ -171,6 +183,18 @@ if run app psql --no-psqlrc --set ON_ERROR_STOP=1 --quiet "${RESTORED_DB}"     -
 fi
 audit_action="$(run app psql --no-psqlrc --tuples-only --no-align --quiet "${RESTORED_DB}"     --command "SELECT action FROM audit_entries WHERE id = '${AUDIT_ROW}'" | tr -d '')"
 [[ "${audit_action}" == "drill.seeded" ]] || fail "the restored audit row reads '${audit_action}', not 'drill.seeded'"
+
+echo "==> The seals made before the backup still verify on the restored rows"
+chain="$(run -e "DB_URL=${RESTORED_DB}" app php artisan tinker --execute='
+    $check = app(App\Modules\Shared\Queries\AuditChain::class)->check();
+    echo "intact=", $check->intact ? "yes" : "no", " last=", $check->lastSealedSequence ?? "none",
+        " broken=", $check->brokenAt ?? "none", " problem=", $check->problem ?? "none", PHP_EOL;' | tr -d '\r')"
+echo "${chain}"
+grep -q "^intact=yes " <<< "${chain}" || fail "the restored audit chain does not verify: ${chain}"
+RESTORED_HEAD="$(chain_head "${RESTORED_DB}")"
+[[ "${RESTORED_HEAD}" == "${SOURCE_HEAD}" ]] || fail "the restored chain head '${RESTORED_HEAD}' is not the source's '${SOURCE_HEAD}'"
+grep -q " last=${SOURCE_HEAD%% *} " <<< "${chain}" || fail "the check did not reach the source's last seal: ${chain}"
+echo "Chain intact up to ${SOURCE_HEAD%% *}, head unchanged."
 
 record="$(run app cat /drill/record.md | tr -d '\r')"
 grep -qF "| ${COPY} |" <<< "${record}" || fail "the restore did not pick the newest copy ${COPY}: ${record}"

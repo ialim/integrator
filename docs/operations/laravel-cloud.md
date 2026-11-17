@@ -18,6 +18,10 @@ Related: [alerts.md](alerts.md) (heartbeat and email), [restore-runbook.md](rest
 - [ ] Environments: `production` (this document) and `staging`. Staging uses the same settings with
       `APP_ENV=staging`, its own database and bucket, and synthetic data only. **Never copy or restore
       production data into staging.**
+- [ ] Staging's Clock can be set, so timers can be tried without waiting (TC-2): `php artisan clock:set
+      2026-12-01T09:00:00Z`, `clock:advance "48 hours"`, `clock:show` and `clock:reset`. The instant is kept
+      in the shared cache, so web, queue and scheduler all follow it until `clock:reset`. Production
+      refuses these commands.
 
 ## 2. Compute
 

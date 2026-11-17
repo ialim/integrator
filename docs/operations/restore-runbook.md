@@ -164,7 +164,9 @@ restores into a **throwaway** environment and never touches production or stagin
    prove it once more by hand:
    `psql "<the throwaway database URL>" --command "UPDATE audit_entries SET action = action"` must fail with
    "The audit trail is insert-only". Check a handful of recent records by eye against what you know
-   happened before the copy.
+   happened before the copy. Then check the audit chain:
+   `DB_URL=<the throwaway database URL> php artisan tinker --execute='var_dump(app(App\Modules\Shared\Queries\AuditChain::class)->check());'`
+   must show `intact` true, with `lastSealedSequence` matching the last sealing run logged before the copy.
 5. Delete the throwaway database and environment, and the local copy of the key if you made one.
 6. Add a row to the drill log below and commit it.
 
@@ -179,7 +181,10 @@ a fresh database and bucket, starts the app on them, checks `/api/v1/health`, ha
 restored rows and object (`RESTORE_APP_CHECK_CMD`), and prints the elapsed time (also in the CI job
 summary). The seeded database has an audit row and **no** trigger on either audit table, so the drill proves
 the restore recreates both before any write: an `UPDATE` on the restored `audit_entries` and `audit_seals`
-must be refused and the row left as it was. It also checks that a backup against an unreachable database fails at the `dump` step and
+must be refused and the row left as it was. The seeded row is sealed (`php artisan audit:seal`) before the
+backup, and after the restore the app's own chain check must find the chain intact up to that seal, with
+the same chain head as before the backup. This proves that seals made on one server still verify on the
+restored copy. It also checks that a backup against an unreachable database fails at the `dump` step and
 leaves nothing in the bucket, that `restore.sh` refuses a database that is not empty, and that it picks
 the newest copy when an older one is present. It proves the scripts, not the real copy or the real key,
 so it does not replace the quarterly drill.
