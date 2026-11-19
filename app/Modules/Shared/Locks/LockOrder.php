@@ -13,6 +13,10 @@ final class LockOrder
 {
     public const ROOTS = [
         'staff_member',
+        // Catalogue: a range, and with it Pricing's markup for the range.
+        'product_range',
+        // Pricing: the margin floor and later settings.
+        'pricing_setting',
     ];
 
     public static function rank(string $root): int

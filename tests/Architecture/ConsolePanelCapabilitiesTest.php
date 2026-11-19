@@ -1,9 +1,10 @@
 <?php
 
+use App\Modules\Pricing\Filament\PricingAndRules;
 use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\Capabilities\NeedsNoCapability;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use App\Modules\Staff\Capabilities\CapabilityRegistry;
-use App\Modules\Staff\Filament\GuardedByCapability;
 use App\Modules\Staff\Filament\Pages\AcceptInvitationPage;
 use App\Modules\Staff\Filament\Pages\SignIn;
 use App\Modules\Staff\Filament\Pages\Today;
@@ -75,7 +76,7 @@ it('declares a capability on every page and resource the console panel serves, n
     expect($problems)->toBeEmpty("The console serves classes without a checked capability:\n  ".implode("\n  ", $problems));
 });
 
-it('walks the Staff page, Today, sign-in and invitation pages', function () {
+it('walks the Staff page, Today, sign-in and invitation pages, and the pages other modules add', function () {
     $panel = Filament::getPanel(StaffMember::PANEL);
     $served = collect(Route::getRoutes()->getRoutes())
         ->filter(fn ($route) => str_starts_with((string) $route->getName(), 'filament.'.StaffMember::PANEL.'.'))
@@ -88,5 +89,6 @@ it('walks the Staff page, Today, sign-in and invitation pages', function () {
         ->toContain(SignIn::class)
         ->toContain(AcceptInvitationPage::class)
         ->toContain(ListStaff::class)
+        ->toContain(PricingAndRules::class)
         ->and($panel->getResources())->toContain(StaffResource::class);
 });

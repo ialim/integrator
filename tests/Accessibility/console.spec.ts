@@ -4,15 +4,18 @@ import { expectNoSidewaysScroll, expectNoViolations } from './checks';
 import { totp } from './totp';
 
 /*
- * The staff console's accessibility criteria (Stories 1.3 to 1.6), including
- * the Staff page's dialogs, the session warning and its dialog, and the phone
- * notice,
+ * The staff console's accessibility criteria (Stories 1.3 to 1.6 and 2.1),
+ * including the Staff page's dialogs, the Pricing and rules page's dialogs,
+ * the session warning and its dialog, and the phone notice,
  * against a fresh database holding the founder's Admin, one invited
- * Operations account and one active Operations account with Support duties
- * Off (`app:seed-test-state first-admin invited-staff active-operations`).
+ * Operations account, one active Operations account with Support duties
+ * Off, one active Finance account and two Product Ranges
+ * (`app:seed-test-state first-admin invited-staff active-operations
+ * active-finance product-ranges`).
  * The test values match database/factories/Staff/FirstAdminFactory.php,
- * StaffAccountFactory.php, InvitedStaffScenario.php and
- * ActiveOperationsScenario.php.
+ * StaffAccountFactory.php, InvitedStaffScenario.php,
+ * ActiveOperationsScenario.php, ActiveFinanceScenario.php and
+ * database/factories/Catalogue/ProductRangesScenario.php.
  */
 const email = process.env.A11Y_STAFF_EMAIL ?? 'founder@example.test';
 const password = process.env.A11Y_STAFF_PASSWORD ?? 'ledger-test-password';
@@ -305,7 +308,7 @@ test('the Staff page: caption and headings, J, K, Enter and /, dialogs and 200% 
     );
 
     const table = page.getByRole('table');
-    await expect(table.locator('caption')).toContainText('Staff accounts: 3 people.');
+    await expect(table.locator('caption')).toContainText('Staff accounts: 4 people.');
     await expect(table.getByRole('columnheader')).toHaveText(['Name', 'Role', 'Duties', 'Status', 'Changes']);
     await expect(page.getByRole('row', { name: new RegExp(inviteeName) })).toContainText('Invited');
     await expectNoViolations(page, 'the Staff page');
@@ -482,6 +485,90 @@ test('the Audit trail page: Watch group, the chain check announced, Look up erro
     await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
+test('the Pricing and rules page: Rules group, the caption, the floor, dialogs with errors in words, History and 200% zoom', async ({
+    page,
+}) => {
+    await waitForNextCode();
+    await firstStep(page);
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(secret));
+    await page.waitForURL('**/console/today');
+
+    await page.goto('/console/pricing-and-rules');
+    await expectOneTopHeading(page);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pricing and rules');
+    await expect(railList(page, 'Rules').getByRole('link', { name: 'Pricing and rules' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+
+    const table = page.getByRole('table');
+    await expect(table.locator('caption')).toContainText('Platform Markup by Product Range');
+    await expect(table.getByRole('columnheader')).toHaveText([
+        'Product Range',
+        'Compliance',
+        'Markup',
+        'Products',
+        'Status',
+        'Changes',
+    ]);
+    await expect(page.getByRole('row', { name: /IP cameras/ })).toContainText('25%');
+    await expect(page.locator('[data-margin-floor]')).toContainText('8% over Supplier Cost');
+    await expect(page.getByText('Set by an Admin. Only an Admin can change these.')).toHaveCount(0);
+    await expectNoViolations(page, 'the Pricing and rules page');
+
+    // The add dialog.
+    await page.getByRole('button', { name: 'Add a Product Range' }).click();
+    const dialog = page.locator('.fi-modal-open .fi-modal-window');
+    await expect(dialog.getByRole('heading', { name: 'Add a Product Range' })).toBeVisible();
+    await expectNoViolations(page, 'the add range dialog');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The markup dialog: a markup below zero is refused in a sentence beside the field, and nothing is saved.
+    await page
+        .getByRole('row', { name: /IP cameras/ })
+        .getByRole('button', { name: 'Change markup' })
+        .click();
+    await expect(dialog.getByRole('heading', { name: 'Change the markup for IP cameras?' })).toBeVisible();
+    await expectNoViolations(page, 'the markup dialog');
+    await dialog.getByLabel('New markup, as a percentage over Supplier Cost').fill('-1');
+    await dialog.getByLabel('Reason').fill('Checking the refusal');
+    await dialog.getByRole('button', { name: 'Save the markup' }).click();
+    await expect(dialog.getByText('A markup cannot be below zero.')).toBeVisible();
+    await expectNoViolations(page, 'the markup dialog with an error');
+    await expectWorksAt200PercentZoom(page, 'the markup dialog');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('row', { name: /IP cameras/ })).toContainText('25%');
+
+    // The retire dialog: red only on the irreversible button; kept, so the range stays Active.
+    await page
+        .getByRole('row', { name: /Recorders/ })
+        .getByRole('button', { name: 'Retire' })
+        .click();
+    await expect(dialog.getByRole('heading', { name: 'Retire Recorders?' })).toBeVisible();
+    await expect(dialog).toContainText('This cannot be undone');
+    await expect(dialog.getByRole('button', { name: 'Retire Recorders' })).toHaveClass(/fi-color-danger/);
+    await expect(dialog.getByRole('button', { name: 'Keep the range' })).not.toHaveClass(/fi-color-danger/);
+    await expectNoViolations(page, 'the retire dialog');
+    await dialog.getByRole('button', { name: 'Keep the range' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // History: read-only, the range and its markup together.
+    await page
+        .getByRole('row', { name: /IP cameras/ })
+        .getByRole('button', { name: 'History' })
+        .click();
+    await expect(dialog.getByRole('heading', { name: 'History of IP cameras' })).toBeVisible();
+    await expect(dialog.getByRole('list', { name: 'History, newest first' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^(Edit|Delete)/ })).toHaveCount(0);
+    await expectNoViolations(page, 'the range History dialog');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await expectWorksAt200PercentZoom(page, 'the Pricing and rules page');
+});
+
 test('Operations: a rail of its own groups only, and the Staff page refused in words naming who can', async ({
     page,
 }) => {
@@ -515,6 +602,22 @@ test('Operations: a rail of its own groups only, and the Staff page refused in w
     await expect(page.getByText('The Audit trail page is for Admins. Ask Ada Founder.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Check the chain' })).toHaveCount(0);
     await expectNoViolations(page, 'the refused Audit trail page');
+
+    // The Pricing and rules page opens read-only: the same values, no change buttons, nothing shown disabled.
+    await page.goto('/console/pricing-and-rules');
+    await expect(railList(page, 'Rules').getByRole('link', { name: 'Pricing and rules' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+    await expectOneTopHeading(page);
+    await expect(page.getByText('Set by an Admin. Only an Admin can change these.')).toBeVisible();
+    await expect(page.getByRole('table').locator('caption')).toContainText('Platform Markup by Product Range');
+    await expect(
+        page.getByRole('button', { name: /^(Add a Product Range|Change markup|Rename|Retire|Change the floor)/ }),
+    ).toHaveCount(0);
+    await expect(page.locator('main [disabled]')).toHaveCount(0);
+    await expectNoViolations(page, 'the read-only Pricing and rules page');
+    await expectWorksAt200PercentZoom(page, 'the read-only Pricing and rules page');
 });
 
 test('with the app installed: the console still signs in and works, every page and Livewire call answered by the server', async ({

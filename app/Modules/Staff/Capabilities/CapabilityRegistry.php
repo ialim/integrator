@@ -2,6 +2,8 @@
 
 namespace App\Modules\Staff\Capabilities;
 
+use App\Modules\Shared\Capabilities\CapabilityDeclarations;
+use App\Modules\Shared\Capabilities\CapabilityGroup;
 use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
@@ -15,41 +17,26 @@ use ReflectionClass;
  * Admin, which holds every capability). Page access, the rail, every Action's
  * server check and the Staff page's Duties column all read it.
  *
- * A container singleton; the Staff module declares its own capabilities from
- * its service provider. Another module cannot reach this registry yet (it is
- * private to `Staff`, AD-2): the first module that adds a capability needs a
- * public way in first, such as a declaration list in `Shared` that the
- * registry reads. A person's groups are read from their account on every
- * request, so switching Support duties takes effect on their next request,
- * with no release.
+ * A container singleton. Every module, Staff included, declares its
+ * capabilities into {@see CapabilityDeclarations} in `Shared` (ADR 0002,
+ * point 4); the registry reads them when asked, so every module's names are
+ * in before `has()` or `names()` answers. It stays the only place that
+ * answers who holds a capability. A person's groups are read from their
+ * account on every request, so switching Support duties takes effect on
+ * their next request, with no release.
  */
 final class CapabilityRegistry
 {
     public const NOT_ACTIVE = 'Your account is not active, so nothing was changed.';
 
-    /** @var array<string, array{what: string, groups: list<CapabilityGroup>}> */
-    private array $capabilities = [];
-
     /** @var array<string, string|null> */
     private array $declared = [];
 
-    /**
-     * Declares $capability, held by $groups and by Admin. $what names it in
-     * words for a refusal: "The Support desk".
-     */
-    public function declare(string $capability, string $what, CapabilityGroup ...$groups): void
-    {
-        if (isset($this->capabilities[$capability])) {
-            throw new LogicException("The capability {$capability} is declared twice.");
-        }
-
-        $holders = array_values(array_filter($groups, fn (CapabilityGroup $group): bool => $group !== CapabilityGroup::Admin));
-        $this->capabilities[$capability] = ['what' => $what, 'groups' => [...$holders, CapabilityGroup::Admin]];
-    }
+    public function __construct(private readonly CapabilityDeclarations $declarations) {}
 
     public function has(string $capability): bool
     {
-        return isset($this->capabilities[$capability]);
+        return isset($this->capabilities()[$capability]);
     }
 
     /**
@@ -57,7 +44,7 @@ final class CapabilityRegistry
      */
     public function names(): array
     {
-        return array_keys($this->capabilities);
+        return array_keys($this->capabilities());
     }
 
     /**
@@ -78,7 +65,7 @@ final class CapabilityRegistry
      */
     public function groupsOf(StaffMember $member): array
     {
-        $groups = [CapabilityGroup::ofRole($member->role)];
+        $groups = [self::groupOfRole($member->role)];
 
         if ($member->role === StaffRole::Operations && $member->support_duties && $member->status !== StaffAccountStatus::Deactivated) {
             $groups[] = CapabilityGroup::SupportDuties;
@@ -230,7 +217,17 @@ final class CapabilityRegistry
     /** What a new account of $role looks after (Support duties start Off). */
     public function dutiesOfRole(StaffRole $role): string
     {
-        return $this->dutiesOf([CapabilityGroup::ofRole($role)]);
+        return $this->dutiesOf([self::groupOfRole($role)]);
+    }
+
+    /** The group a role holds by itself, before any switch. */
+    private static function groupOfRole(StaffRole $role): CapabilityGroup
+    {
+        return match ($role) {
+            StaffRole::Finance => CapabilityGroup::Finance,
+            StaffRole::Operations => CapabilityGroup::Operations,
+            StaffRole::Admin => CapabilityGroup::Admin,
+        };
     }
 
     /**
@@ -250,6 +247,17 @@ final class CapabilityRegistry
      */
     private function entry(string $capability): array
     {
-        return $this->capabilities[$capability] ?? throw new LogicException("The capability {$capability} is not in the registry.");
+        return $this->capabilities()[$capability] ?? throw new LogicException("The capability {$capability} is not in the registry.");
+    }
+
+    /**
+     * Every module's declarations, read when asked, never copied: a module
+     * may declare after the registry was first built.
+     *
+     * @return array<string, array{what: string, groups: list<CapabilityGroup>}>
+     */
+    private function capabilities(): array
+    {
+        return $this->declarations->all();
     }
 }

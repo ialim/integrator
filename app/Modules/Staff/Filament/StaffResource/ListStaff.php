@@ -3,7 +3,8 @@
 namespace App\Modules\Staff\Filament\StaffResource;
 
 use App\Modules\Notifications\Queries\EmailDeliveries;
-use App\Modules\Shared\Queries\AuditTrail;
+use App\Modules\Shared\Filament\AuditHistory;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use App\Modules\Shared\Queries\OutboxEvents;
 use App\Modules\Shared\StatusTables\TransitionRefused;
 use App\Modules\Staff\Actions\CreateStaffAccount;
@@ -16,8 +17,6 @@ use App\Modules\Staff\Actions\SetSupportDuties;
 use App\Modules\Staff\Capabilities\CapabilityRefused;
 use App\Modules\Staff\Capabilities\CapabilityRegistry;
 use App\Modules\Staff\Events\StaffInvitationIssued;
-use App\Modules\Staff\Filament\AuditWords;
-use App\Modules\Staff\Filament\GuardedByCapability;
 use App\Modules\Staff\Filament\RefusalWords;
 use App\Modules\Staff\Filament\StaffResource;
 use App\Modules\Staff\Locks\LockStaffMember;
@@ -70,7 +69,7 @@ final class ListStaff extends Page
     public const INVITATION_IN_DOUBT = 'The invitation email may not have arrived. Send a new invitation.';
 
     /** The most entries a History dialog shows; it says so when there are more. */
-    public const HISTORY_LIMIT = 200;
+    public const HISTORY_LIMIT = AuditHistory::LIMIT;
 
     protected static string $resource = StaffResource::class;
 
@@ -263,19 +262,10 @@ final class ListStaff extends Page
             ->modalWidth(Width::ThreeExtraLarge)
             ->modalHeading(fn (array $arguments): string => 'History of '.$this->nameOf($arguments))
             ->modalDescription('Who did what to this account and when, newest first, from the audit trail. Read-only: it cannot be edited.')
-            ->modalContent(function (array $arguments): View {
-                $entries = app(AuditTrail::class)->historyOf((new StaffMember)->getTable(), $this->idOf($arguments), self::HISTORY_LIMIT + 1);
-                $shown = array_slice($entries, 0, self::HISTORY_LIMIT);
-                $words = app(AuditWords::class);
-
-                return view('staff::audit-history', [
-                    'entries' => $shown,
-                    'more' => count($entries) > self::HISTORY_LIMIT,
-                    'limit' => self::HISTORY_LIMIT,
-                    'words' => $words,
-                    'names' => $words->staffNames($shown),
-                ]);
-            })
+            ->modalContent(fn (array $arguments): View => app(AuditHistory::class)->view(
+                [[(new StaffMember)->getTable(), $this->idOf($arguments)]],
+                'Nothing has been recorded for this account yet.',
+            ))
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Close');
     }

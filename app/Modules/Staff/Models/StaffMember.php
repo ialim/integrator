@@ -3,6 +3,7 @@
 namespace App\Modules\Staff\Models;
 
 use App\Modules\Shared\Contracts\Clock;
+use App\Modules\Shared\Filament\ConsoleRail;
 use App\Modules\Shared\Support\HasUuidV7;
 use App\Modules\Staff\Actions\SetAuthenticatorSecret;
 use App\Modules\Staff\Actions\SetRecoveryCodes;
@@ -43,7 +44,7 @@ final class StaffMember extends Authenticatable implements FilamentUser, HasAppA
 {
     use HasUuidV7;
 
-    public const PANEL = 'console';
+    public const PANEL = ConsoleRail::PANEL;
 
     /** Personal and secret columns: the audit trail records only that they changed. */
     public const PERSONAL_FIELDS = ['name', 'email', 'password', 'app_authentication_secret', 'app_authentication_recovery_codes', 'invitation_token_hash'];

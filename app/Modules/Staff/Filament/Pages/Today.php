@@ -3,9 +3,9 @@
 namespace App\Modules\Staff\Filament\Pages;
 
 use App\Modules\Shared\Capabilities\NeedsCapability;
+use App\Modules\Shared\Filament\ConsoleRail;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use App\Modules\Staff\Capabilities\StaffCapabilities;
-use App\Modules\Staff\Filament\ConsoleRail;
-use App\Modules\Staff\Filament\GuardedByCapability;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;

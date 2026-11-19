@@ -4,7 +4,7 @@
     goes to the search box (resources/console/table-keys.ts).
 
     A member without the capability never sees this view: GuardedByCapability
-    swaps in staff::refused-page, inside the console shell, sent as 403.
+    swaps in shared::refused-page, inside the console shell, sent as 403.
 --}}
 <x-filament-panels::page>
     @php($members = $this->getMembers())

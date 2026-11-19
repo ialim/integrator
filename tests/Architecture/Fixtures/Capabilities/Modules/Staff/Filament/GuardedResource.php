@@ -3,7 +3,7 @@
 namespace ArchFixtures\Capabilities\Modules\Staff\Filament;
 
 use App\Modules\Shared\Capabilities\NeedsCapability;
-use App\Modules\Staff\Filament\GuardedByCapability;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use Filament\Resources\Resource;
 
 // Fixture: a console resource that declares a known capability and uses the guard is not reported.

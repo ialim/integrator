@@ -179,12 +179,12 @@ jobs:
       - run: npm ci
       - name: Build the app and console assets
         run: npm run build
-      - name: Prepare a fresh database with the founder's Admin, one invited staff member and one active Operations member
+      - name: Prepare a fresh database with the founder's Admin, one invited staff member, active Operations and Finance members, and two Product Ranges
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
-          php artisan app:seed-test-state first-admin invited-staff active-operations
+          php artisan app:seed-test-state first-admin invited-staff active-operations active-finance product-ranges
       - name: Start the app
         run: |
           # Laravel's router script serves from the current directory, so start it in public/.
@@ -196,7 +196,7 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8000/console/login
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
-      - name: Every app shell screen, and the console's sign-in, second-step, set-up, Today, Staff, refused and invitation pages and rail per role, have no axe-core violations
+      - name: Every app shell screen, and the console's sign-in, second-step, set-up, Today, Staff, Pricing and rules, refused and invitation pages and rail per role, have no axe-core violations
         run: npm run test:a11y
       - name: Keep the report and server log on failure
         if: failure()

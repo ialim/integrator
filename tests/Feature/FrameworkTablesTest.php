@@ -20,6 +20,9 @@ it('creates the framework tables and each module\'s own tables when migrated', f
         'cache', 'cache_locks', 'failed_jobs', 'job_batches', 'jobs', 'migrations',
         'notification_deliveries', // Notifications
         'outbox_events', // Shared
+        'pricing_settings', // Pricing
+        'product_ranges', // Catalogue
+        'range_markups', // Pricing
         'sessions',
         'staff_members', 'staff_sessions', // Staff
     ]);

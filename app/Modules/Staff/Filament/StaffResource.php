@@ -3,6 +3,8 @@
 namespace App\Modules\Staff\Filament;
 
 use App\Modules\Shared\Capabilities\NeedsCapability;
+use App\Modules\Shared\Filament\ConsoleRail;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use App\Modules\Staff\Capabilities\StaffCapabilities;
 use App\Modules\Staff\Filament\StaffResource\ListStaff;
 use App\Modules\Staff\Models\StaffMember;

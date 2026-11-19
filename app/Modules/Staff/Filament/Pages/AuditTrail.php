@@ -3,13 +3,13 @@
 namespace App\Modules\Staff\Filament\Pages;
 
 use App\Modules\Shared\Capabilities\NeedsCapability;
+use App\Modules\Shared\Filament\AuditWords;
+use App\Modules\Shared\Filament\ConsoleRail;
+use App\Modules\Shared\Filament\GuardedByCapability;
 use App\Modules\Shared\Queries\AuditChain;
 use App\Modules\Shared\Queries\AuditEntry;
 use App\Modules\Shared\Queries\AuditTrail as AuditTrailQuery;
 use App\Modules\Staff\Capabilities\StaffCapabilities;
-use App\Modules\Staff\Filament\AuditWords;
-use App\Modules\Staff\Filament\ConsoleRail;
-use App\Modules\Staff\Filament\GuardedByCapability;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;

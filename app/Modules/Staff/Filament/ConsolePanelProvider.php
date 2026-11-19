@@ -2,6 +2,7 @@
 
 namespace App\Modules\Staff\Filament;
 
+use App\Modules\Shared\Filament\ConsoleRail;
 use App\Modules\Staff\Filament\Pages\AcceptInvitationPage;
 use App\Modules\Staff\Filament\Pages\AuditTrail;
 use App\Modules\Staff\Filament\Pages\SignIn;
@@ -37,6 +38,11 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
  * and a session that ends 12 hours after sign-in. Every page and resource
  * declares its capability; the rail and each page load follow the capability
  * registry (FR-52).
+ *
+ * Other modules add their own pages and resources from their service
+ * providers through `Panel::configureUsing()`, for the panel whose id is
+ * {@see ConsoleRail::PANEL} only; Filament appends them to the ones below, so
+ * this provider never lists another module's classes.
  */
 final class ConsolePanelProvider extends PanelProvider
 {
@@ -74,7 +80,7 @@ final class ConsolePanelProvider extends PanelProvider
             ->breadcrumbs(false)
             // The rail: Queues, Work, Money, Catalogue, People, Rules, Watch, each shown only when it holds a page the member can use.
             ->navigationGroups(ConsoleRail::groups())
-            // Registered explicitly: Today in Queues, the Audit trail in Watch.
+            // Registered explicitly: Today in Queues, the Audit trail in Watch. Other modules append their own.
             ->pages([Today::class, AuditTrail::class])
             ->resources([StaffResource::class])
             ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn () => ConsoleShell::title())

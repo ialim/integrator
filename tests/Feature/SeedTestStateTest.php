@@ -1,10 +1,14 @@
 <?php
 
 use App\Console\Commands\SeedTestState;
+use App\Modules\Catalogue\Queries\ProductRanges;
+use App\Modules\Pricing\Queries\PricingRules;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
 use App\Modules\Staff\StatusTables\StaffAccountStatus;
 use Database\Factories\ActionFactory;
+use Database\Factories\Catalogue\ProductRangesScenario;
+use Database\Factories\Staff\ActiveFinanceScenario;
 use Database\Factories\Staff\ActiveOperationsScenario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -69,4 +73,21 @@ it('seeds the accessibility run\'s state: the founder, an invitee and an active 
         ->and($operations->support_duties)->toBeFalse()
         ->and($operations->getAppAuthenticationSecret())->toBe(ActiveOperationsScenario::SECRET)
         ->and(Hash::check(ActiveOperationsScenario::PASSWORD, (string) $operations->password))->toBeTrue();
+});
+
+it('seeds an active Finance member and two Product Ranges at the starting markup, through Actions', function () {
+    $this->artisan('app:seed-test-state', ['scenarios' => ['first-admin', 'active-finance', 'product-ranges']])->assertSuccessful();
+
+    $finance = StaffMember::query()->where('email', ActiveFinanceScenario::EMAIL)->firstOrFail();
+    $ranges = app(ProductRanges::class)->all();
+    $markups = app(PricingRules::class)->markups();
+
+    expect($finance->role)->toBe(StaffRole::Finance)
+        ->and($finance->status)->toBe(StaffAccountStatus::Active)
+        ->and(array_map(fn ($range) => $range->name, $ranges))->toBe(array_keys(ProductRangesScenario::RANGES))
+        ->and(array_map(fn ($markup) => $markup->words(), array_values($markups)))->toBe(['25%', '25%']);
+
+    // Seeding again adds nothing.
+    $this->artisan('app:seed-test-state', ['scenarios' => ['product-ranges']])->assertSuccessful();
+    expect(app(ProductRanges::class)->all())->toHaveCount(2);
 });

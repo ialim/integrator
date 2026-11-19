@@ -1,17 +1,20 @@
 {{--
     A record's read-only History panel: who did what and when, newest first,
     from the audit trail. Names are shown for staff actors; values only where
-    the row holds them (a personal field reads "changed"). No Edit or Delete.
+    the row holds them (a personal field reads "changed"); a reason as written.
+    No Edit or Delete. Any module's console page shows it through
+    \App\Modules\Shared\Filament\AuditHistory.
 
     @var list<\App\Modules\Shared\Queries\AuditEntry> $entries
-    @var \App\Modules\Staff\Filament\AuditWords $words
+    @var \App\Modules\Shared\Filament\AuditWords $words
     @var array<string, string> $names
     @var bool $more
     @var int $limit
+    @var string $nothingYet
 --}}
 @php($now = app(\App\Modules\Shared\Contracts\Clock::class)->now())
 @if ($entries === [])
-    <p>Nothing has been recorded for this account yet.</p>
+    <p>{{ $nothingYet }}</p>
 @else
     <ol class="console-history" aria-label="History, newest first">
         @foreach ($entries as $entry)

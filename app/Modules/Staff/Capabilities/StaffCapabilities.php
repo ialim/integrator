@@ -2,10 +2,13 @@
 
 namespace App\Modules\Staff\Capabilities;
 
+use App\Modules\Shared\Capabilities\CapabilityDeclarations;
+use App\Modules\Shared\Capabilities\CapabilityGroup;
+
 /**
- * The Staff module's own capabilities. Other modules declare theirs in the
- * same registry as their screens and Actions arrive. Admin holds every
- * capability without being listed.
+ * The Staff module's own capabilities. Every module declares its own into
+ * the same {@see CapabilityDeclarations} from its service provider. Admin
+ * holds every capability without being listed.
  */
 final class StaffCapabilities
 {
@@ -21,11 +24,11 @@ final class StaffCapabilities
     /** The Audit trail page, its chain check and "Look up": Admins only. */
     public const VIEW_AUDIT = 'audit.view';
 
-    public static function declareIn(CapabilityRegistry $registry): void
+    public static function declareIn(CapabilityDeclarations $declarations): void
     {
-        $registry->declare(self::TODAY, 'The Today page', CapabilityGroup::Finance, CapabilityGroup::Operations, CapabilityGroup::SupportDuties);
-        $registry->declare(self::MANAGE_STAFF, 'Managing staff accounts and their Support duties');
-        $registry->declare(self::SUPPORT_DESK, 'The Support desk', CapabilityGroup::SupportDuties);
-        $registry->declare(self::VIEW_AUDIT, 'Reading the audit trail and looking up an identifier in it');
+        $declarations->declare(self::TODAY, 'The Today page', CapabilityGroup::Finance, CapabilityGroup::Operations, CapabilityGroup::SupportDuties);
+        $declarations->declare(self::MANAGE_STAFF, 'Managing staff accounts and their Support duties');
+        $declarations->declare(self::SUPPORT_DESK, 'The Support desk', CapabilityGroup::SupportDuties);
+        $declarations->declare(self::VIEW_AUDIT, 'Reading the audit trail and looking up an identifier in it');
     }
 }

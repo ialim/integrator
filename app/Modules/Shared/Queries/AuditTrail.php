@@ -55,6 +55,31 @@ final class AuditTrail
     }
 
     /**
+     * One History for several subjects that belong together (a Product Range
+     * and its Platform Markup), newest first, interleaved by sequence.
+     *
+     * @param  list<array{0: string, 1: string}>  $subjects  [subject type, subject id] pairs
+     * @return list<AuditEntry>
+     */
+    public function historyOfEach(array $subjects, int $limit = 200): array
+    {
+        if ($subjects === []) {
+            return [];
+        }
+
+        return $this->map(DB::table('audit_entries')
+            ->where(function ($query) use ($subjects): void {
+                foreach ($subjects as [$type, $id]) {
+                    $query->orWhere(fn ($subject) => $subject->where('subject_type', $type)->where('subject_id', $id));
+                }
+            })
+            ->orderByDesc('sequence')
+            ->limit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
      * The latest entries across the trail, newest first.
      *
      * @return list<AuditEntry>

@@ -4,11 +4,11 @@ import { defineConfig, devices } from '@playwright/test';
  * The automated accessibility check (axe-core) of every Integrator app shell
  * screen (tests/Accessibility/app.spec.ts: built assets only, no rows needed)
  * and of the staff console's sign-in,
- * second-step, set-up, Today, Staff, Audit trail, refused and invitation
- * pages, the Staff page's dialogs, the session warning and its dialog, the
+ * second-step, set-up, Today, Staff, Audit trail, Pricing and rules, refused
+ * and invitation pages, the Staff and Pricing and rules pages' dialogs, the session warning and its dialog, the
  * phone notice, and the rail per role. The shared checks are in checks.ts.
  * It needs the app running with a fresh database seeded by
- * `php artisan app:seed-test-state first-admin invited-staff active-operations`; CI does this
+ * `php artisan app:seed-test-state first-admin invited-staff active-operations active-finance product-ranges`; CI does this
  * in the `accessibility` job. A11Y_BASE_URL points it elsewhere.
  */
 export default defineConfig({

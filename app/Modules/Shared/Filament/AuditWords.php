@@ -1,29 +1,36 @@
 <?php
 
-namespace App\Modules\Staff\Filament;
+namespace App\Modules\Shared\Filament;
 
 use App\Modules\Shared\Audit\Actor;
+use App\Modules\Shared\Audit\ActorNames;
 use App\Modules\Shared\Audit\PersonalFields;
+use App\Modules\Shared\Capabilities\CapabilityGroup;
 use App\Modules\Shared\Queries\AuditEntry;
 use App\Modules\Shared\Queries\ChainCheck;
-use App\Modules\Staff\Models\StaffMember;
-use App\Modules\Staff\Models\StaffRole;
 use Illuminate\Support\Str;
 
 /**
  * Audit rows in words, for the Audit trail page and each record's History
- * panel: who did what and when, names shown for staff actors, and values
- * only where the row holds them (a personal field reads "changed").
+ * panel in any module: who did what and when, names shown for staff actors
+ * (from {@see ActorNames}), and values only where the row holds them (a
+ * personal field reads "changed"). A change's `reason` is shown as written.
  */
 final class AuditWords
 {
     /** Subject tables in words. */
     private const RECORDS = [
         'staff_members' => 'Staff account',
+        'product_ranges' => 'Product Range',
+        'range_markups' => 'Platform Markup',
+        'pricing_settings' => 'Pricing setting',
     ];
 
+    public function __construct(private readonly ActorNames $actorNames) {}
+
     /**
-     * Names of the staff members the entries mention, by id.
+     * Names of the staff members the entries mention, by id: actors, the
+     * people they acted for, and subjects that are staff accounts.
      *
      * @param  list<AuditEntry>  $entries
      * @return array<string, string>
@@ -41,17 +48,12 @@ final class AuditWords
                 $ids[] = $entry->actingFor;
             }
 
-            if ($entry->subjectType === (new StaffMember)->getTable() && $entry->subjectId !== null) {
+            if ($entry->subjectId !== null) {
                 $ids[] = $entry->subjectId;
             }
         }
 
-        if ($ids === []) {
-            return [];
-        }
-
-        /** @var array<string, string> */
-        return StaffMember::query()->whereIn('id', array_values(array_unique($ids)))->pluck('name', 'id')->all();
+        return $this->actorNames->namesOf(array_values(array_unique($ids)));
     }
 
     /**
@@ -68,7 +70,7 @@ final class AuditWords
         };
 
         if ($entry->actingAs !== null) {
-            $who .= ', acting as '.(StaffRole::tryFrom($entry->actingAs)?->label() ?? $entry->actingAs);
+            $who .= ', acting as '.(CapabilityGroup::tryFrom($entry->actingAs)?->label() ?? $entry->actingAs);
         }
 
         if ($entry->actingFor !== null) {
@@ -85,7 +87,7 @@ final class AuditWords
     }
 
     /**
-     * "Staff account: Bola Ade", or the table and identifier.
+     * "Staff account: Bola Ade", or the kind of record and its identifier.
      *
      * @param  array<string, string>  $names
      */
@@ -101,7 +103,8 @@ final class AuditWords
     }
 
     /**
-     * Each change in words: "Status: from invited to active", "Email: changed".
+     * Each change in words: "Status: from invited to active", "Email: changed",
+     * "Reason: matching a competitor".
      *
      * @return list<string>
      */

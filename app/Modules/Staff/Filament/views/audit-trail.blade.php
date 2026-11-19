@@ -4,10 +4,10 @@
     rows, newest first. No Edit, Delete, re-seal or export anywhere.
 
     A member without the capability never sees this view: GuardedByCapability
-    swaps in staff::refused-page, inside the console shell, sent as 403.
+    swaps in shared::refused-page, inside the console shell, sent as 403.
 --}}
 <x-filament-panels::page>
-    @php($words = app(\App\Modules\Staff\Filament\AuditWords::class))
+    @php($words = app(\App\Modules\Shared\Filament\AuditWords::class))
     @php($now = app(\App\Modules\Shared\Contracts\Clock::class)->now())
     @php($shown = $this->getEntries())
     @php($entries = $shown['entries'])

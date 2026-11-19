@@ -1,18 +1,22 @@
 <?php
 
-namespace App\Modules\Staff\Filament;
+namespace App\Modules\Shared\Filament;
 
 use App\Modules\Shared\Capabilities\NeedsCapability;
 use Filament\Resources\Pages\Page as ResourcePage;
 use Livewire\Attributes\Locked;
+use LogicException;
+use ReflectionClass;
 
 /**
  * Makes a console page's or resource's #[NeedsCapability] declaration the
  * check (FR-52). Every page or resource that declares a capability uses this
- * trait; the architecture rule fails on one that does not.
+ * trait, whichever module it is in; the architecture rule fails on one that
+ * does not. The answer comes from {@see ConsolePageGuard}, which Staff binds
+ * to the capability registry.
  *
- * - `canAccess()` asks the capability registry, so the rail leaves the link
- *   out and Filament refuses the page to anyone without it.
+ * - `canAccess()` asks the guard, so the rail leaves the link out and
+ *   Filament refuses the page to anyone without it.
  * - A resource's pages need the resource's capability: they declare none of
  *   their own and use this trait for the refusal.
  * - On load, a member without the capability gets the page inside the console
@@ -31,7 +35,7 @@ trait GuardedByCapability
      */
     public static function canAccess(array $parameters = []): bool
     {
-        return ConsoleAccess::allows(static::capabilityDeclarer());
+        return app(ConsolePageGuard::class)->allows(static::requiredCapability());
     }
 
     /** "The Staff page is for Admins. Ask Ada Founder." */
@@ -39,7 +43,20 @@ trait GuardedByCapability
     {
         $declarer = static::capabilityDeclarer();
 
-        return ConsoleAccess::refusal($declarer, (string) $declarer::getNavigationLabel());
+        return app(ConsolePageGuard::class)->refusal((string) $declarer::getNavigationLabel(), static::requiredCapability());
+    }
+
+    /** The capability the declarer names with #[NeedsCapability]; a page without one is a programming error. */
+    public static function requiredCapability(): string
+    {
+        $declarer = static::capabilityDeclarer();
+        $attributes = (new ReflectionClass($declarer))->getAttributes(NeedsCapability::class);
+
+        if ($attributes === []) {
+            throw new LogicException("{$declarer} declares no capability with #[NeedsCapability].");
+        }
+
+        return $attributes[0]->newInstance()->capability;
     }
 
     /**
@@ -66,7 +83,7 @@ trait GuardedByCapability
     {
         if (! static::canAccess()) {
             $this->refusal = static::refusalWords();
-            ConsoleAccess::markRefused();
+            app(ConsolePageGuard::class)->markRefused();
         }
     }
 
@@ -92,7 +109,7 @@ trait GuardedByCapability
     public function getView(): string
     {
         // Pages only: a resource never renders, so it never calls this.
-        return $this->refusal === null ? parent::getView() : 'staff::refused-page'; // @phpstan-ignore staticMethod.notFound
+        return $this->refusal === null ? parent::getView() : 'shared::refused-page'; // @phpstan-ignore staticMethod.notFound
     }
 
     /**

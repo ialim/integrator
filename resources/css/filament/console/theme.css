@@ -8,6 +8,8 @@
 @import '../../../tokens/ledger.css';
 
 @source '../../../../app/Modules/Staff/**/*';
+@source '../../../../app/Modules/Shared/Filament/**/*';
+@source '../../../../app/Modules/Pricing/Filament/**/*';
 
 @theme inline {
     --font-sans: var(--ledger-font-sans);
@@ -773,4 +775,23 @@ h3,
 
 .console-history-line {
     margin: 0 0 var(--ledger-space-1);
+}
+
+/* The Pricing and rules page: the floor as a fact, figures aligned right */
+
+.console-facts {
+    margin-block: var(--ledger-space-2) var(--ledger-space-3);
+}
+
+.console-facts dt {
+    font-weight: 600;
+}
+
+.console-facts dd {
+    margin: 0;
+}
+
+.console-table .console-num {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
 }

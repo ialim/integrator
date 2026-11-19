@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Shared\Capabilities\CapabilityGroup;
 use App\Modules\Shared\Contracts\Clock;
 use App\Modules\Shared\Queries\AuditTrail;
 use App\Modules\Shared\StatusTables\TransitionRefused;
@@ -8,7 +9,6 @@ use App\Modules\Staff\Actions\DeactivateStaffAccount;
 use App\Modules\Staff\Actions\ResendInvitation;
 use App\Modules\Staff\Actions\ResetSignIn;
 use App\Modules\Staff\Actions\SetSupportDuties;
-use App\Modules\Staff\Capabilities\CapabilityGroup;
 use App\Modules\Staff\Capabilities\CapabilityRefused;
 use App\Modules\Staff\Capabilities\CapabilityRegistry;
 use App\Modules\Staff\Capabilities\StaffCapabilities;
@@ -37,6 +37,18 @@ function capabilityRegistry(): CapabilityRegistry
     return app(CapabilityRegistry::class);
 }
 
+/**
+ * Staff's own capabilities, in the order Staff declares them; other modules declare theirs alongside.
+ *
+ * @return list<string>
+ */
+function staffCapabilityNames(): array
+{
+    $staff = [StaffCapabilities::TODAY, StaffCapabilities::MANAGE_STAFF, StaffCapabilities::SUPPORT_DESK, StaffCapabilities::VIEW_AUDIT];
+
+    return array_values(array_filter(capabilityRegistry()->names(), fn (string $name): bool => in_array($name, $staff, true)));
+}
+
 /** The rail's group labels, in the order the page renders them. */
 function railGroupLabels(string $html): array
 {
@@ -50,7 +62,7 @@ it('holds each capability for the right groups, with Admin holding every one', f
         ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::MANAGE_STAFF))->toBe([CapabilityGroup::Admin])
         ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::SUPPORT_DESK))->toBe([CapabilityGroup::SupportDuties, CapabilityGroup::Admin])
         ->and(capabilityRegistry()->groupsHolding(StaffCapabilities::VIEW_AUDIT))->toBe([CapabilityGroup::Admin])
-        ->and(capabilityRegistry()->names())->toBe([StaffCapabilities::TODAY, StaffCapabilities::MANAGE_STAFF, StaffCapabilities::SUPPORT_DESK, StaffCapabilities::VIEW_AUDIT]);
+        ->and(staffCapabilityNames())->toBe([StaffCapabilities::TODAY, StaffCapabilities::MANAGE_STAFF, StaffCapabilities::SUPPORT_DESK, StaffCapabilities::VIEW_AUDIT]);
 });
 
 it('allows each role only its own capabilities, and Support duties only while the switch is On', function () {
@@ -58,7 +70,7 @@ it('allows each role only its own capabilities, and Support duties only while th
     $finance = StaffConsole::active($admin, StaffRole::Finance, 'Bola Finance');
     $operations = StaffConsole::active($admin, StaffRole::Operations, 'Chika Operations');
 
-    $matrix = fn (StaffMember $member): array => array_map(fn (string $capability) => capabilityRegistry()->allows($member->refresh(), $capability), capabilityRegistry()->names());
+    $matrix = fn (StaffMember $member): array => array_map(fn (string $capability) => capabilityRegistry()->allows($member->refresh(), $capability), staffCapabilityNames());
 
     expect($matrix($admin))->toBe([true, true, true, true])
         ->and($matrix($finance))->toBe([true, false, false, false])
@@ -124,13 +136,13 @@ it('names the alphabetically first active holder when refusing', function () {
     );
 });
 
-it('shows Finance only the Queues group with Today, marked as the current place', function () {
+it('shows Finance only its own groups: Queues with Today, marked as the current place, and Rules', function () {
     $finance = StaffConsole::active(StaffConsole::admin(), StaffRole::Finance, 'Bola Finance');
     StaffConsole::signIn($this, $finance);
 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
-    expect(railGroupLabels($html))->toBe(['Queues'])
+    expect(railGroupLabels($html))->toBe(['Queues', 'Rules'])
         ->and($html)->not->toContain('href="'.url('/console/staff').'"')
         ->and($html)->toMatch('/<ul[^>]*aria-labelledby="(fi-sidebar-group-label-queues-[0-9a-f]{8})"/')
         ->and($html)->toMatch('/<span id="fi-sidebar-group-label-queues-[0-9a-f]{8}" class="fi-sidebar-group-label">\s*Queues\s*<\/span>/')
@@ -144,7 +156,7 @@ it('shows an Admin every group that has a page, People with Staff included, in r
 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
-    expect(railGroupLabels($html))->toBe(['Queues', 'People', 'Watch'])
+    expect(railGroupLabels($html))->toBe(['Queues', 'People', 'Rules', 'Watch'])
         ->and($html)->toContain('href="'.url('/console/staff').'"')
         ->and($html)->toMatch('/<ul[^>]*aria-labelledby="fi-sidebar-group-label-people-[0-9a-f]{8}"/');
 

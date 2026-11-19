@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Staff\Filament;
+namespace App\Modules\Shared\Filament;
 
 use Filament\Navigation\NavigationGroup;
 
@@ -9,6 +9,9 @@ use Filament\Navigation\NavigationGroup;
  * names its group with one of these labels. Filament leaves out every link
  * whose `canAccess()` is false and every group left empty, so each role sees
  * only its own groups and links: nothing greyed out, no padlock.
+ *
+ * In `Shared`, so a module that adds its own console page names its group
+ * without importing `Staff` (AD-2).
  */
 final class ConsoleRail
 {
@@ -25,6 +28,9 @@ final class ConsoleRail
     public const RULES = 'Rules';
 
     public const WATCH = 'Watch';
+
+    /** The staff console panel's id: a module adds its pages only to this panel. */
+    public const PANEL = 'console';
 
     public const ORDER = [self::QUEUES, self::WORK, self::MONEY, self::CATALOGUE, self::PEOPLE, self::RULES, self::WATCH];
 

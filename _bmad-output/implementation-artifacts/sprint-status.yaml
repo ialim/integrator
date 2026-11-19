@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-25-2026 12:00
-last_updated: 11-16-2026 12:00
+last_updated: 11-19-2026 16:30
 project: integrator
 project_key: NOKEY
 tracking_system: file-system
@@ -45,8 +45,8 @@ development_status:
   1-7-the-integrator-app-installs-on-a-phone: done
   epic-1-retrospective: done
 
-  epic-2: backlog
-  2-1-admin-sets-up-product-ranges-and-their-markup: backlog
+  epic-2: in-progress
+  2-1-admin-sets-up-product-ranges-and-their-markup: review
   2-2-admin-records-suppliers-and-approves-them-against-an-onboard: backlog
   2-3-operations-creates-and-edits-a-product: backlog
   2-4-a-product-goes-live-and-leaves: backlog
