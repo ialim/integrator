@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Catalogue\Filament\SupplierPage;
+use App\Modules\Catalogue\Filament\SuppliersPage;
 use App\Modules\Pricing\Filament\PricingAndRules;
 use App\Modules\Shared\Capabilities\NeedsCapability;
 use App\Modules\Shared\Capabilities\NeedsNoCapability;
@@ -90,5 +92,7 @@ it('walks the Staff page, Today, sign-in and invitation pages, and the pages oth
         ->toContain(AcceptInvitationPage::class)
         ->toContain(ListStaff::class)
         ->toContain(PricingAndRules::class)
+        ->toContain(SuppliersPage::class)
+        ->toContain(SupplierPage::class)
         ->and($panel->getResources())->toContain(StaffResource::class);
 });

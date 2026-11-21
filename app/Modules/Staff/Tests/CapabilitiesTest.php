@@ -136,13 +136,13 @@ it('names the alphabetically first active holder when refusing', function () {
     );
 });
 
-it('shows Finance only its own groups: Queues with Today, marked as the current place, and Rules', function () {
+it('shows Finance only its own groups: Queues with Today, marked as the current place, Catalogue and Rules', function () {
     $finance = StaffConsole::active(StaffConsole::admin(), StaffRole::Finance, 'Bola Finance');
     StaffConsole::signIn($this, $finance);
 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
-    expect(railGroupLabels($html))->toBe(['Queues', 'Rules'])
+    expect(railGroupLabels($html))->toBe(['Queues', 'Catalogue', 'Rules'])
         ->and($html)->not->toContain('href="'.url('/console/staff').'"')
         ->and($html)->toMatch('/<ul[^>]*aria-labelledby="(fi-sidebar-group-label-queues-[0-9a-f]{8})"/')
         ->and($html)->toMatch('/<span id="fi-sidebar-group-label-queues-[0-9a-f]{8}" class="fi-sidebar-group-label">\s*Queues\s*<\/span>/')
@@ -156,7 +156,7 @@ it('shows an Admin every group that has a page, People with Staff included, in r
 
     $html = $this->get('/console/today')->assertOk()->getContent();
 
-    expect(railGroupLabels($html))->toBe(['Queues', 'People', 'Rules', 'Watch'])
+    expect(railGroupLabels($html))->toBe(['Queues', 'Catalogue', 'People', 'Rules', 'Watch'])
         ->and($html)->toContain('href="'.url('/console/staff').'"')
         ->and($html)->toMatch('/<ul[^>]*aria-labelledby="fi-sidebar-group-label-people-[0-9a-f]{8}"/');
 

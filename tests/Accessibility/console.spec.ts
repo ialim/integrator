@@ -4,18 +4,20 @@ import { expectNoSidewaysScroll, expectNoViolations } from './checks';
 import { totp } from './totp';
 
 /*
- * The staff console's accessibility criteria (Stories 1.3 to 1.6 and 2.1),
+ * The staff console's accessibility criteria (Stories 1.3 to 1.6, 2.1 and 2.2),
  * including the Staff page's dialogs, the Pricing and rules page's dialogs,
+ * the Suppliers list and a Supplier's page with their dialogs,
  * the session warning and its dialog, and the phone notice,
  * against a fresh database holding the founder's Admin, one invited
  * Operations account, one active Operations account with Support duties
- * Off, one active Finance account and two Product Ranges
+ * Off, one active Finance account, two Product Ranges and three Suppliers
  * (`app:seed-test-state first-admin invited-staff active-operations
- * active-finance product-ranges`).
+ * active-finance product-ranges suppliers`).
  * The test values match database/factories/Staff/FirstAdminFactory.php,
  * StaffAccountFactory.php, InvitedStaffScenario.php,
  * ActiveOperationsScenario.php, ActiveFinanceScenario.php and
- * database/factories/Catalogue/ProductRangesScenario.php.
+ * database/factories/Catalogue/ProductRangesScenario.php and
+ * SuppliersScenario.php.
  */
 const email = process.env.A11Y_STAFF_EMAIL ?? 'founder@example.test';
 const password = process.env.A11Y_STAFF_PASSWORD ?? 'ledger-test-password';
@@ -618,6 +620,178 @@ test('Operations: a rail of its own groups only, and the Staff page refused in w
     await expect(page.locator('main [disabled]')).toHaveCount(0);
     await expectNoViolations(page, 'the read-only Pricing and rules page');
     await expectWorksAt200PercentZoom(page, 'the read-only Pricing and rules page');
+});
+
+test('the Suppliers pages as Admin: chips with counts, dialogs, the checklist in words, the dashed button and its reason, 200% zoom', async ({
+    page,
+}) => {
+    await waitForNextCode();
+    await firstStep(page);
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(secret));
+    await page.waitForURL('**/console/today');
+
+    await page.goto('/console/suppliers');
+    await expectOneTopHeading(page);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Suppliers');
+    await expect(railList(page, 'Catalogue').getByRole('link', { name: 'Suppliers' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+    await expect(page.getByRole('table').getByRole('columnheader')).toHaveText([
+        'Supplier',
+        'Status',
+        'Products',
+        'Checklist',
+    ]);
+    await expect(page.getByRole('row', { name: /Brightwave Wholesale/ })).toContainText('Not approved');
+    await expect(page.getByRole('row', { name: /Northgate Distribution/ })).toContainText('5 of 5 clear');
+    await expect(page.getByRole('row', { name: /Sentinel Imports/ })).toContainText('Approved with a reason');
+    await expect(page.getByText('Only an Admin approves Suppliers or changes the checklist.')).toHaveCount(0);
+    await expectNoViolations(page, 'the Suppliers list');
+
+    // The chips: toggle buttons with counts; the one in use is pressed.
+    const chips = page.getByRole('group', { name: 'Show Suppliers' });
+    await expect(chips.getByRole('button', { name: 'All · 3' })).toHaveAttribute('aria-pressed', 'true');
+    await chips.getByRole('button', { name: 'Not approved · 1' }).click();
+    await expect(chips.getByRole('button', { name: 'Not approved · 1' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('row', { name: /Northgate Distribution/ })).toHaveCount(0);
+    await expect(page.getByRole('row', { name: /Brightwave Wholesale/ })).toBeVisible();
+    await chips.getByRole('button', { name: 'All · 3' }).click();
+    await expect(page.getByRole('row', { name: /Northgate Distribution/ })).toBeVisible();
+
+    // The add dialog: only the legal name is required, and a window of 0 days is refused beside its field.
+    const dialog = page.locator('.fi-modal-open .fi-modal-window');
+    await page.getByRole('button', { name: 'Add a supplier…' }).click();
+    await expect(dialog.getByRole('heading', { name: 'Add a supplier' })).toBeVisible();
+    await expect(dialog.getByLabel('Legal name')).toHaveAttribute('required', /.*/);
+    await expectNoViolations(page, 'the add supplier dialog');
+    await dialog.getByLabel('Legal name').fill('Checking Ltd');
+    await dialog.getByLabel('Dead-on-arrival window, in days').fill('0');
+    await dialog.getByRole('button', { name: 'Add the supplier' }).click();
+    await expectErrorTiedToField(
+        page,
+        dialog.getByLabel('Dead-on-arrival window, in days'),
+        'Enter the dead-on-arrival window as a whole number of days, 1 or more.',
+    );
+    await expectNoViolations(page, 'the add supplier dialog with an error');
+    await expectWorksAt200PercentZoom(page, 'the add supplier dialog');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The settings dialog: the three terms are always required, in words, not as greyed-out boxes.
+    await page.getByRole('button', { name: 'Onboarding settings…' }).click();
+    await expect(dialog.getByRole('heading', { name: 'Supplier onboarding settings' })).toBeVisible();
+    await expect(dialog.getByText('Returns terms: always required.')).toBeVisible();
+    await expect(dialog.getByRole('checkbox', { name: 'Business details is required' })).toBeChecked();
+    await expect(dialog.locator('[disabled]')).toHaveCount(0);
+    await expectNoViolations(page, 'the onboarding settings dialog');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await expectWorksAt200PercentZoom(page, 'the Suppliers list');
+
+    // A Supplier with gaps: its sections, the checklist in words, and the off button with its reason.
+    await page
+        .getByRole('row', { name: /Brightwave Wholesale/ })
+        .getByRole('link', { name: 'Brightwave Wholesale Ltd' })
+        .click();
+    await page.waitForURL('**/console/suppliers/*');
+    await expectOneTopHeading(page);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Brightwave Wholesale Ltd');
+    await expect(railList(page, 'Catalogue').getByRole('link', { name: 'Suppliers' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+    for (const section of ['Business details', 'Contacts', 'Agreement terms', 'Onboarding checklist']) {
+        await expect(page.getByRole('heading', { level: 2, name: section })).toBeVisible();
+    }
+
+    const checklist = page.getByRole('list', { name: 'Onboarding checklist' });
+    await expect(checklist.getByRole('listitem')).toHaveCount(5);
+    await expect(checklist.getByRole('listitem').first()).toContainText('Business details');
+    await expect(checklist.getByRole('listitem').first()).toContainText('Needs action');
+    await expect(checklist.getByRole('listitem').nth(3)).toContainText('Clear · 14 days');
+
+    const off = page.getByRole('button', { name: 'Approve the supplier' });
+    await expect(off).toHaveAttribute('aria-disabled', 'true');
+    await expect(off).toHaveAccessibleDescription(/^Off because 3 required items need action:/);
+    await off.focus();
+    expect(await focusRingWidth(page)).toBe('3px');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Approve with a reason…' })).toBeFocused();
+    const reason = page.locator('#supplier-approve-why');
+    await reason.focus();
+    await expect(reason).toBeFocused();
+    await expect(reason).toContainText('Off because 3 required items need action');
+    await expectNoViolations(page, 'a Supplier with gaps');
+
+    // Approve with a reason: an empty reason is refused beside the field; cancelled, nothing changes.
+    await page.getByRole('button', { name: 'Approve with a reason…' }).click();
+    await expect(
+        dialog.getByRole('heading', { name: 'Approve Brightwave Wholesale Ltd with a reason?' }),
+    ).toBeVisible();
+    await expect(dialog.getByLabel('Reason')).toHaveAttribute('required', /.*/);
+    await expect(dialog).toContainText('Off because 3 required items need action');
+    await expectNoViolations(page, 'the approve with a reason dialog');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The edit dialog asks for a reason.
+    await page.getByRole('button', { name: 'Edit details…' }).click();
+    await expect(dialog.getByRole('heading', { name: 'Edit Brightwave Wholesale Ltd' })).toBeVisible();
+    await expect(dialog.getByLabel('Reason')).toBeVisible();
+    await expectNoViolations(page, 'the edit supplier dialog');
+    await expectWorksAt200PercentZoom(page, 'the edit supplier dialog');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // History: read-only.
+    await page.getByRole('button', { name: 'History' }).click();
+    await expect(dialog.getByRole('heading', { name: 'History of Brightwave Wholesale Ltd' })).toBeVisible();
+    await expect(dialog.getByRole('list', { name: 'History, newest first' })).toBeVisible();
+    await expectNoViolations(page, 'the Supplier History dialog');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await expectWorksAt200PercentZoom(page, 'a Supplier with gaps');
+
+    // The Supplier approved with a reason shows that reason.
+    await page.goto('/console/suppliers');
+    await page.getByRole('link', { name: 'Sentinel Imports Nigeria Ltd' }).click();
+    await page.waitForURL('**/console/suppliers/*');
+    await expect(page.locator('[data-approval-reason]')).toContainText('Counterfeit term agreed by phone');
+    await expectNoViolations(page, 'a Supplier approved with a reason');
+});
+
+test('the Suppliers pages as Operations: add and edit, no approve or settings buttons, one line instead, nothing greyed out', async ({
+    page,
+}) => {
+    await waitForNextCode();
+    await firstStep(page, { email: operationsEmail, password: operationsPassword });
+    await page.getByRole('textbox', { name: 'Code from your authenticator app' }).fill(totp(operationsSecret));
+    await page.waitForURL('**/console/today');
+
+    await page.goto('/console/suppliers');
+    await expect(railList(page, 'Catalogue').getByRole('link', { name: 'Suppliers' })).toHaveAttribute(
+        'aria-current',
+        'page',
+    );
+    await expectOneTopHeading(page);
+    await expect(page.getByText('Only an Admin approves Suppliers or changes the checklist.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add a supplier…' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Onboarding settings…' })).toHaveCount(0);
+    await expect(page.locator('main [disabled], main [aria-disabled="true"]')).toHaveCount(0);
+    await expectNoViolations(page, 'the Suppliers list for Operations');
+
+    await page.getByRole('link', { name: 'Brightwave Wholesale Ltd' }).click();
+    await page.waitForURL('**/console/suppliers/*');
+    await expectOneTopHeading(page);
+    await expect(page.getByText('Only an Admin approves Suppliers or changes the checklist.')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Approve/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Edit details…' })).toBeVisible();
+    await expect(page.locator('main [disabled], main [aria-disabled="true"]')).toHaveCount(0);
+    await expectNoViolations(page, 'a Supplier for Operations');
+    await expectWorksAt200PercentZoom(page, 'a Supplier for Operations');
 });
 
 test('with the app installed: the console still signs in and works, every page and Livewire call answered by the server', async ({

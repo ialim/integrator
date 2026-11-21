@@ -2,12 +2,14 @@
 
 use App\Console\Commands\SeedTestState;
 use App\Modules\Catalogue\Queries\ProductRanges;
+use App\Modules\Catalogue\Queries\Suppliers;
 use App\Modules\Pricing\Queries\PricingRules;
 use App\Modules\Staff\Models\StaffMember;
 use App\Modules\Staff\Models\StaffRole;
 use App\Modules\Staff\StatusTables\StaffAccountStatus;
 use Database\Factories\ActionFactory;
 use Database\Factories\Catalogue\ProductRangesScenario;
+use Database\Factories\Catalogue\SuppliersScenario;
 use Database\Factories\Staff\ActiveFinanceScenario;
 use Database\Factories\Staff\ActiveOperationsScenario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -90,4 +92,25 @@ it('seeds an active Finance member and two Product Ranges at the starting markup
     // Seeding again adds nothing.
     $this->artisan('app:seed-test-state', ['scenarios' => ['product-ranges']])->assertSuccessful();
     expect(app(ProductRanges::class)->all())->toHaveCount(2);
+});
+
+it('seeds three Suppliers through Actions: approved, approved with a reason, and not approved with gaps', function () {
+    $this->artisan('app:seed-test-state', ['scenarios' => ['first-admin', 'suppliers']])->assertSuccessful();
+
+    $byName = [];
+
+    foreach (app(Suppliers::class)->list() as $supplier) {
+        $byName[$supplier->legalName] = $supplier;
+    }
+
+    expect(array_keys($byName))->toBe([SuppliersScenario::WITH_GAPS, SuppliersScenario::APPROVED, SuppliersScenario::APPROVED_WITH_REASON])
+        ->and($byName[SuppliersScenario::APPROVED]->isApproved)->toBeTrue()
+        ->and($byName[SuppliersScenario::APPROVED]->progressWords())->toBe('5 of 5 clear')
+        ->and($byName[SuppliersScenario::APPROVED_WITH_REASON]->approvalReason)->toBe(SuppliersScenario::REASON)
+        ->and($byName[SuppliersScenario::WITH_GAPS]->isApproved)->toBeFalse()
+        ->and(app(Suppliers::class)->doaWindowDays($byName[SuppliersScenario::WITH_GAPS]->id))->toBe(14);
+
+    // Seeding again adds nothing.
+    $this->artisan('app:seed-test-state', ['scenarios' => ['suppliers']])->assertSuccessful();
+    expect(app(Suppliers::class)->list())->toHaveCount(3);
 });

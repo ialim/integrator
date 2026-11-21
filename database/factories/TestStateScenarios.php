@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Database\Factories\Catalogue\ProductRangesScenario;
+use Database\Factories\Catalogue\SuppliersScenario;
 use Database\Factories\Staff\ActiveFinanceScenario;
 use Database\Factories\Staff\ActiveOperationsScenario;
 use Database\Factories\Staff\FirstAdminScenario;
@@ -27,6 +28,7 @@ final class TestStateScenarios
             'active-operations' => ActiveOperationsScenario::class,
             'active-finance' => ActiveFinanceScenario::class,
             'product-ranges' => ProductRangesScenario::class,
+            'suppliers' => SuppliersScenario::class,
         ];
     }
 }

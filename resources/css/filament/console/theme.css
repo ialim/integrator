@@ -10,6 +10,7 @@
 @source '../../../../app/Modules/Staff/**/*';
 @source '../../../../app/Modules/Shared/Filament/**/*';
 @source '../../../../app/Modules/Pricing/Filament/**/*';
+@source '../../../../app/Modules/Catalogue/Filament/**/*';
 
 @theme inline {
     --font-sans: var(--ledger-font-sans);
@@ -794,4 +795,111 @@ h3,
 .console-table .console-num {
     text-align: end;
     font-variant-numeric: tabular-nums;
+}
+
+/* Filter chips with counts (the Suppliers list; shared::filter-chips) */
+
+.console-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ledger-space-2);
+    margin-block: var(--ledger-space-2) var(--ledger-space-3);
+}
+
+.console-chip {
+    min-height: var(--ledger-target-console);
+    padding: 0 var(--ledger-space-3);
+    background: var(--ledger-surface-sheet);
+    border: 1px solid var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+    color: var(--ledger-ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.console-chip[aria-pressed='true'] {
+    background: var(--ledger-green);
+    border-color: var(--ledger-green);
+    color: var(--ledger-on-green);
+}
+
+.console-chip:focus-visible,
+.console-button-off:focus-visible,
+.console-off-reason:focus-visible {
+    outline: var(--ledger-focus-width) solid var(--ledger-focus-ring);
+    outline-offset: var(--ledger-focus-gap);
+}
+
+/* Checklists: each item Clear or Needs action, in words (shared::checklist) */
+
+.console-checklist {
+    margin: var(--ledger-space-2) 0 var(--ledger-space-3);
+    padding: 0;
+    list-style: none;
+}
+
+.console-checklist-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--ledger-space-1) var(--ledger-space-3);
+    padding-block: var(--ledger-space-2);
+    border-block-end: 1px solid var(--ledger-hairline);
+}
+
+.console-checklist-label {
+    font-weight: 600;
+}
+
+.console-checklist-state {
+    color: var(--ledger-good);
+}
+
+.console-checklist-need .console-checklist-state {
+    color: var(--ledger-error);
+}
+
+.console-checklist-mark {
+    display: inline-block;
+    min-inline-size: 1.25em;
+    font-weight: 700;
+}
+
+.console-progress-need {
+    color: var(--ledger-error);
+    font-weight: 600;
+}
+
+/* A button that cannot be pressed: visible, dashed, its reason beside it */
+
+.console-button-off {
+    min-height: var(--ledger-target-console);
+    padding: 0 var(--ledger-space-4);
+    background: transparent;
+    border: 1px dashed var(--ledger-control-edge);
+    border-radius: var(--ledger-radius-sm);
+    color: var(--ledger-ink-secondary);
+    font: inherit;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
+.console-off-reason {
+    margin-block: var(--ledger-space-2) 0;
+    color: var(--ledger-ink);
+}
+
+.console-approve-actions,
+.console-after-table {
+    margin-block-start: var(--ledger-space-3);
+}
+
+.console-approval-reason {
+    border-inline-start: 4px solid var(--ledger-caution);
+}
+
+.console-facts-grid div + div,
+.console-facts div + div {
+    margin-block-start: var(--ledger-space-2);
 }

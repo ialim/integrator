@@ -17,6 +17,9 @@ final class LockOrder
         'product_range',
         // Pricing: the margin floor and later settings.
         'pricing_setting',
+        // Catalogue: a Supplier, then the onboarding checklist's settings it is approved against.
+        'supplier',
+        'onboarding_setting',
     ];
 
     public static function rank(string $root): int

@@ -24,6 +24,8 @@ final class AuditWords
         'product_ranges' => 'Product Range',
         'range_markups' => 'Platform Markup',
         'pricing_settings' => 'Pricing setting',
+        'suppliers' => 'Supplier',
+        'onboarding_checklist_items' => 'Onboarding checklist item',
     ];
 
     public function __construct(private readonly ActorNames $actorNames) {}

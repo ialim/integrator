@@ -12,6 +12,7 @@ use App\Modules\Shared\Support\SystemClock;
 use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -47,6 +48,8 @@ final class SharedServiceProvider extends ServiceProvider
     {
         // The console views every module's pages share: History, and the in-shell refusal.
         $this->loadViewsFrom(__DIR__.'/../Filament/views', 'shared');
+        // And the components they share: <x-shared::filter-chips>, <x-shared::checklist>.
+        Blade::anonymousComponentPath(__DIR__.'/../Filament/views/components', 'shared');
 
         if (! $this->app->environment('staging')) {
             return;
